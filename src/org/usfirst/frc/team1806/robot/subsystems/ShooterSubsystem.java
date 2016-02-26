@@ -24,6 +24,9 @@ public class ShooterSubsystem extends Subsystem {
     
     double kGearEngageSpeed = Constants.gearEngageSpeed;
     
+    /*
+     * @param meme a string
+     */
     public ShooterSubsystem(){
     	cockingMotor = new Talon(RobotMap.cockingMotor);
     	cockedLimitSwitch = new DigitalInput(RobotMap.cockedShooterLimit);
@@ -34,16 +37,16 @@ public class ShooterSubsystem extends Subsystem {
     
     public void cockShooterEngageGear(){
     	//go at slow speed so the gear can catch
-    	cockingMotor.set(kGearEngageSpeed);
+    	//kgearengagespeed
+    	cockingMotor.set(-.25);
     }
     
     public void cockShooterFullSpeed(){
-    	//FIXME this needs to pull it back
-    	cockingMotor.set(1);
+    	cockingMotor.set(-.4);
     }
     
     public void cockShooterReleaseDogGear(){
-    	cockingMotor.set(.5);
+    	cockingMotor.set(0);
     }
     
     public void stopCocking(){
@@ -67,11 +70,11 @@ public class ShooterSubsystem extends Subsystem {
     }
     
     public boolean shooterIsCocked(){
-    	return cockedLimitSwitch.get();
+    	return !cockedLimitSwitch.get();
     }
     
     public boolean hasBallSensor(){
-    	return ballSensor.get();
+    	return !ballSensor.get();
     }
 
     public void initDefaultCommand() {

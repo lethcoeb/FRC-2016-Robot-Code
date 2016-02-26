@@ -1,11 +1,15 @@
 package org.usfirst.frc.team1806.robot;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.TimeoutException;
 
 import org.usfirst.frc.team1806.robot.RobotStates.VisionTrackingState;
 
@@ -19,14 +23,13 @@ public class JetsonReceiver extends Thread {
 
 	String answer;
 	String serverAddress = "1234";
-	//Socket s;
+	// Socket s;
 	BufferedReader input;
 
 	int isGoal;
 	double distance;
 	double angle;
-	
-	
+
 	double then;
 	double now;
 	double deltaTime;
@@ -36,18 +39,25 @@ public class JetsonReceiver extends Thread {
 
 			ds = new DatagramSocket(5800);
 			bb = ByteBuffer.allocate(20);
-			//s = new Socket(serverAddress, 9090);
-			//input = new BufferedReader(new InputStreamReader(s.getInputStream()));
+			// s = new Socket(serverAddress, 9090);
+			// input = new BufferedReader(new
+			// InputStreamReader(s.getInputStream()));
 		} catch (Exception e) {
 			System.out.println("Error initializing client: " + e);
 		}
-		
+
 		now = System.currentTimeMillis();
 		then = System.currentTimeMillis();
-		
+
 	}
 
 	public void run() {
+
+		try {
+			ds.setSoTimeout((int) Constants.jetsonConnectionLostTimeout * 1000);
+		} catch (SocketException se) {
+			se.printStackTrace();
+		}
 
 		while (true) {
 			try {
@@ -59,47 +69,52 @@ public class JetsonReceiver extends Thread {
 				isGoal = bb.getInt();
 				distance = bb.getDouble();
 				angle = bb.getDouble();
-				//System.out.println("Goal found? : " + isGoal);
-				//System.out.println("Distance from goal: " + distance);
-				//System.out.println("angle from goal: " + angle);
+				// System.out.println("Goal found? : " + isGoal);
+				// System.out.println("Distance from goal: " + distance);
+				// System.out.println("angle from goal: " + angle);
 
 				SmartDashboard.putNumber("Goal found", isGoal);
-				SmartDashboard.putNumber("Distance from goal", distance/12);
+				SmartDashboard.putNumber("Distance from goal", distance / 12);
 				SmartDashboard.putNumber("ANgle from goal", angle);
 
-				//System.out.println("run successfully");
+				// System.out.println("run successfully");
 				then = now;
 				now = System.currentTimeMillis();
 				deltaTime = now - then;
-				
+
 				System.out.println("Time since last packet: " + deltaTime);
-				
-				if(getTimeSinceLastPacketReceived() > Constants.jetsonConnectionLostTimeout){
-					Robot.states.visionTrackingStateTracker = VisionTrackingState.ROBORIO;
-				}
-				
+
+				// If this try block completes all the way to here, it means you
+				// had no errors and you successfully received
+				// data from the jetson. So that means you should switch back to
+				// using image data from the Jetson if you were't already :-)
+				Robot.states.visionTrackingStateTracker = VisionTrackingState.JETSON;
+
 			} catch (Exception e) {
-				System.out.println("Error receiving data: " + e);
-				// oops
+				if (e instanceof SocketTimeoutException) {
+					// Failed to receive socket in time.
+					Robot.states.visionTrackingStateTracker = VisionTrackingState.ROBORIO;
+				} else if (e instanceof IOException) {
+					e.printStackTrace();
+				}
 			}
 		}
-
 	}
-	
-	public double getAngleToGoal(){
+
+	public double getAngleToGoal() {
 		return angle;
 	}
-	
-	public boolean isGoalFound(){
-		if(isGoal == 1){
+
+	public boolean isGoalFound() {
+		if (isGoal == 1) {
 			return true;
-		}else {
+		} else {
 			return false;
 		}
 	}
-	
-	public double getTimeSinceLastPacketReceived(){
+
+	public double getTimeSinceLastPacketReceived() {
 		return System.currentTimeMillis() - then;
 	}
-	
+
 }

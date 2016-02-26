@@ -11,7 +11,7 @@ public class RobotStates {
 	}
 	
 	public enum ShooterArmPosition{
-		DOWN, UP, MID
+		DOWN, UP, HOLDING, OTHER
 	}
 	
 	public enum DriveControlMode{
@@ -38,6 +38,10 @@ public class RobotStates {
 		JETSON, ROBORIO, NONE
 	}
 	
+	public enum IntakeControlMode{
+		DRIVER, AUTOMATIC
+	}
+	
 	public boolean hasBall = true;
 	
 	public IntakePosition intakePositionTracker;
@@ -48,6 +52,8 @@ public class RobotStates {
 	public IntakeRollerState intakeRollerStateTracker;
 	public ElevatorOperatorControlMode elevatorOperatorControlModeTracker;
 	public VisionTrackingState visionTrackingStateTracker;
+	public IntakeControlMode intakeControlModeTracker;
+	
 	
 	public void reset(){
 		intakePositionTracker = IntakePosition.RETRACTED;
@@ -58,6 +64,7 @@ public class RobotStates {
 		intakeRollerStateTracker = IntakeRollerState.STOPPED;
 		elevatorOperatorControlModeTracker = ElevatorOperatorControlMode.AUTO;
 		visionTrackingStateTracker = VisionTrackingState.JETSON;
+		intakeControlModeTracker = IntakeControlMode.DRIVER;
 		hasBall = true;
 	}
 	

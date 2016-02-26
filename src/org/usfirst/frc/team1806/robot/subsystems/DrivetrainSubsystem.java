@@ -67,7 +67,6 @@ public class DrivetrainSubsystem extends Subsystem {
 			
 			@Override
 			public double pidGet() {
-				//FIXME return relative angle
 				return getAverageEncoderDistance();
 			}
 			

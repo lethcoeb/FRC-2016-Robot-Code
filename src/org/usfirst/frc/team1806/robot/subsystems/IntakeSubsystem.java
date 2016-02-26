@@ -12,48 +12,51 @@ import edu.wpi.first.wpilibj.command.Subsystem;
  *
  */
 public class IntakeSubsystem extends Subsystem {
-    
+
 	Talon roller;
 	DoubleSolenoid deployer;
-	
+
 	double kIntakeRollerSpeed = Constants.intakeRollerSpeed;
 	double kOuttakeRollerSpeed = Constants.outtakeRollerSpeed;
-	
-	public IntakeSubsystem(){
+
+	public IntakeSubsystem() {
 		roller = new Talon(RobotMap.intakeRoller);
 		deployer = new DoubleSolenoid(RobotMap.deployerExtend, RobotMap.deployerRetract);
 	}
-	
-	public void intakeBall(){
+
+	public void intakeBall() {
 		roller.set(kIntakeRollerSpeed);
 	}
-	
-	public void outtakeBall(){
+
+	public void outtakeBall() {
 		roller.set(kOuttakeRollerSpeed);
 	}
 	
-	public void stopIntaking(){
+	public void runAtSpeed(double speed){
+		roller.set(speed);
+	}
+
+	public void stopIntaking() {
 		roller.set(0);
 	}
-	
-	public void deployIntake(){
-		if(deployer.get() == Value.kReverse){
-			deployer.set(Value.kForward);
-		}
-	}
-	
-	public void retractIntake(){
-		if(deployer.get() == Value.kForward){
-			deployer.set(Value.kReverse);
-		}
-	}
-	
-    // Put methods for controlling this subsystem
-    // here. Call these from Commands.
 
-    public void initDefaultCommand() {
-        // Set the default command for a subsystem here.
-        //setDefaultCommand(new MySpecialCommand());
-    }
+	public void deployIntake() {
+
+		deployer.set(Value.kForward);
+
+	}
+
+	public void retractIntake() {
+
+		deployer.set(Value.kReverse);
+
+	}
+
+	// Put methods for controlling this subsystem
+	// here. Call these from Commands.
+
+	public void initDefaultCommand() {
+		// Set the default command for a subsystem here.
+		// setDefaultCommand(new MySpecialCommand());
+	}
 }
-

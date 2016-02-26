@@ -11,9 +11,9 @@ import edu.wpi.first.wpilibj.command.Command;
 /**
  *
  */
-public class MoveToShootingHeight extends Command {
+public class MoveToHolding extends Command {
 
-    public MoveToShootingHeight() {
+    public MoveToHolding() {
         requires(Robot.elevatorSS);
     }
 
@@ -24,29 +24,14 @@ public class MoveToShootingHeight extends Command {
     	if(!Robot.elevatorSS.isElevatorPIDEnabled()){
         	Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
     	}
-    	Robot.elevatorSS.elevatorSetSetpoint(Constants.elevatorShootingHeight);
-    	if(!Robot.elevatorSS.isElevatorPIDOnTarget()){
-    		Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
-    	}
-    	
-    	if(Robot.elevatorSS.getElevatorPosition() < 40000){
-    		//help it w/ intake
+    	Robot.elevatorSS.elevatorSetSetpoint(8000);
     		Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
-    		Robot.intakeSS.runAtSpeed(.4);
-    	}
+    		Robot.intakeSS.runAtSpeed(.3);
     	
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	
-    	if(Robot.elevatorSS.getElevatorPosition() >= 40000){
-    		//can stop helping
-    		//FIXME make this a variable
-    		Robot.states.intakeControlModeTracker = IntakeControlMode.DRIVER;
-    		Robot.intakeSS.stopIntaking();
-    	}
-    	
     }
 
     // Make this return true when this Command no longer needs to run execute()
@@ -56,20 +41,16 @@ public class MoveToShootingHeight extends Command {
 
     // Called once after isFinished returns true
     protected void end() {
-    	//Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
     	Robot.elevatorSS.elevatorStopMovement();
-		Robot.states.shooterArmPositionTracker = ShooterArmPosition.UP;
-		Robot.states.intakeControlModeTracker = IntakeControlMode.DRIVER;
+		Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
 		Robot.intakeSS.stopIntaking();
-
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
     	Robot.elevatorSS.elevatorStopMovement();
-    	Robot.states.intakeControlModeTracker = IntakeControlMode.DRIVER;
-    	Robot.intakeSS.runAtSpeed(0);
-    	Robot.elevatorSS.resetSrxPID();
+		Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
+		Robot.intakeSS.stopIntaking();
     }
 }

@@ -15,6 +15,8 @@ public class CockShooter extends Command {
 	Timer t;
 	boolean cocking = false;
 	
+	boolean finished = false;
+	
     public CockShooter() {
         requires(Robot.shooterSS);
     }
@@ -42,11 +44,20 @@ public class CockShooter extends Command {
     		Robot.shooterSS.cockShooterFullSpeed();
     	}
     	
+    	if(Robot.pdp.getCurrent(13) > 100){
+    		//kill pls
+    		finished = true;
+    	}
+    	
+    	if(Robot.shooterSS.shooterIsCocked()){
+    		finished = true;
+    	}
+    	
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return Robot.shooterSS.shooterIsCocked();
+        return finished;
     }
 
     // Called once after isFinished returns true

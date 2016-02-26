@@ -2,6 +2,7 @@ package org.usfirst.frc.team1806.robot.commands.shooter;
 
 import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.Robot;
+import org.usfirst.frc.team1806.robot.RobotStates.IntakeControlMode;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
@@ -23,7 +24,7 @@ public class PinchBall extends Command {
     protected void initialize() {
     	t.reset();
     	t.start();
-    	Robot.shooterSS.releaseBall();
+    	Robot.shooterSS.pinchBall();
     }
 
     // Called repeatedly when this Command is scheduled to run

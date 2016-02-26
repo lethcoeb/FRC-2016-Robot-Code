@@ -2,50 +2,48 @@ package org.usfirst.frc.team1806.robot;
 
 public class Constants {
 	
-	public static final double intakeRollerSpeed = .75;
-	public static final double outtakeRollerSpeed = -.75;
+	public static final double intakeRollerSpeed = .4;
+	public static final double outtakeRollerSpeed = -.8;
 	
 	
 	//FIXME this
 	public static final double encoderCountsPerRevolution = .01;
 	
-	public static final double liftEncoderCountsPerRevolution = .01;
-	
 	//DRIVETRAIN PID
 	public static final double drivetrainDriveP = .5;
 	public static final double drivetrainDriveI = 0;
 	public static final double drivetrainDriveD = 0;
-	public static final double drivetrainDrivePIDTolerance = .5; //.5 inches
+	public static final double drivetrainDrivePIDTolerance = 1; //inches
 	
 	public static final double drivetrainTurnP = .1;
 	public static final double drivetrainTurnI = 0;
 	public static final double drivetrainTurnD = 0;
-	public static final double drivetrainTurnPIDTolerance = .1; //.1 degrees
+	public static final double drivetrainTurnPIDTolerance = .1; //degrees
 	
 	//ELEVATOR PID
 	public static final double elevatorPIDp = .01;
 	public static final double elevatorPIDi = 0;
 	public static final double elevatorPIDd = 0;
-	public static final double elevatorAbsoluteTolerance = .25;
+	public static final double elevatorAbsoluteTolerance = 1000;
 	
-	public static final double elevatorShootingHeight = 1;
+	public static final double elevatorShootingHeight = 103560;
 	public static final double resetSpeed = .2;
 	
 	public static final double maxPowerDiffential = .05;
 	
 	//INTAKE STUFF
-	public static final double timeToLower = .5;
-	public static final double timeToRaise = .75;
+	public static final double intakeTimeToLower = .5;
+	public static final double intakeTimeToRaise = .75;
 	
 	//SHOOTER STUFF
 	public static final double timeToEngageDogGear = .25;
 	public static final double gearEngageSpeed = .5;
-	public static final double timeToPinch = .5;
-	public static final double timeToUnpinch = .5;
-	public static final double timeToShoot = 1.5; //Time in seconds that it takes for the puncher to travel all the way through,
+	public static final double timeToPinch = .75;
+	public static final double timeToUnpinch = .15;
+	public static final double timeToShoot = 2; //Time in seconds that it takes for the puncher to travel all the way through,
 												  //after this time elapses you can begin recocking bc the shooter is unmoving
 	//Networking stuff
-	public static final double jetsonConnectionLostTimeout = 1; //timeout until conn. failure for Jetson
+	public static final double jetsonConnectionLostTimeout = 1; //timeout until connection failure for Jetson, if time between received info surpasses this then switch to onboard vision processing
 	//AUTONOMOUS CONSTANTS
 	
 	/*

@@ -18,26 +18,24 @@ public class MoveToGrabPosition extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
+    	Robot.elevatorSS.resetSrxPID();
     	if(!Robot.elevatorSS.isElevatorPIDEnabled()){
         	Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
     	}
     	Robot.elevatorSS.elevatorSetSetpoint(0);
     	if(!Robot.elevatorSS.isBottomLimitHit()){
-    		Robot.states.shooterArmPositionTracker = ShooterArmPosition.MID;
+    		Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
     	}
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	if(Robot.elevatorSS.isElevatorPIDOnTarget() && !Robot.elevatorSS.isBottomLimitHit()){
-    		//go ahead and rezero with the limit switch
-    		Robot.elevatorSS.elevatorMoveAtSpeed(Constants.resetSpeed);
-    	}
+    	
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return Robot.elevatorSS.isBottomLimitHit();
+        return Robot.elevatorSS.isElevatorPIDOnTarget();
     }
 
     // Called once after isFinished returns true
@@ -51,5 +49,7 @@ public class MoveToGrabPosition extends Command {
     // subsystems is scheduled to run
     protected void interrupted() {
     	Robot.elevatorSS.elevatorStopMovement();
+    	Robot.elevatorSS.resetSrxPID();
+
     }
 }

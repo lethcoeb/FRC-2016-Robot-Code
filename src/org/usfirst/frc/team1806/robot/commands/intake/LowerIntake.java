@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.command.Command;
  */
 public class LowerIntake extends Command {
 	
-	double kTimeToLower = Constants.timeToLower;
+	double kTimeToLower = Constants.intakeTimeToLower;
 	
 	Timer timer;
 	

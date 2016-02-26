@@ -8,18 +8,17 @@ package org.usfirst.frc.team1806.robot;
 public class RobotMap {
 	
 	//MOTORS
-    public static final int rightMotor1 = 3;
-    public static final int rightMotor2 = 4;
-    public static final int rightMotor3 = 5;
-    public static final int leftMotor1 = 0;
-    public static final int leftMotor2 = 1;
-    public static final int leftMotor3 = 2;
+	public static final int leftMotor1 = 4;
+    public static final int leftMotor2 = 5;
+    public static final int leftMotor3 = 6;
+    public static final int rightMotor1 = 9;
+    public static final int rightMotor2 = 8;
+    public static final int rightMotor3 = 7;
     
-    public static final int intakeRoller = 6;
-    
-    public static final int liftMotor = 7;
-    
-    public static final int cockingMotor = 8;
+    public static final int intakeRoller = 3;
+    //public static final int liftMotor = 1;
+    public static final int cockingMotor = 1;
+    public static final int tapeMeasureMotor = 0;
     
     //SOLENOIDS
     //double solenoids
@@ -39,14 +38,15 @@ public class RobotMap {
     public static final int rightEncoderB = 1;
     public static final int leftEncoderA = 2;
     public static final int leftEncoderB = 3;
-    public static final int liftEncoderA = 4;
-    public static final int liftEncoderB = 5;
+    public static final int cockedShooterLimit = 9;
+    //4
+    //5
     
-    public static final int bottomElevatorLimit = 6;
-    public static final int topElevatorLimit = 7;
+    public static final int bottomElevatorLimit = 4;
+    //public static final int topElevatorLimit = 7;
     
-    public static final int cockedShooterLimit = 8;
+   
     
-    public static final int hasBallSensor = 9;
+    public static final int hasBallSensor = 8;
 
 }

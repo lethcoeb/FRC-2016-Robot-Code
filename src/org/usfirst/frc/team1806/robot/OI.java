@@ -14,15 +14,19 @@ import org.usfirst.frc.team1806.robot.Commands.ShootRequest;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.DrivetrainGear;
 import org.usfirst.frc.team1806.robot.RobotStates.ElevatorOperatorControlMode;
+import org.usfirst.frc.team1806.robot.RobotStates.IntakeControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.IntakePosition;
 import org.usfirst.frc.team1806.robot.RobotStates.IntakeRollerState;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterCocked;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.intake.RaiseIntake;
+import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
 import org.usfirst.frc.team1806.robot.commands.shooter.ReleaseBall;
+import org.usfirst.frc.team1806.robot.commands.shooter.ShootDaBall;
 import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
 /**
@@ -66,11 +70,11 @@ public class OI {
 		// drivetrain is separate because it's so important :-)
 		if (Robot.states.driveControlModeTracker == DriveControlMode.DRIVER) {
 			if (Math.abs(dlsY) > kJoystickDeadzone && Math.abs(drsX) > kJoystickDeadzone) {
-				Robot.drivetrainSS.execute(dlsY, drsX);
+				Robot.drivetrainSS.execute(dlsY, -drsX);
 			} else if (Math.abs(dlsY) > kJoystickDeadzone) {
 				Robot.drivetrainSS.execute(dlsY, 0);
 			} else if (Math.abs(drsX) > kJoystickDeadzone) {
-				Robot.drivetrainSS.execute(0, drsX);
+				Robot.drivetrainSS.execute(0, -drsX);
 			} else {
 				Robot.drivetrainSS.execute(0, 0);
 			}
@@ -100,6 +104,7 @@ public class OI {
 		} else if (dRT > .5) {
 			// spit dat ball out boi
 			m_commands.intakeCommandTracker = RunIntakeCommand.OUTTAKE;
+
 		} else {
 			// leave dat ball where it be boi
 			m_commands.intakeCommandTracker = RunIntakeCommand.STOP;
@@ -113,7 +118,7 @@ public class OI {
 			m_commands.shiftRequestCommandTracker = ShiftRequest.NONE;
 		}
 
-		if (moveShooterLatch.update(oA)) {
+		if (moveShooterLatch.update(dB)) {
 			// reposition it
 			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.SWITCH;
 		} else {
@@ -126,7 +131,7 @@ public class OI {
 			m_commands.shootRequestTracker = ShootRequest.NONE;
 		}
 
-		if (elevatorManualAutoLatch.update(oStart)) {
+		if (elevatorManualAutoLatch.update(dc.getRawButton(10))) {
 			if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.AUTO) {
 				m_commands.elevatorControlModeTracker = ElevatorControlMode.MANUAL;
 			} else {
@@ -134,6 +139,11 @@ public class OI {
 			}
 		} else {
 			m_commands.elevatorControlModeTracker = ElevatorControlMode.NONE;
+		}
+
+		// FIXME again quick and dirty
+		if (elevatorManualAutoLatch.update(dStart) && !Robot.shooterSS.shooterIsCocked()) {
+			new CockShooter().start();
 		}
 
 		return m_commands;
@@ -159,22 +169,29 @@ public class OI {
 			}
 		}
 
-		if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall
-				&& Robot.states.intakeRollerStateTracker != IntakeRollerState.INTAKING) {
-			Robot.intakeSS.intakeBall();
-			Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
-		} else if (m_commands.intakeCommandTracker == RunIntakeCommand.OUTTAKE
-				&& Robot.states.intakeRollerStateTracker != IntakeRollerState.OUTTAKING) {
-			if (Robot.states.hasBall) {
-				new ReleaseBall().start();
-			} else {
-				Robot.intakeSS.outtakeBall();
-				Robot.states.intakeRollerStateTracker = IntakeRollerState.OUTTAKING;
+		if (Robot.states.intakeControlModeTracker == IntakeControlMode.DRIVER) {
+			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall
+					&& Robot.states.intakeRollerStateTracker != IntakeRollerState.INTAKING) {
+				Robot.intakeSS.intakeBall();
+				Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
+			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.OUTTAKE
+			// quick and dirty comment for outtaking, fix it
+			/*
+			 * && Robot.states.intakeRollerStateTracker !=
+			 * IntakeRollerState.OUTTAKING
+			 */) {
+				if (Robot.states.hasBall && Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN || Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
+					//can only release ball when it's close to the ground
+					new ReleaseBall().start();
+				} else {
+					Robot.intakeSS.outtakeBall();
+					Robot.states.intakeRollerStateTracker = IntakeRollerState.OUTTAKING;
+				}
+			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.STOP
+					&& Robot.states.intakeRollerStateTracker != IntakeRollerState.STOPPED) {
+				Robot.intakeSS.stopIntaking();
+				Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
 			}
-		} else if (m_commands.intakeCommandTracker == RunIntakeCommand.STOP
-				&& Robot.states.intakeRollerStateTracker != IntakeRollerState.STOPPED) {
-			Robot.intakeSS.stopIntaking();
-			Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
 		}
 
 		if (c.elevatorControlModeTracker == ElevatorControlMode.AUTO) {
@@ -191,7 +208,7 @@ public class OI {
 				new MoveToShootingHeight().start();
 			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.UP) {
 				new MoveToGrabPosition().start();
-			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.MID) {
+			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.OTHER) {
 				if (Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorShootingHeight) {
 					new MoveToGrabPosition().start();
 				} else {
@@ -201,7 +218,7 @@ public class OI {
 		} else if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.MANUAL) {
 			if (orsY > kJoystickDeadzone) {
 				Robot.elevatorSS.elevatorMoveAtSpeed(orsY);
-			}else{
+			} else {
 				Robot.elevatorSS.elevatorMoveAtSpeed(0);
 			}
 		}
@@ -209,7 +226,14 @@ public class OI {
 		if (m_commands.shootRequestTracker == ShootRequest.SHOOT && Robot.states.hasBall
 				&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.UP
 				&& Robot.states.shooterCockedTracker == ShooterCocked.COCKED) {
+
 			new ShootThenCock().start();
+		}
+
+		// FIXME THIS
+		if (dBack) {
+			System.out.println("reseting elevator");
+			new ResetElevator().start();
 		}
 	}
 

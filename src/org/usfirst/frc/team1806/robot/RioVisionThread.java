@@ -138,12 +138,12 @@ public class RioVisionThread extends Thread {
 	public boolean isTote;
 
 	public void run() {
+		CameraServer.getInstance().startAutomaticCapture(camera);
 		while (1 == 1) {
-			
-			CameraServer.getInstance().startAutomaticCapture(camera);
-			
 			//FIXME THIS!!!
 			if (Robot.states.visionTrackingStateTracker == VisionTrackingState.ROBORIO) {
+				
+				System.out.println("Vision processing bruh");
 
 				camera.getImage(frame);
 				//CameraServer.getInstance().setImage(frame);

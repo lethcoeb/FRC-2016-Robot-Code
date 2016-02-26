@@ -1,7 +1,9 @@
 
 package org.usfirst.frc.team1806.robot;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.command.Command;
@@ -18,7 +20,9 @@ import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallNoSteal;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallSteal;
+import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
 import org.usfirst.frc.team1806.robot.commands.shooter.PinchBall;
+import org.usfirst.frc.team1806.robot.commands.shooter.SecureBall;
 import org.usfirst.frc.team1806.robot.subsystems.DrivetrainSubsystem;
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -37,7 +41,8 @@ public class Robot extends IterativeRobot {
 	public static ElevatorSubsystem elevatorSS;
 	public static IntakeSubsystem intakeSS;
 	public static ShooterSubsystem shooterSS;
-
+	public static PowerDistributionPanel pdp;
+	
 	public static OI oi;
 	public static RobotStates states;
 
@@ -55,20 +60,25 @@ public class Robot extends IterativeRobot {
 		elevatorSS = new ElevatorSubsystem();
 		intakeSS = new IntakeSubsystem();
 		shooterSS = new ShooterSubsystem();
+		pdp = new PowerDistributionPanel();
 
 		oi = new OI();
 		states = new RobotStates();
+		
+		if(elevatorSS.isBottomLimitHit()){
+			states.shooterArmPositionTracker = ShooterArmPosition.DOWN; //to speed up testing
+		}
 
 		jr = new JetsonReceiver();
-		jr.start();
+		//jr.start();
 
 		ar = new AutonomousReader();
 		ar.start();
 		
 		sdu = new SmartDashboardUpdater();
 		
-		rvt = new RioVisionThread();
-		rvt.start();
+		//rvt = new RioVisionThread();
+		//rvt.start();
 
 	}
 
@@ -77,15 +87,16 @@ public class Robot extends IterativeRobot {
 	 * You can use it to reset any subsystem information you want to clear when
 	 * the robot is disabled.
 	 */
+	
 	public void disabledInit() {
-
 	}
 
 	public void disabledPeriodic() {
 		
 		Scheduler.getInstance().run();
-		SmartDashboard.putNumber("angle", drivetrainSS.getTrueAngle());
 		sdu.push();
+		
+		
 
 	}
 
@@ -154,14 +165,25 @@ public class Robot extends IterativeRobot {
 	/**
 	 * This function is called periodically during operator control
 	 */
+	boolean memes = false;
 	public void teleopPeriodic() {
 
 		Scheduler.getInstance().run();
 		oi.update();
+		
+		if(oi.dc.getButtonA()){
+			if(!memes){
+				memes = true;
+				new CockShooter().start();
+			}
+		}
+		
+		
 
 		// automatic sensor listener, put this somewhere else bc it's so ugleh
 		if (Robot.shooterSS.hasBallSensor() && !Robot.states.hasBall
-				&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN) {
+				//FIXME oi.drt is dirty af
+				&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN && oi.dRT == 0) {
 			new PinchBall().start();
 		}
 		

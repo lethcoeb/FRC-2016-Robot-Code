@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.command.Command;
  */
 public class RaiseIntake extends Command {
 
-double kTimeToRaise = Constants.timeToRaise;
+double kTimeToRaise = Constants.intakeTimeToRaise;
 	
 	Timer timer;
 	
@@ -24,7 +24,7 @@ double kTimeToRaise = Constants.timeToRaise;
     // Called just before this Command runs the first time
     protected void initialize() {
     	Robot.states.intakePositionTracker = IntakePosition.MOVING;
-    	Robot.intakeSS.deployIntake();
+    	Robot.intakeSS.retractIntake();
     	timer.reset();
     	timer.start();
     }

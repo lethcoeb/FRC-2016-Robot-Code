@@ -34,15 +34,16 @@ public class ElevatorSubsystem extends Subsystem {
 	public ElevatorSubsystem() {
 
 		bottomLimit = new DigitalInput(RobotMap.bottomElevatorLimit);
-		topLimit = new DigitalInput(RobotMap.topElevatorLimit);
+		//topLimit = new DigitalInput(RobotMap.topElevatorLimit);
 
 		// TODO delete me
 		elevatorSRX = new CANTalon(0);
 		elevatorSRX.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 		// starts in pid mode
 		elevatorSRX.changeControlMode(TalonControlMode.Position);
-		elevatorSRX.setPID(.05, 0, 0);
-		elevatorSRX.reverseOutput(true);
+		elevatorSRX.setPID(.05, 0, 0.01);
+		elevatorSRX.reverseOutput(false);
+		elevatorSRX.reverseSensor(true);
 		elevatorSRX.enable();
 
 	}
@@ -65,19 +66,13 @@ public class ElevatorSubsystem extends Subsystem {
 
 	public void elevatorMoveAtSpeed(double speed) {
 		// for manual mode - directly set speed
-		if (topLimit.get()) {
-			// too high/low, stop dat motor
-			if (speed > 0) {
-				elevatorSRX.set(0);
-			}
-			Robot.states.shooterArmPositionTracker = ShooterArmPosition.UP;
-		} else if (bottomLimit.get()) {
+		if (isBottomLimitHit()) {
 			if(speed < 0){
 				elevatorSRX.set(0);
 			}
 			Robot.states.shooterArmPositionTracker = ShooterArmPosition.DOWN;
 		} else {
-			Robot.states.shooterArmPositionTracker = ShooterArmPosition.MID;
+			Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
 			if (elevatorSRX.getControlMode() != TalonControlMode.PercentVbus) {
 				elevatorSRX.changeControlMode(TalonControlMode.PercentVbus);
 			}
@@ -92,6 +87,10 @@ public class ElevatorSubsystem extends Subsystem {
 		} else {
 			elevatorSRX.set(0);
 		}
+	}
+	
+	public void elevatorResetEncoder(){
+		elevatorSRX.setEncPosition(0);
 	}
 
 	public boolean isElevatorPIDEnabled() {
@@ -111,15 +110,22 @@ public class ElevatorSubsystem extends Subsystem {
 	}
 
 	public boolean isBottomLimitHit() {
-		return bottomLimit.get();
+		return !bottomLimit.get();
+	}
+	
+	public void resetSrxPID(){
+		elevatorSRX.reset();
+		elevatorSRX.disable();
+		elevatorSRX.enable();
 	}
 
-	public boolean isTopLimitHit() {
-		return topLimit.get();
-	}
+	/*public boolean isTopLimitHit() {
+		//return topLimit.get();
+	}*/
 
 	public void resetElevatorEncoder() {
 		elevatorSRX.setEncPosition(0);
+		
 	}
 
 	public void initDefaultCommand() {
