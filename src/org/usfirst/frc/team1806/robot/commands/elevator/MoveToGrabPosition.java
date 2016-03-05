@@ -22,6 +22,11 @@ public class MoveToGrabPosition extends Command {
     	if(!Robot.elevatorSS.isElevatorPIDEnabled()){
         	Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
     	}
+    	
+    	if(Robot.elevatorSS.getElevatorPosition() < Constants.elevatorIntakeEngagedHeight && Robot.states.hasBall){
+    		//need to run intake because ball is engaged w/ intake still
+    	}
+    	
     	Robot.elevatorSS.elevatorSetSetpoint(0);
     	if(!Robot.elevatorSS.isBottomLimitHit()){
     		Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;

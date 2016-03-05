@@ -45,8 +45,12 @@ public class RobotMap {
     public static final int bottomElevatorLimit = 4;
     //public static final int topElevatorLimit = 7;
     
+   public static final int hasBallSensor = 8;
    
-    
-    public static final int hasBallSensor = 8;
-
+   
+   //PDP Slots
+   //TODO Check this!
+   public static final int PDPcockingWinchSlot = 13;
+   public static final int PDPelevatorSlot = 12;
+   
 }

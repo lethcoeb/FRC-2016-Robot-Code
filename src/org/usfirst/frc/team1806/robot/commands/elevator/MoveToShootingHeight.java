@@ -29,8 +29,8 @@ public class MoveToShootingHeight extends Command {
     		Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
     	}
     	
-    	if(Robot.elevatorSS.getElevatorPosition() < 40000){
-    		//help it w/ intake
+    	if(Robot.elevatorSS.getElevatorPosition() < Constants.elevatorIntakeEngagedHeight && Robot.states.hasBall){
+    		//you need to help the elevator raise with the intake since the ball is engaged
     		Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
     		Robot.intakeSS.runAtSpeed(.4);
     	}

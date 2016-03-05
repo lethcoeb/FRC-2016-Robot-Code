@@ -1,31 +1,29 @@
-package org.usfirst.frc.team1806.robot.commands.shooter;
+package org.usfirst.frc.team1806.robot.commands;
 
-import org.usfirst.frc.team1806.robot.Constants;
-import org.usfirst.frc.team1806.robot.Robot;
-
+import edu.wpi.first.wpilibj.Joystick.RumbleType;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
+import util.XboxController;
 
 /**
  *
  */
-public class ShootDaBall extends Command {
+public class RumbleController extends Command {
+
+	XboxController xbc;
+	Timer t;
 	
-	Timer timer;
-	final double kTimeToSettle = Constants.timeToSettle;
-	
-    public ShootDaBall() {
-        requires(Robot.shooterSS);
-        timer = new Timer();
+    public RumbleController(XboxController cont) {
+        xbc = cont;
+        t = new Timer();
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	timer.reset();
-    	timer.start();
-    	Robot.shooterSS.releaseBall();
-    	//ezpz
-    	Robot.shooterSS.cockShooterReleaseDogGear();
+    	
+    	t.start();
+    	xbc.setRumble(RumbleType.kLeftRumble, (float) .3);
+    	
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -34,17 +32,17 @@ public class ShootDaBall extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return timer.get() >= kTimeToSettle;
+        return t.get() > .1;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	Robot.shooterSS.cockingDogGearDisengage();
-    	Robot.states.hasBall = false;
+    	xbc.setRumble(RumbleType.kLeftRumble, 0);
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
+    	xbc.setRumble(RumbleType.kLeftRumble, 0);
     }
 }

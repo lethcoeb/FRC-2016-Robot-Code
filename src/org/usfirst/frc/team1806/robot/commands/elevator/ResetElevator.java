@@ -1,6 +1,8 @@
 package org.usfirst.frc.team1806.robot.commands.elevator;
 
+import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.Robot;
+import org.usfirst.frc.team1806.robot.RobotMap;
 import org.usfirst.frc.team1806.robot.RobotStates;
 import org.usfirst.frc.team1806.robot.RobotStates.ElevatorOperatorControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
@@ -28,7 +30,7 @@ public class ResetElevator extends Command {
     	Robot.elevatorSS.elevatorSetSetpoint(0);
     	
     		Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.PercentVbus);
-    		Robot.elevatorSS.elevatorMoveAtSpeed(-.35);
+    		Robot.elevatorSS.elevatorMoveAtSpeed(Constants.resetSpeed);
     	//}else{
     		//finished = true;
     //	}
@@ -37,6 +39,9 @@ public class ResetElevator extends Command {
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	if(Robot.elevatorSS.isBottomLimitHit()){
+    		finished = true;
+    	}else if(Robot.pdp.getCurrent(RobotMap.PDPelevatorSlot) >= 100){
+    		//stalling, limit switch is broken
     		finished = true;
     	}
     }

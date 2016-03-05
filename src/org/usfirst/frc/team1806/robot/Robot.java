@@ -3,6 +3,7 @@ package org.usfirst.frc.team1806.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Joystick.RumbleType;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.SerialPort.Port;
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
+import org.usfirst.frc.team1806.robot.commands.RumbleController;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallNoSteal;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallSteal;
 import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
@@ -43,7 +45,7 @@ public class Robot extends IterativeRobot {
 	public static ShooterSubsystem shooterSS;
 	public static PowerDistributionPanel pdp;
 	
-	public static OI oi;
+	public static OperatorInterface oi;
 	public static RobotStates states;
 
 	Command autonomousCommand;
@@ -62,7 +64,7 @@ public class Robot extends IterativeRobot {
 		shooterSS = new ShooterSubsystem();
 		pdp = new PowerDistributionPanel();
 
-		oi = new OI();
+		oi = new OperatorInterface();
 		states = new RobotStates();
 		
 		if(elevatorSS.isBottomLimitHit()){
@@ -89,6 +91,7 @@ public class Robot extends IterativeRobot {
 	 */
 	
 	public void disabledInit() {
+		oi.stopRumbles();
 	}
 
 	public void disabledPeriodic() {
@@ -170,22 +173,14 @@ public class Robot extends IterativeRobot {
 
 		Scheduler.getInstance().run();
 		oi.update();
-		
-		if(oi.dc.getButtonA()){
-			if(!memes){
-				memes = true;
-				new CockShooter().start();
-			}
-		}
-		
-		
 
+		/*
 		// automatic sensor listener, put this somewhere else bc it's so ugleh
 		if (Robot.shooterSS.hasBallSensor() && !Robot.states.hasBall
 				//FIXME oi.drt is dirty af
 				&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN && oi.dRT == 0) {
 			new PinchBall().start();
-		}
+		}*/
 		
 		sdu.push();
 	}

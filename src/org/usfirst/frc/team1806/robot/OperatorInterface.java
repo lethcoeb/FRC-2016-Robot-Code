@@ -1,6 +1,7 @@
 package org.usfirst.frc.team1806.robot;
 
 import edu.wpi.first.wpilibj.CANTalon.TalonControlMode;
+import edu.wpi.first.wpilibj.Joystick.RumbleType;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import util.Latch;
@@ -8,6 +9,7 @@ import util.XboxController;
 
 import org.usfirst.frc.team1806.robot.Commands.ElevatorControlMode;
 import org.usfirst.frc.team1806.robot.Commands.ElevatorPositionRequest;
+import org.usfirst.frc.team1806.robot.Commands.ManualCockCommand;
 import org.usfirst.frc.team1806.robot.Commands.RunIntakeCommand;
 import org.usfirst.frc.team1806.robot.Commands.ShiftRequest;
 import org.usfirst.frc.team1806.robot.Commands.ShootRequest;
@@ -22,6 +24,7 @@ import org.usfirst.frc.team1806.robot.RobotStates.ShooterCocked;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
+import org.usfirst.frc.team1806.robot.commands.intake.CollectBall;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.intake.RaiseIntake;
 import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
@@ -33,9 +36,9 @@ import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
  * This class is the glue that binds the controls on the physical operator
  * interface to the commands and command groups that allow control of the robot.
  */
-public class OI {
+public class OperatorInterface {
 
-	XboxController dc, oc;
+	public static XboxController dc, oc;
 	Commands m_commands;
 
 	// d for driver ;)
@@ -43,13 +46,13 @@ public class OI {
 	boolean dA, dB, dX, dY, dRB, dLB, dStart, dBack;
 
 	double orsY;
-	boolean oA, oStart;
+	boolean oA, oRsClick, oStart;
 
-	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch;
+	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch;
 
 	final double kJoystickDeadzone = .25;
 
-	public OI() {
+	public OperatorInterface() {
 
 		dc = new XboxController(0);
 		oc = new XboxController(1);
@@ -58,6 +61,7 @@ public class OI {
 		moveShooterLatch = new Latch();
 		shootBallLatch = new Latch();
 		elevatorManualAutoLatch = new Latch();
+		cockingRequestLatch = new Latch();
 
 		m_commands = new Commands();
 
@@ -131,7 +135,7 @@ public class OI {
 			m_commands.shootRequestTracker = ShootRequest.NONE;
 		}
 
-		if (elevatorManualAutoLatch.update(dc.getRawButton(10))) {
+		if (elevatorManualAutoLatch.update(dc.getButtonRS())) {
 			if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.AUTO) {
 				m_commands.elevatorControlModeTracker = ElevatorControlMode.MANUAL;
 			} else {
@@ -142,8 +146,10 @@ public class OI {
 		}
 
 		// FIXME again quick and dirty
-		if (elevatorManualAutoLatch.update(dStart) && !Robot.shooterSS.shooterIsCocked()) {
-			new CockShooter().start();
+		if (cockingRequestLatch.update(dStart)) {
+			m_commands.manualCockCommandTracker = ManualCockCommand.COCK;
+		}else{
+			m_commands.manualCockCommandTracker = ManualCockCommand.NONE;
 		}
 
 		return m_commands;
@@ -170,18 +176,19 @@ public class OI {
 		}
 
 		if (Robot.states.intakeControlModeTracker == IntakeControlMode.DRIVER) {
-			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall
-					&& Robot.states.intakeRollerStateTracker != IntakeRollerState.INTAKING) {
-				Robot.intakeSS.intakeBall();
+			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall && Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.INTAKING) {
+				if (Robot.elevatorSS.getElevatorSetpoint() != Constants.elevatorShootingHeight) {
+					//TODO is there a better way to do this other than reading the setpoint?
+					new CollectBall().start();
+				} else {
+					// somewhere in between holding and grabbing, or maybe the
+					// arm is up. do nothing
+				}
 				Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
-			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.OUTTAKE
-			// quick and dirty comment for outtaking, fix it
-			/*
-			 * && Robot.states.intakeRollerStateTracker !=
-			 * IntakeRollerState.OUTTAKING
-			 */) {
-				if (Robot.states.hasBall && Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN || Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
-					//can only release ball when it's close to the ground
+			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.OUTTAKE) {
+				if (Robot.states.hasBall && Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN
+						|| Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
+					// can only release ball when it's close to the ground
 					new ReleaseBall().start();
 				} else {
 					Robot.intakeSS.outtakeBall();
@@ -229,6 +236,10 @@ public class OI {
 
 			new ShootThenCock().start();
 		}
+		
+		if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && Robot.states.shooterCockedTracker == ShooterCocked.NOTCOCKED) {
+			new CockShooter().start();
+		}
 
 		// FIXME THIS
 		if (dBack) {
@@ -256,7 +267,16 @@ public class OI {
 		orsY = oc.getRightJoyY();
 
 		oA = oc.getButtonA();
+		oRsClick = oc.getButtonRS();
 		oStart = oc.getButtonStart();
 
 	}
+	
+	public void stopRumbles(){
+		dc.setRumble(RumbleType.kLeftRumble, 0);
+		dc.setRumble(RumbleType.kRightRumble, 0);
+		oc.setRumble(RumbleType.kLeftRumble, 0);
+		oc.setRumble(RumbleType.kRightRumble, 0);
+	}
+	
 }

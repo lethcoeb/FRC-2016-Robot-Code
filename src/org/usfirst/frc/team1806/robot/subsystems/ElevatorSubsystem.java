@@ -34,7 +34,7 @@ public class ElevatorSubsystem extends Subsystem {
 	public ElevatorSubsystem() {
 
 		bottomLimit = new DigitalInput(RobotMap.bottomElevatorLimit);
-		//topLimit = new DigitalInput(RobotMap.topElevatorLimit);
+		// topLimit = new DigitalInput(RobotMap.topElevatorLimit);
 
 		// TODO delete me
 		elevatorSRX = new CANTalon(0);
@@ -67,7 +67,7 @@ public class ElevatorSubsystem extends Subsystem {
 	public void elevatorMoveAtSpeed(double speed) {
 		// for manual mode - directly set speed
 		if (isBottomLimitHit()) {
-			if(speed < 0){
+			if (speed < 0) {
 				elevatorSRX.set(0);
 			}
 			Robot.states.shooterArmPositionTracker = ShooterArmPosition.DOWN;
@@ -88,8 +88,8 @@ public class ElevatorSubsystem extends Subsystem {
 			elevatorSRX.set(0);
 		}
 	}
-	
-	public void elevatorResetEncoder(){
+
+	public void elevatorResetEncoder() {
 		elevatorSRX.setEncPosition(0);
 	}
 
@@ -112,20 +112,23 @@ public class ElevatorSubsystem extends Subsystem {
 	public boolean isBottomLimitHit() {
 		return !bottomLimit.get();
 	}
-	
-	public void resetSrxPID(){
+
+	// for some reason you gotta call this a lot to use the SRX PID idk why.
+	// fuck srx's
+	// jk i love them but still
+	public void resetSrxPID() {
 		elevatorSRX.reset();
 		elevatorSRX.disable();
 		elevatorSRX.enable();
 	}
 
-	/*public boolean isTopLimitHit() {
-		//return topLimit.get();
-	}*/
+	/*
+	 * public boolean isTopLimitHit() { //return topLimit.get(); }
+	 */
 
 	public void resetElevatorEncoder() {
 		elevatorSRX.setEncPosition(0);
-		
+
 	}
 
 	public void initDefaultCommand() {

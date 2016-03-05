@@ -2,6 +2,7 @@ package org.usfirst.frc.team1806.robot.commands.shooter;
 
 import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.Robot;
+import org.usfirst.frc.team1806.robot.RobotMap;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterCocked;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -44,7 +45,7 @@ public class CockShooter extends Command {
     		Robot.shooterSS.cockShooterFullSpeed();
     	}
     	
-    	if(Robot.pdp.getCurrent(13) > 100){
+    	if(Robot.pdp.getCurrent(RobotMap.PDPcockingWinchSlot) > 100){
     		//kill pls
     		finished = true;
     	}

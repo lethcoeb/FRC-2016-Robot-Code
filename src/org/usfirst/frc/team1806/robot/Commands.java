@@ -30,12 +30,17 @@ public class Commands {
 		AUTO, MANUAL, NONE
 	}
 	
+	public enum ManualCockCommand{
+		COCK, NONE
+	}
+	
 	public RunIntakeCommand intakeCommandTracker;
 	public DeployIntakeCommand deployIntakeCommandTracker;
 	public ShiftRequest shiftRequestCommandTracker;
 	public ElevatorPositionRequest elevatorPositionRequestTracker;
 	public ShootRequest shootRequestTracker;
 	public ElevatorControlMode elevatorControlModeTracker;
+	public ManualCockCommand manualCockCommandTracker;
 	
 	public void reset(){
 		intakeCommandTracker = RunIntakeCommand.STOP;
@@ -44,6 +49,7 @@ public class Commands {
 		elevatorPositionRequestTracker = ElevatorPositionRequest.NONE;
 		shootRequestTracker = ShootRequest.NONE;
 		elevatorControlModeTracker = ElevatorControlMode.AUTO;
+		manualCockCommandTracker = ManualCockCommand.NONE;
 	}
 	
 }
