@@ -62,13 +62,21 @@ public class JetsonReceiver extends Thread {
 		while (true) {
 			try {
 
-				System.out.println("Beginning to listening for packet...");
+				//System.out.println("Beginning to listening for packet...");
 				bb.position(0);
 				dp = new DatagramPacket(bb.array(), bb.capacity());
 				ds.receive(dp);
 				isGoal = bb.getInt();
 				distance = bb.getDouble();
 				angle = bb.getDouble();
+				
+				if(angle > 180){
+					angle = angle - 360;
+				}
+				
+				angle = angle - 6;
+				
+				//angle = -angle;
 				// System.out.println("Goal found? : " + isGoal);
 				// System.out.println("Distance from goal: " + distance);
 				// System.out.println("angle from goal: " + angle);
@@ -82,7 +90,7 @@ public class JetsonReceiver extends Thread {
 				now = System.currentTimeMillis();
 				deltaTime = now - then;
 
-				System.out.println("Time since last packet: " + deltaTime);
+				//System.out.println("Time since last packet: " + deltaTime);
 
 				// If this try block completes all the way to here, it means you
 				// had no errors and you successfully received

@@ -34,6 +34,8 @@ public class Commands {
 		COCK, NONE
 	}
 	
+	public boolean autoLineUp;
+	
 	public RunIntakeCommand intakeCommandTracker;
 	public DeployIntakeCommand deployIntakeCommandTracker;
 	public ShiftRequest shiftRequestCommandTracker;
@@ -50,6 +52,7 @@ public class Commands {
 		shootRequestTracker = ShootRequest.NONE;
 		elevatorControlModeTracker = ElevatorControlMode.AUTO;
 		manualCockCommandTracker = ManualCockCommand.NONE;
+		autoLineUp = false;
 	}
 	
 }

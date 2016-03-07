@@ -18,6 +18,7 @@ public class MoveToGrabPosition extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
+    	System.out.println("MoveToGrabPosition() Started");
     	Robot.elevatorSS.resetSrxPID();
     	if(!Robot.elevatorSS.isElevatorPIDEnabled()){
         	Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);

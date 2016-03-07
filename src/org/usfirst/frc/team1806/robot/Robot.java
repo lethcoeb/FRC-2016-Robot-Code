@@ -1,6 +1,7 @@
 
 package org.usfirst.frc.team1806.robot;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick.RumbleType;
@@ -44,6 +45,7 @@ public class Robot extends IterativeRobot {
 	public static IntakeSubsystem intakeSS;
 	public static ShooterSubsystem shooterSS;
 	public static PowerDistributionPanel pdp;
+	public static Compressor compressor;
 	
 	public static OperatorInterface oi;
 	public static RobotStates states;
@@ -55,6 +57,10 @@ public class Robot extends IterativeRobot {
 	public static AutonomousReader ar;
 	public static SmartDashboardUpdater sdu;
 	public static RioVisionThread rvt;
+	
+	public static double getPDPResistance(int channel){
+	 return pdp.getVoltage() / pdp.getCurrent(channel);
+	}
 
 	public void robotInit() {
 
@@ -63,6 +69,7 @@ public class Robot extends IterativeRobot {
 		intakeSS = new IntakeSubsystem();
 		shooterSS = new ShooterSubsystem();
 		pdp = new PowerDistributionPanel();
+		compressor = new Compressor();
 
 		oi = new OperatorInterface();
 		states = new RobotStates();
@@ -72,7 +79,7 @@ public class Robot extends IterativeRobot {
 		}
 
 		jr = new JetsonReceiver();
-		//jr.start();
+		jr.start();
 
 		ar = new AutonomousReader();
 		ar.start();
@@ -81,6 +88,8 @@ public class Robot extends IterativeRobot {
 		
 		//rvt = new RioVisionThread();
 		//rvt.start();
+		
+		compressor.setClosedLoopControl(false);
 
 	}
 
@@ -181,6 +190,12 @@ public class Robot extends IterativeRobot {
 				&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN && oi.dRT == 0) {
 			new PinchBall().start();
 		}*/
+		
+		if(pdp.getVoltage() < 9){
+			compressor.setClosedLoopControl(false);
+		}else{
+			compressor.setClosedLoopControl(true);
+		}
 		
 		sdu.push();
 	}

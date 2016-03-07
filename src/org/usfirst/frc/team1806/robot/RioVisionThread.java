@@ -139,7 +139,7 @@ public class RioVisionThread extends Thread {
 
 	public void run() {
 		CameraServer.getInstance().startAutomaticCapture(camera);
-		while (1 == 1) {
+		while (true) {
 			//FIXME THIS!!!
 			if (Robot.states.visionTrackingStateTracker == VisionTrackingState.ROBORIO) {
 				

@@ -17,7 +17,7 @@ public class RobotMap {
     
     public static final int intakeRoller = 3;
     //public static final int liftMotor = 1;
-    public static final int cockingMotor = 1;
+    public static final int cockingMotor = 2;
     public static final int tapeMeasureMotor = 0;
     
     //SOLENOIDS
@@ -30,8 +30,10 @@ public class RobotMap {
     public static final int pincherRelease = 5;
     
     //single solenoids
-    public static final int winchEngageSolenoid = 6;
-    public static final int shooterReleaseSolenoid = 7;
+    /*public static final int winchEngageSolenoid = 6;
+    public static final int shooterReleaseSolenoid = 7;*/
+    public static final int winchEngageSolenoid = 1;
+    public static final int shooterReleaseSolenoid = 0;
     
     //SENSORS
     public static final int rightEncoderA = 0;
@@ -42,7 +44,7 @@ public class RobotMap {
     //4
     //5
     
-    public static final int bottomElevatorLimit = 4;
+    public static final int bottomElevatorLimit = 7;
     //public static final int topElevatorLimit = 7;
     
    public static final int hasBallSensor = 8;

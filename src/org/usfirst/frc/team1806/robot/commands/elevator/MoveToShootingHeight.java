@@ -19,6 +19,8 @@ public class MoveToShootingHeight extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
+    	Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
+    	System.out.println("MoveToShootingHeight() Started");
     	Robot.elevatorSS.resetSrxPID();
 
     	if(!Robot.elevatorSS.isElevatorPIDEnabled()){

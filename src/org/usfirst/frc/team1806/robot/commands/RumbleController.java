@@ -10,19 +10,21 @@ import util.XboxController;
  */
 public class RumbleController extends Command {
 
-	XboxController xbc;
+
 	Timer t;
+	XboxController xbc;
 	
     public RumbleController(XboxController cont) {
-        xbc = cont;
         t = new Timer();
+        xbc = cont;
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
     	
     	t.start();
-    	xbc.setRumble(RumbleType.kLeftRumble, (float) .3);
+    	xbc.setRumble(RumbleType.kLeftRumble, 1);
+
     	
     }
 
@@ -32,7 +34,7 @@ public class RumbleController extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return t.get() > .1;
+        return t.get() > .3;
     }
 
     // Called once after isFinished returns true

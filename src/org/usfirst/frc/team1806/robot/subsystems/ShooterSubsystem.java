@@ -28,21 +28,26 @@ public class ShooterSubsystem extends Subsystem {
      * @param meme a string
      */
     public ShooterSubsystem(){
+    	//cockingMotor goes one direction. Only valid values are positive
     	cockingMotor = new Talon(RobotMap.cockingMotor);
+    	cockingMotor.setInverted(true);
     	cockedLimitSwitch = new DigitalInput(RobotMap.cockedShooterLimit);
     	puncherReleaseSolenoid = new Solenoid(RobotMap.shooterReleaseSolenoid);
-    	ballPincherSolenoid = new DoubleSolenoid(RobotMap.pincherPinch, RobotMap.pincherRelease);
+    	ballPincherSolenoid = new DoubleSolenoid(1, RobotMap.pincherPinch, RobotMap.pincherRelease);
     	ballSensor = new DigitalInput(RobotMap.hasBallSensor);
     }
     
     public void cockShooterEngageGear(){
     	//go at slow speed so the gear can catch
     	//kgearengagespeed
-    	cockingMotor.set(-.25);
+    	cockingMotor.set(.25);
+    	//cockingMotor.set(.1);
+
     }
     
     public void cockShooterFullSpeed(){
-    	cockingMotor.set(-.4);
+    	cockingMotor.set(.6);
+
     }
     
     public void cockShooterReleaseDogGear(){
@@ -70,7 +75,7 @@ public class ShooterSubsystem extends Subsystem {
     }
     
     public boolean shooterIsCocked(){
-    	return !cockedLimitSwitch.get();
+    	return cockedLimitSwitch.get();
     }
     
     public boolean hasBallSensor(){

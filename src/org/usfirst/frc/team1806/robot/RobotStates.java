@@ -31,7 +31,7 @@ public class RobotStates {
 	}
 	
 	public enum ElevatorOperatorControlMode{
-		AUTO, MANUAL
+		AUTO, MANUAL, RESET
 	}
 	
 	public enum VisionTrackingState{
@@ -42,7 +42,8 @@ public class RobotStates {
 		DRIVER, AUTOMATIC
 	}
 	
-	public boolean hasBall = true;
+	public boolean autoLiningUp;
+	public boolean hasBall;
 	
 	public IntakePosition intakePositionTracker;
 	public ShooterArmPosition shooterArmPositionTracker;
@@ -66,6 +67,7 @@ public class RobotStates {
 		visionTrackingStateTracker = VisionTrackingState.JETSON;
 		intakeControlModeTracker = IntakeControlMode.DRIVER;
 		hasBall = true;
+		autoLiningUp = false;
 	}
 	
 }

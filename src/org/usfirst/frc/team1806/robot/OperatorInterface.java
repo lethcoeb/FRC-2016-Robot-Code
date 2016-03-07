@@ -1,8 +1,10 @@
 package org.usfirst.frc.team1806.robot;
 
 import edu.wpi.first.wpilibj.CANTalon.TalonControlMode;
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Joystick.RumbleType;
 import edu.wpi.first.wpilibj.buttons.Button;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import util.Latch;
 import util.XboxController;
@@ -21,12 +23,17 @@ import org.usfirst.frc.team1806.robot.RobotStates.IntakePosition;
 import org.usfirst.frc.team1806.robot.RobotStates.IntakeRollerState;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterCocked;
+import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
+import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingFromLow;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.CollectBall;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.intake.RaiseIntake;
+import org.usfirst.frc.team1806.robot.commands.intake.SpitOutBall;
 import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
 import org.usfirst.frc.team1806.robot.commands.shooter.ReleaseBall;
 import org.usfirst.frc.team1806.robot.commands.shooter.ShootDaBall;
@@ -38,7 +45,8 @@ import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
  */
 public class OperatorInterface {
 
-	public static XboxController dc, oc;
+	public XboxController dc;
+	public static XboxController oc;
 	Commands m_commands;
 
 	// d for driver ;)
@@ -50,8 +58,12 @@ public class OperatorInterface {
 
 	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch;
 
-	final double kJoystickDeadzone = .25;
+	final double kJoystickDeadzone = .15;
 
+	//TODO remove this
+	Joystick j;
+	JoystickButton a;
+	
 	public OperatorInterface() {
 
 		dc = new XboxController(0);
@@ -64,11 +76,18 @@ public class OperatorInterface {
 		cockingRequestLatch = new Latch();
 
 		m_commands = new Commands();
+		
+		//TODO remove this
+		j = new Joystick(0);
+		a = new JoystickButton(j, 1);
+		a.whenPressed(new TurnToAngle(90));
 
 	}
 
 	public void update() {
 
+		
+		
 		updateInputs();
 
 		// drivetrain is separate because it's so important :-)
@@ -91,6 +110,7 @@ public class OperatorInterface {
 	}
 
 	private Commands setCommands() {
+			
 		if (intakeDeployLatch.update(dY)) {
 			// switch intake deployment
 			if (Robot.states.intakePositionTracker == IntakePosition.DEPLOYED) {
@@ -102,10 +122,10 @@ public class OperatorInterface {
 			}
 		}
 
-		if (dLT > .5) {
+		if (dLB) {
 			// suck dat ball in boi
 			m_commands.intakeCommandTracker = RunIntakeCommand.INTAKE;
-		} else if (dRT > .5) {
+		} else if (dRB) {
 			// spit dat ball out boi
 			m_commands.intakeCommandTracker = RunIntakeCommand.OUTTAKE;
 
@@ -114,12 +134,25 @@ public class OperatorInterface {
 			m_commands.intakeCommandTracker = RunIntakeCommand.STOP;
 		}
 
-		if (dLB) {
+		//TODO fix dis
+		if (dc.getButtonLS()) {
 			m_commands.shiftRequestCommandTracker = ShiftRequest.LOW;
-		} else if (dRB) {
+			Robot.drivetrainSS.shiftLow();
+		} else if (dc.getButtonRS()) {
 			m_commands.shiftRequestCommandTracker = ShiftRequest.HIGH;
+			Robot.drivetrainSS.shiftHigh();
 		} else {
 			m_commands.shiftRequestCommandTracker = ShiftRequest.NONE;
+		}
+		
+		
+		
+		m_commands.shiftRequestCommandTracker = ShiftRequest.NONE;
+		
+		if(dRT >= .6){
+			m_commands.autoLineUp = true;
+		}else{
+			m_commands.autoLineUp = false;
 		}
 
 		if (moveShooterLatch.update(dB)) {
@@ -157,11 +190,6 @@ public class OperatorInterface {
 
 	private void executeCommands(Commands c) {
 
-		// TODO you don't need to execute a command if the robot is already
-		// doing it
-		// ie you don't need to update the speed for your intake motor if the
-		// command is to intake and it is already intaking
-
 		if (c.shiftRequestCommandTracker == ShiftRequest.HIGH
 				&& Robot.states.drivetrainGearTracker == DrivetrainGear.LOW
 				|| c.shiftRequestCommandTracker == ShiftRequest.LOW
@@ -174,8 +202,12 @@ public class OperatorInterface {
 				Robot.states.drivetrainGearTracker = DrivetrainGear.LOW;
 			}
 		}
+		
+		if(c.autoLineUp == true && Robot.states.autoLiningUp == false){
+			new LineUpShot().start();
+		}
 
-		if (Robot.states.intakeControlModeTracker == IntakeControlMode.DRIVER) {
+		if (/*Robot.states.intakeControlModeTracker == IntakeControlMode.DRIVER*/true) {
 			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall && Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.INTAKING) {
 				if (Robot.elevatorSS.getElevatorSetpoint() != Constants.elevatorShootingHeight) {
 					//TODO is there a better way to do this other than reading the setpoint?
@@ -186,13 +218,11 @@ public class OperatorInterface {
 				}
 				Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
 			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.OUTTAKE) {
-				if (Robot.states.hasBall && Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN
-						|| Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
+				if (Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.OUTTAKING && (Robot.elevatorSS.getElevatorPosition() < 8000 || Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN
+						|| Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING)) {
 					// can only release ball when it's close to the ground
-					new ReleaseBall().start();
-				} else {
-					Robot.intakeSS.outtakeBall();
-					Robot.states.intakeRollerStateTracker = IntakeRollerState.OUTTAKING;
+					System.out.println("spitout started");
+					new SpitOutBall().start();
 				}
 			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.STOP
 					&& Robot.states.intakeRollerStateTracker != IntakeRollerState.STOPPED) {
@@ -211,10 +241,10 @@ public class OperatorInterface {
 
 		if (c.elevatorPositionRequestTracker == ElevatorPositionRequest.SWITCH
 				&& Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.AUTO) {
-			if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN) {
+			if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
 				new MoveToShootingHeight().start();
 			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.UP) {
-				new MoveToGrabPosition().start();
+				new MoveToHoldingPID().start();
 			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.OTHER) {
 				if (Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorShootingHeight) {
 					new MoveToGrabPosition().start();
@@ -237,12 +267,14 @@ public class OperatorInterface {
 			new ShootThenCock().start();
 		}
 		
-		if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && Robot.states.shooterCockedTracker == ShooterCocked.NOTCOCKED) {
+		if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && !Robot.shooterSS.shooterIsCocked()) {
 			new CockShooter().start();
+		}else if(m_commands.manualCockCommandTracker == ManualCockCommand.COCK && Robot.shooterSS.shooterIsCocked()){
+			new ShootDaBall().start();
 		}
 
 		// FIXME THIS
-		if (dBack) {
+		if (dBack && Robot.states.elevatorOperatorControlModeTracker != RobotStates.ElevatorOperatorControlMode.RESET) {
 			System.out.println("reseting elevator");
 			new ResetElevator().start();
 		}

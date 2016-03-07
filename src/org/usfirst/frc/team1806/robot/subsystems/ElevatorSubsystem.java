@@ -41,9 +41,12 @@ public class ElevatorSubsystem extends Subsystem {
 		elevatorSRX.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 		// starts in pid mode
 		elevatorSRX.changeControlMode(TalonControlMode.Position);
-		elevatorSRX.setPID(.05, 0, 0.01);
+		elevatorSRX.setPID(.05, 0.00000005, 0.01);
 		elevatorSRX.reverseOutput(false);
 		elevatorSRX.reverseSensor(true);
+		elevatorSRX.configPeakOutputVoltage(14, -14);
+		elevatorSRX.setCloseLoopRampRate(1);
+		//elevatorSRX.
 		elevatorSRX.enable();
 
 	}
@@ -66,13 +69,16 @@ public class ElevatorSubsystem extends Subsystem {
 
 	public void elevatorMoveAtSpeed(double speed) {
 		// for manual mode - directly set speed
-		if (isBottomLimitHit()) {
-			if (speed < 0) {
+		if(speed == 0){
+			elevatorSRX.set(0);
+		}
+		else if (isBottomLimitHit() && speed < 0) {
+			
 				elevatorSRX.set(0);
-			}
+			
 			Robot.states.shooterArmPositionTracker = ShooterArmPosition.DOWN;
 		} else {
-			Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
+			//hella set it to whatever
 			if (elevatorSRX.getControlMode() != TalonControlMode.PercentVbus) {
 				elevatorSRX.changeControlMode(TalonControlMode.PercentVbus);
 			}

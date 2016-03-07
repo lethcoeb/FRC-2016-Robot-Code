@@ -1,11 +1,16 @@
 package org.usfirst.frc.team1806.robot.commands.intake;
 
+import java.sql.Blob;
+
 import org.usfirst.frc.team1806.robot.Constants;
+import org.usfirst.frc.team1806.robot.OperatorInterface;
 import org.usfirst.frc.team1806.robot.Robot;
+import org.usfirst.frc.team1806.robot.RobotStates.IntakeControlMode;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHolding;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingFromLow;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.CANTalon.TalonControlMode;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
@@ -24,13 +29,17 @@ public class CollectBall extends Command {
 	public CollectBall() {
 		requires(Robot.intakeSS);
 		requires(Robot.elevatorSS);
+		requires(Robot.shooterSS);
 		
 		t = new Timer();
 	}
 
 	// Called just before this Command runs the first time
 	protected void initialize() {
+		Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
+		System.out.println("CollectBall() started");
 		Robot.elevatorSS.resetSrxPID();
+		Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
 		Robot.elevatorSS.elevatorSetSetpoint(0);
 	}
 
@@ -41,19 +50,22 @@ public class CollectBall extends Command {
 			// you can now run the intake to collect the ball since the claw is
 			// in position to grab the ball
 			Robot.intakeSS.intakeBall();
+			System.out.println("intake rolling");
 			intaking = true;
-		}else if(Robot.shooterSS.hasBallSensor() && intaking){
+		}else if(Robot.shooterSS.hasBallSensor() && intaking && !ballSensed){
 			//you successfully intaked a ball and now you need to wait a bit for it to center.
 			t.start();
 			ballSensed = true;
+			System.out.println("sensed ball, centering");
 		}else if(ballSensed && t.get() > kTimeToCenter){
 			//ball was sensed and you've waited long enough for it to center. raise up the ball.
 			Robot.shooterSS.pinchBall();
 			Robot.states.hasBall = true;
 			new RumbleController(Robot.oi.dc).start();
+			System.out.println("ball centered, done");
 			finished = true;
-		}else if(Robot.oi.dc.getLeftTrigger() < .4){
-			new RumbleController(Robot.oi.dc).start();
+		}else if(!Robot.oi.dc.getButtonLB()){
+			//new RumbleController(Robot.oi.dc).start();
 			finished = true;
 		}
 	}
@@ -65,7 +77,7 @@ public class CollectBall extends Command {
 
 	// Called once after isFinished returns true
 	protected void end() {
-		new MoveToHolding().start();
+		new MoveToHoldingFromLow().start();
 		Robot.intakeSS.stopIntaking();
 	}
 

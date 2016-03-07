@@ -39,7 +39,7 @@ public class DrivetrainSubsystem extends Subsystem {
     PIDController turnAbsolutePC;
     
     
-    double lastPower, currPower = 0;
+    double lastPower, currPower, lastTurnPower, currTurnPower = 0;
     
     public DrivetrainSubsystem(){
     	right1 = new Talon(RobotMap.rightMotor1);
@@ -49,7 +49,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	left2 = new Talon(RobotMap.leftMotor2);
     	left3 = new Talon(RobotMap.leftMotor3);
     	
-    	shifter = new DoubleSolenoid(RobotMap.shiftLow, RobotMap.shiftHigh);
+    	shifter = new DoubleSolenoid(1, RobotMap.shiftLow, RobotMap.shiftHigh);
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);
@@ -81,7 +81,7 @@ public class DrivetrainSubsystem extends Subsystem {
 			@Override
 			public void pidWrite(double output) {
 				//TODO: Check if this is right
-				execute(output, navx.getQuaternionX() * -.1);
+				execute(output, getYaw() * .1);
 			}
 		};
 		
@@ -95,7 +95,7 @@ public class DrivetrainSubsystem extends Subsystem {
 			
 			@Override
 			public double pidGet() {
-				return navx.getQuaternionX();
+				return navx.getYaw();
 			}
 			
 			@Override
@@ -127,13 +127,21 @@ public class DrivetrainSubsystem extends Subsystem {
 			
 			@Override
 			public void pidWrite(double output) {
-				execute(0, output);
+				/*pass the opposite of the value from the PID to the turn value of the drivetrain.
+				If the value isn't zero, we need to re-scale it to be between the minimum power to cause movement and max power
+				Otherwise, just pass the 0 value to the drivetrain.
+				*/
+				/*if(output != 0){
+					output = output * (1-Constants.drivetrainTurnMinPowerToMove) + Constants.drivetrainTurnMinPowerToMove * Math.signum(output);
+				}*/
+				execute(0, -output);
+				System.out.println(turnPC.getError());
 			}
 		};
 		
 		drivePC = new PIDController(Constants.drivetrainDriveP, Constants.drivetrainDriveI, Constants.drivetrainDriveD, drivePS, drivePO);
-		turnPC = new PIDController(Constants.drivetrainTurnP, Constants.drivetrainTurnI, Constants.drivetrainTurnD, turnPS, turnPO);
-		turnAbsolutePC = new PIDController(Constants.drivetrainTurnP, Constants.drivetrainTurnI,Constants.drivetrainTurnD, turnAbsolutePS, turnPO);
+		turnPC = new PIDController(Constants.drivetrainTurn3P, Constants.drivetrainTurn3I, Constants.drivetrainTurn3D, turnPS, turnPO);
+		turnAbsolutePC = new PIDController(Constants.drivetrainTurn3P, Constants.drivetrainTurn3I,Constants.drivetrainTurn3D, turnAbsolutePS, turnPO);
 		
 		drivePC.setContinuous(false);
 		drivePC.setOutputRange(-1, 1);
@@ -142,12 +150,12 @@ public class DrivetrainSubsystem extends Subsystem {
 		turnPC.setContinuous(true);
 		turnPC.setInputRange(-180, 180);
 		turnPC.setOutputRange(-1, 1);
-		turnPC.setAbsoluteTolerance(Constants.drivetrainTurnPIDTolerance);
+		turnPC.setAbsoluteTolerance(Constants.drivetrainTurnPID3Tolerance);
 		
 		turnAbsolutePC.setContinuous(true);
 		turnAbsolutePC.setInputRange(-180, 180);
 		turnAbsolutePC.setOutputRange(-1, 1);
-		turnAbsolutePC.setAbsoluteTolerance(Constants.drivetrainTurnPIDTolerance);
+		turnAbsolutePC.setAbsoluteTolerance(Constants.drivetrainTurnPID3Tolerance);
 		
     }
     
@@ -170,6 +178,9 @@ public class DrivetrainSubsystem extends Subsystem {
 		lastPower = currPower;
 		currPower = power;
 		//turn = pTurn;
+		
+		lastTurnPower = currTurnPower;
+		currTurnPower = turn;
     	
     	if(Math.abs(currPower - lastPower) > Constants.maxPowerDiffential){
     		if(currPower > lastPower){
@@ -179,7 +190,16 @@ public class DrivetrainSubsystem extends Subsystem {
     		}
     	}
     	
-    	arcadeDrive(currPower, turn);
+    	if(Math.abs(currTurnPower - lastTurnPower) > Constants.maxTurnPowerDifferential){
+    		if(currTurnPower > lastTurnPower){
+        		currTurnPower = lastTurnPower + Constants.maxTurnPowerDifferential;
+    		}else{
+        		currTurnPower = lastTurnPower - Constants.maxTurnPowerDifferential;
+    		}
+    	}
+    	
+    	arcadeDrive(currPower, currTurnPower);
+    	//arcadeDrive(currPower, turn);
     }
     
     public void arcadeDrive(double power, double turn){
@@ -211,8 +231,24 @@ public class DrivetrainSubsystem extends Subsystem {
     
     //NAVX
     
+    public void resetYaw(){
+    	navx.zeroYaw();
+    }
+    
+    public boolean isNavxConnected(){
+    	return navx.isConnected();
+    }
+    
     public double getTrueAngle(){
     	return navx.getAngle();
+    }
+    
+    public double getYaw(){
+    	return navx.getYaw();
+    }
+    
+    public double getQuaternion(){
+    	return navx.getQuaternionZ() * 180;
     }
     
     public double getTilt(){
@@ -233,6 +269,7 @@ public class DrivetrainSubsystem extends Subsystem {
     
     public void drivetrainDrivePIDDisable(){
     	drivePC.disable();
+    	drivePC.reset();
     }
     
     public void drivetrainDrivePIDSetSetpoint(double setpoint){
@@ -252,11 +289,13 @@ public class DrivetrainSubsystem extends Subsystem {
     		turnAbsolutePC.disable();
     	}
     	navx.zeroYaw();
+    	turnPC.reset();
     	turnPC.enable();
     }
     
     public void drivetrainTurnPIDDisable(){
     	turnPC.disable();
+    	turnPC.reset();
     }
     
     public void drivetrainTurnPIDSetSetpoint(double setpoint){
@@ -267,6 +306,22 @@ public class DrivetrainSubsystem extends Subsystem {
     	return turnPC.onTarget();
     }
     
+    public double getTurnPCError(){
+    	return turnPC.getError();
+    }
+    
+    public void drivetrainTurnPIDchangePID(double p, double i, double d){
+    	turnPC.setPID(p, i, d);
+    }
+    
+    public void drivetrainTurnPIDReset(){
+    	turnPC.reset();
+    }
+    
+    public void drivetrainTurnPIDSetTolerance(double tolerance){
+    	turnPC.setAbsoluteTolerance(tolerance);
+    }
+    
     public void drivetrainTurnAbsolutePIDEnable(){
     	if(drivePC.isEnabled()){
     		drivePC.disable();
@@ -275,11 +330,13 @@ public class DrivetrainSubsystem extends Subsystem {
     	if(turnPC.isEnabled()){
     		turnPC.disable();
     	}
+    	turnAbsolutePC.reset();
     	turnAbsolutePC.enable();
     }
     
     public void drivetrainTurnAbsolutePIDDisable(){
     	turnAbsolutePC.disable();
+    	turnAbsolutePC.reset();
     }
     
     public void drivetrainTurnAbsolutePIDSetSetpoint(double setpoint){
