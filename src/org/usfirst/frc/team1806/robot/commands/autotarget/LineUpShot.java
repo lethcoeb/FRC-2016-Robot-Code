@@ -1,5 +1,6 @@
 package org.usfirst.frc.team1806.robot.commands.autotarget;
 
+import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.OperatorInterface;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
@@ -50,13 +51,25 @@ public class LineUpShot extends Command {
     		}
     	}else if(goalFound && !withinRange){
     		//found goal now line up
-    		if(Math.abs(Robot.drivetrainSS.getTurnPCError()) < .5){
-    			
+    		if(Robot.jr.isAngleAcceptable() && Robot.drivetrainSS.drivetrainTurnAbsolutePIDisOnTarget()){
+    			//if we are absolutely on target by vision processing, let's get some points
     			System.out.println("on target");
     			withinRange = true;
     			
     			Robot.drivetrainSS.drivetrainTurnPIDDisable();
     			
+    		}
+    		else if(Robot.drivetrainSS.drivetrainTurnAbsolutePIDisOnTarget()){
+    			/* If for some reason our original angle was wrong, being that we aren't in an
+    			 * acceptable range according to the Jetson, yet we got to the angle it originally
+    			 * said the goal was at, try to line up again to the new angle.
+    			 * 
+    			 * the PID is disabled and re-enabled in order to reset the navX and clear
+    			 * accumulated error.
+    			 */
+    			Robot.drivetrainSS.drivetrainTurnPIDDisable();
+    			Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
+    			Robot.drivetrainSS.drivetrainTurnPIDEnable();
     		}
     	}else if(goalFound && withinRange && !hasRumbled){
     		System.out.println("rumbled");

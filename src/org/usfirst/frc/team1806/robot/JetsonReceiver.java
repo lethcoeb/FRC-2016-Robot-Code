@@ -74,7 +74,7 @@ public class JetsonReceiver extends Thread {
 					angle = angle - 360;
 				}
 				
-				angle = angle - 6;
+				angle = angle + Constants.ShootingJetsonCameraAngleOffset;
 				
 				//angle = -angle;
 				// System.out.println("Goal found? : " + isGoal);
@@ -111,6 +111,19 @@ public class JetsonReceiver extends Thread {
 
 	public double getAngleToGoal() {
 		return angle;
+	}
+	
+	public boolean isAngleAcceptable(){
+		//Is the angle within the range specified in Constants?
+		return Math.abs(angle) < Constants.ShootingmaxAngleError;
+	}
+	public boolean isDistanceAcceptable(){
+		//Is the distance within range specified in Constants?
+		return ( distance > Constants.ShootingMinGoalDistance && distance < Constants.ShootingMaxGoalDistance);
+	}
+	
+	public double getDistanceFromGoal(){
+		return distance;
 	}
 
 	public boolean isGoalFound() {

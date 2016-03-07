@@ -91,6 +91,15 @@ public class Constants {
 												// can begin recocking bc the
 												// shooter is unmoving
 	public static final double minTimeToCock = 1;
+	
+	/*
+	 AutoShoting constants
+	 */
+	public static final double ShootingmaxAngleError = 0.5;
+	//TODO: Make distance range reasonable.
+	public static final double ShootingMinGoalDistance = 4;
+	public static final double ShootingMaxGoalDistance = 12;
+	public static final double ShootingJetsonCameraAngleOffset = -6;
 
 	// Networking stuff
 	public static final double jetsonConnectionLostTimeout = 1; // timeout until
