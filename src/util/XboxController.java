@@ -48,10 +48,6 @@ public class XboxController extends Joystick {
 			return getRawAxis(2);
 	}
 
-	// TODO: find out if there's a more efficient way to do the deadzone check.
-	// i don't like how you
-	// call getRawAxis twice. make a local variable and set it to the getRawAxis
-	// value? idk smh
 	public double getRightJoyX() {
 			return getRawAxis(4);
 	}
@@ -108,7 +104,6 @@ public class XboxController extends Joystick {
 		return getRawButton(10);
 	}
 	
-	/*
 	public boolean getPOVUp() {
 		return getPOV() > 45 && getPOV() < 135;
 	}
@@ -123,6 +118,6 @@ public class XboxController extends Joystick {
 
 	public boolean getPOVRight() {
 		return getPOV() > 315 && getPOV() < 45;
-	}*/
+	}
 
 }
