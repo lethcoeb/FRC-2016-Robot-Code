@@ -51,11 +51,12 @@ public class Constants {
 	public static final double elevatorPIDd = 0;
 	public static final double elevatorAbsoluteTolerance = 1500;
 
-	//public static final double elevatorShootingHeight = 103560;
+	//public static final double elevatorShootingHeight = 103560; :: comp bot
 	public static final double elevatorShootingHeight = 98112;
 	public static final double elevatorHoldingHeight = 30000;
+	public static final double elevatorChevaldeFunHeight = 45000; //lowest height at which the intake can be raised and lowered
 	public static final double resetSpeed = -.35;
-
+	
 	public static final double elevatorIntakeEngagedHeight = 30000;
 	// position where the ball is no longer engaged w/ the intake while held
 	// with the claw. After the elevator surpasses this height,
@@ -70,6 +71,7 @@ public class Constants {
 	public static final double intakeTimeToLower = .5;
 	public static final double intakeTimeToRaise = .75;
 	public static final double intakeTimeToCenterBall = .25;
+	public static final double intakeSpeedToMatchArm = .5;
 
 	// SHOOTER STUFF
 	public static final double timeToEngageDogGear = .25;

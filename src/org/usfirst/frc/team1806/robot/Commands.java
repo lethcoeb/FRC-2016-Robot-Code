@@ -34,6 +34,10 @@ public class Commands {
 		COCK, NONE
 	}
 	
+	public enum ArmDefenseCommand{
+		CHEVALDEFUN, LOWBAR, NONE;
+	}
+	
 	public boolean autoLineUp;
 	
 	public RunIntakeCommand intakeCommandTracker;
@@ -43,6 +47,7 @@ public class Commands {
 	public ShootRequest shootRequestTracker;
 	public ElevatorControlMode elevatorControlModeTracker;
 	public ManualCockCommand manualCockCommandTracker;
+	public ArmDefenseCommand armDefenseCommandTracker;
 	
 	public void reset(){
 		intakeCommandTracker = RunIntakeCommand.STOP;
@@ -52,6 +57,7 @@ public class Commands {
 		shootRequestTracker = ShootRequest.NONE;
 		elevatorControlModeTracker = ElevatorControlMode.AUTO;
 		manualCockCommandTracker = ManualCockCommand.NONE;
+		armDefenseCommandTracker = ArmDefenseCommand.NONE;
 		autoLineUp = false;
 	}
 	

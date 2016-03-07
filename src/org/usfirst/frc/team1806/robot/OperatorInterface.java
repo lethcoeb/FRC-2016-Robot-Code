@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import util.Latch;
 import util.XboxController;
 
+import org.usfirst.frc.team1806.robot.Commands.ArmDefenseCommand;
 import org.usfirst.frc.team1806.robot.Commands.ElevatorControlMode;
 import org.usfirst.frc.team1806.robot.Commands.ElevatorPositionRequest;
 import org.usfirst.frc.team1806.robot.Commands.ManualCockCommand;
@@ -28,6 +29,8 @@ import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingFromLow;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
+import org.usfirst.frc.team1806.robot.commands.elevator.TempMoveToChevalDeFunHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.TempMoveToGrabHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.CollectBall;
@@ -51,19 +54,20 @@ public class OperatorInterface {
 
 	// d for driver ;)
 	double dlsY, drsX, dRT, dLT;
-	boolean dA, dB, dX, dY, dRB, dLB, dStart, dBack;
+	boolean dA, dB, dX, dY, dRB, dLB, dStart, dBack, dPOVUp, dPOVDown, dPOVLeft, dPOVRight;
 
-	double orsY;
-	boolean oA, oRsClick, oStart;
+	double olsY, orsY, oRT, oLT;
+	boolean oA, oB, oX, oY, oRB, oLB, oStart, oBack, oRsClick, oPOVUp, oPOVDown;
 
-	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch;
+	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch,
+			chevalDeFunLatch, elevatorLowBarModeLatch;
 
 	final double kJoystickDeadzone = .15;
 
-	//TODO remove this
+	// TODO remove this
 	Joystick j;
 	JoystickButton a;
-	
+
 	public OperatorInterface() {
 
 		dc = new XboxController(0);
@@ -74,10 +78,12 @@ public class OperatorInterface {
 		shootBallLatch = new Latch();
 		elevatorManualAutoLatch = new Latch();
 		cockingRequestLatch = new Latch();
+		chevalDeFunLatch = new Latch();
+		elevatorLowBarModeLatch = new Latch();
 
 		m_commands = new Commands();
-		
-		//TODO remove this
+
+		// TODO remove this
 		j = new Joystick(0);
 		a = new JoystickButton(j, 1);
 		a.whenPressed(new TurnToAngle(90));
@@ -86,8 +92,6 @@ public class OperatorInterface {
 
 	public void update() {
 
-		
-		
 		updateInputs();
 
 		// drivetrain is separate because it's so important :-)
@@ -110,7 +114,8 @@ public class OperatorInterface {
 	}
 
 	private Commands setCommands() {
-			
+
+		// TODO make this a command
 		if (intakeDeployLatch.update(dY)) {
 			// switch intake deployment
 			if (Robot.states.intakePositionTracker == IntakePosition.DEPLOYED) {
@@ -120,6 +125,14 @@ public class OperatorInterface {
 				// Robot.intakeSS.deployIntake();
 				new LowerIntake().start();
 			}
+		}
+
+		if (chevalDeFunLatch.update(oPOVUp)) {
+			m_commands.armDefenseCommandTracker = ArmDefenseCommand.CHEVALDEFUN;
+		} else if (elevatorLowBarModeLatch.update(oPOVDown)) {
+			m_commands.armDefenseCommandTracker = ArmDefenseCommand.LOWBAR;
+		} else {
+			m_commands.armDefenseCommandTracker = ArmDefenseCommand.NONE;
 		}
 
 		if (dLB) {
@@ -134,7 +147,7 @@ public class OperatorInterface {
 			m_commands.intakeCommandTracker = RunIntakeCommand.STOP;
 		}
 
-		//TODO fix dis
+		// TODO fix dis
 		if (dc.getButtonLS()) {
 			m_commands.shiftRequestCommandTracker = ShiftRequest.LOW;
 			Robot.drivetrainSS.shiftLow();
@@ -144,14 +157,12 @@ public class OperatorInterface {
 		} else {
 			m_commands.shiftRequestCommandTracker = ShiftRequest.NONE;
 		}
-		
-		
-		
+
 		m_commands.shiftRequestCommandTracker = ShiftRequest.NONE;
-		
-		if(dRT >= .6){
+
+		if (dRT >= .6) {
 			m_commands.autoLineUp = true;
-		}else{
+		} else {
 			m_commands.autoLineUp = false;
 		}
 
@@ -181,7 +192,7 @@ public class OperatorInterface {
 		// FIXME again quick and dirty
 		if (cockingRequestLatch.update(dStart)) {
 			m_commands.manualCockCommandTracker = ManualCockCommand.COCK;
-		}else{
+		} else {
 			m_commands.manualCockCommandTracker = ManualCockCommand.NONE;
 		}
 
@@ -196,30 +207,31 @@ public class OperatorInterface {
 						&& Robot.states.drivetrainGearTracker == DrivetrainGear.HIGH) {
 			if (c.shiftRequestCommandTracker == ShiftRequest.HIGH) {
 				Robot.drivetrainSS.shiftHigh();
-				Robot.states.drivetrainGearTracker = DrivetrainGear.HIGH;
 			} else if (c.shiftRequestCommandTracker == ShiftRequest.LOW) {
 				Robot.drivetrainSS.shiftLow();
-				Robot.states.drivetrainGearTracker = DrivetrainGear.LOW;
 			}
 		}
-		
-		if(c.autoLineUp == true && Robot.states.autoLiningUp == false){
+
+		if (c.autoLineUp == true && Robot.states.autoLiningUp == false) {
 			new LineUpShot().start();
 		}
 
-		if (/*Robot.states.intakeControlModeTracker == IntakeControlMode.DRIVER*/true) {
-			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall && Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.INTAKING) {
+		if (/*
+			 * Robot.states.intakeControlModeTracker == IntakeControlMode.DRIVER
+			 */true) {
+			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall
+					&& Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.INTAKING) {
 				if (Robot.elevatorSS.getElevatorSetpoint() != Constants.elevatorShootingHeight) {
-					//TODO is there a better way to do this other than reading the setpoint?
+					// TODO is there a better way to do this other than reading
+					// the setpoint?
 					new CollectBall().start();
-				} else {
-					// somewhere in between holding and grabbing, or maybe the
-					// arm is up. do nothing
 				}
 				Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
 			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.OUTTAKE) {
-				if (Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.OUTTAKING && (Robot.elevatorSS.getElevatorPosition() < 8000 || Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN
-						|| Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING)) {
+				if (Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.OUTTAKING
+						&& (Robot.elevatorSS.getElevatorPosition() < 8000
+								|| Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN
+								|| Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING)) {
 					// can only release ball when it's close to the ground
 					System.out.println("spitout started");
 					new SpitOutBall().start();
@@ -228,6 +240,20 @@ public class OperatorInterface {
 					&& Robot.states.intakeRollerStateTracker != IntakeRollerState.STOPPED) {
 				Robot.intakeSS.stopIntaking();
 				Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
+			}
+		}
+
+		if (c.armDefenseCommandTracker == ArmDefenseCommand.NONE) {
+
+		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.CHEVALDEFUN) {
+			if (c.intakeCommandTracker == RunIntakeCommand.STOP
+					&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
+				new TempMoveToChevalDeFunHeight().start();
+			}
+		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.LOWBAR) {
+			if (c.intakeCommandTracker == RunIntakeCommand.STOP
+					&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
+				new TempMoveToGrabHeight().start();
 			}
 		}
 
@@ -266,10 +292,10 @@ public class OperatorInterface {
 
 			new ShootThenCock().start();
 		}
-		
+
 		if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && !Robot.shooterSS.shooterIsCocked()) {
 			new CockShooter().start();
-		}else if(m_commands.manualCockCommandTracker == ManualCockCommand.COCK && Robot.shooterSS.shooterIsCocked()){
+		} else if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && Robot.shooterSS.shooterIsCocked()) {
 			new ShootDaBall().start();
 		}
 
@@ -282,6 +308,7 @@ public class OperatorInterface {
 
 	private void updateInputs() {
 
+		// driver buttons
 		dlsY = dc.getLeftJoyY();
 		drsX = dc.getRightJoyX();
 		dRT = dc.getRightTrigger();
@@ -295,20 +322,36 @@ public class OperatorInterface {
 		dLB = dc.getButtonLB();
 		dStart = dc.getButtonStart();
 		dBack = dc.getButtonBack();
+		dPOVUp = dc.getPOVUp();
+		dPOVDown = dc.getPOVDown();
+		dPOVLeft = dc.getPOVLeft();
+		dPOVRight = dc.getPOVRight();
 
+		// op buttons
+		olsY = oc.getLeftJoyY();
 		orsY = oc.getRightJoyY();
+		oRT = oc.getRightTrigger();
+		oLT = oc.getLeftTrigger();
 
 		oA = oc.getButtonA();
-		oRsClick = oc.getButtonRS();
+		oB = oc.getButtonB();
+		oX = oc.getButtonX();
+		oY = oc.getButtonY();
+		oRB = oc.getButtonRB();
+		oLB = oc.getButtonLB();
 		oStart = oc.getButtonStart();
+		oBack = oc.getButtonBack();
+		oRsClick = oc.getButtonRS();
+		oPOVUp = oc.getPOVUp();
+		oPOVDown = oc.getPOVDown();
 
 	}
-	
-	public void stopRumbles(){
+
+	public void stopRumbles() {
 		dc.setRumble(RumbleType.kLeftRumble, 0);
 		dc.setRumble(RumbleType.kRightRumble, 0);
 		oc.setRumble(RumbleType.kLeftRumble, 0);
 		oc.setRumble(RumbleType.kRightRumble, 0);
 	}
-	
+
 }
