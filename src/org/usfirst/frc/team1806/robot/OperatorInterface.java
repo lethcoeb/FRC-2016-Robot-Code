@@ -19,7 +19,6 @@ import org.usfirst.frc.team1806.robot.Commands.ShootRequest;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.DrivetrainGear;
 import org.usfirst.frc.team1806.robot.RobotStates.ElevatorOperatorControlMode;
-import org.usfirst.frc.team1806.robot.RobotStates.IntakeControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.IntakePosition;
 import org.usfirst.frc.team1806.robot.RobotStates.IntakeRollerState;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
@@ -27,7 +26,6 @@ import org.usfirst.frc.team1806.robot.RobotStates.ShooterCocked;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingFromLow;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.TempMoveToChevalDeFunHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.TempMoveToGrabHeight;
@@ -38,7 +36,7 @@ import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.intake.RaiseIntake;
 import org.usfirst.frc.team1806.robot.commands.intake.SpitOutBall;
 import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
-import org.usfirst.frc.team1806.robot.commands.shooter.ReleaseBall;
+import org.usfirst.frc.team1806.robot.commands.shooter.ManualCock;
 import org.usfirst.frc.team1806.robot.commands.shooter.ShootDaBall;
 import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
@@ -247,13 +245,15 @@ public class OperatorInterface {
 
 		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.CHEVALDEFUN) {
 			if (c.intakeCommandTracker == RunIntakeCommand.STOP
-					&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
+					&& Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorHoldingHeight) {
 				new TempMoveToChevalDeFunHeight().start();
+				System.out.println("moving to temp chevaldefun");
 			}
 		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.LOWBAR) {
 			if (c.intakeCommandTracker == RunIntakeCommand.STOP
-					&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
+					&& Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorHoldingHeight) {
 				new TempMoveToGrabHeight().start();
+				System.out.println("moving to temp grab height");
 			}
 		}
 
@@ -294,7 +294,7 @@ public class OperatorInterface {
 		}
 
 		if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && !Robot.shooterSS.shooterIsCocked()) {
-			new CockShooter().start();
+			new ManualCock().start();
 		} else if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && Robot.shooterSS.shooterIsCocked()) {
 			new ShootDaBall().start();
 		}

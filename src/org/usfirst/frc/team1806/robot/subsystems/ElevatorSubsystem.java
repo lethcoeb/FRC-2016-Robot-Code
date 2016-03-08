@@ -30,6 +30,8 @@ public class ElevatorSubsystem extends Subsystem {
 	CANTalon elevatorSRX;
 	DigitalInput bottomLimit;
 	DigitalInput topLimit;
+	
+	int elevatorSetpoint;
 
 	public ElevatorSubsystem() {
 
@@ -63,8 +65,9 @@ public class ElevatorSubsystem extends Subsystem {
 		elevatorSRX.changeControlMode(cm);
 	}
 
-	public void elevatorSetSetpoint(double setpoint) {
+	public void elevatorSetSetpoint(int setpoint) {
 		elevatorSRX.setSetpoint(setpoint);
+		elevatorSetpoint = setpoint;
 	}
 
 	public void elevatorMoveAtSpeed(double speed) {
@@ -112,7 +115,7 @@ public class ElevatorSubsystem extends Subsystem {
 	}
 
 	public double getElevatorSetpoint() {
-		return elevatorSRX.getSetpoint();
+		return elevatorSetpoint;
 	}
 
 	public boolean isBottomLimitHit() {

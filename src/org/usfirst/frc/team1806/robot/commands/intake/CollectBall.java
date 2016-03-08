@@ -25,6 +25,7 @@ public class CollectBall extends Command {
 	boolean intaking = false;
 	boolean ballSensed = false;
 	boolean finished = false;
+	boolean clamping = false;
 	
 	public CollectBall() {
 		requires(Robot.intakeSS);
@@ -63,6 +64,10 @@ public class CollectBall extends Command {
 			Robot.states.hasBall = true;
 			new RumbleController(Robot.oi.dc).start();
 			System.out.println("ball centered, done");
+			clamping = true;
+			t.reset();
+			t.start();
+		}else if(clamping && t.get() > .5){
 			finished = true;
 		}else if(!Robot.oi.dc.getButtonLB()){
 			//new RumbleController(Robot.oi.dc).start();

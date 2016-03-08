@@ -53,6 +53,7 @@ public class SmartDashboardUpdater {
 			
 			SmartDashboard.putNumber("TurnPC error", Robot.drivetrainSS.getTurnPCError());
 
+			SmartDashboard.putNumber("angular velocity", Robot.drivetrainSS.getRotationalSpeed());
 		}
 
 	}

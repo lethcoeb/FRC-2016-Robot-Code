@@ -38,6 +38,8 @@ public class DrivetrainSubsystem extends Subsystem {
     
     
     double lastPower, currPower, lastTurnPower, currTurnPower = 0;
+    double PIDTolerance = 30;
+    double MaxRotationPID = Constants.drivetrainMaxRotationPIDStage3;
     
     public DrivetrainSubsystem(){
     	right1 = new Talon(RobotMap.rightMotor1);
@@ -133,7 +135,7 @@ public class DrivetrainSubsystem extends Subsystem {
 					output = output * (1-Constants.drivetrainTurnMinPowerToMove) + Constants.drivetrainTurnMinPowerToMove * Math.signum(output);
 				}*/
 				execute(0, -output);
-				System.out.println(turnPC.getError());
+				//System.out.println(turnPC.getError());
 			}
 		};
 		
@@ -245,6 +247,10 @@ public class DrivetrainSubsystem extends Subsystem {
     	return navx.getYaw();
     }
     
+    public double getRotationalSpeed(){
+    	return navx.getRate();
+    }
+    
     public double getQuaternion(){
     	return navx.getQuaternionZ() * 180;
     }
@@ -286,14 +292,11 @@ public class DrivetrainSubsystem extends Subsystem {
     	if(turnAbsolutePC.isEnabled()){
     		turnAbsolutePC.disable();
     	}
-    	navx.zeroYaw();
-    	turnPC.reset();
     	turnPC.enable();
     }
     
     public void drivetrainTurnPIDDisable(){
     	turnPC.disable();
-    	turnPC.reset();
     }
     
     public void drivetrainTurnPIDSetSetpoint(double setpoint){
@@ -301,7 +304,7 @@ public class DrivetrainSubsystem extends Subsystem {
     }
     
     public boolean drivetrainTurnPIDisOnTarget(){
-    	return turnPC.onTarget();
+    	return Math.abs(turnPC.getError()) < PIDTolerance && Math.abs(getRotationalSpeed()) < MaxRotationPID;
     }
     
     public double getTurnPCError(){
@@ -312,12 +315,16 @@ public class DrivetrainSubsystem extends Subsystem {
     	turnPC.setPID(p, i, d);
     }
     
+    public void drivetrainTurnPIDchangeMaxRotation(double maxRot){
+    	MaxRotationPID = maxRot;
+    }
+    
     public void drivetrainTurnPIDReset(){
     	turnPC.reset();
     }
     
     public void drivetrainTurnPIDSetTolerance(double tolerance){
-    	turnPC.setAbsoluteTolerance(tolerance);
+    	PIDTolerance = tolerance;
     }
     
     public void drivetrainTurnAbsolutePIDEnable(){

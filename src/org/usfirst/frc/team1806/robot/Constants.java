@@ -2,11 +2,13 @@ package org.usfirst.frc.team1806.robot;
 
 public class Constants {
 
-	public static final double intakeRollerSpeed = .8;
-	public static final double outtakeRollerSpeed = -.8;
+	
 
 	// FIXME this
 	public static final double encoderCountsPerRevolution = .01;
+	public static final double drivetrainMaxRotationPIDStage3 = 1; //degrees per second
+	public static final double drivetrainMaxRotationPIDStage2 = .2; //degrees per second
+	public static final double drivetrainMaxRotationPIDStage1 = .15; //degrees per second
 
 	// DRIVETRAIN THINGS
 	public static final double drivetrainDriveP = .5;
@@ -18,11 +20,11 @@ public class Constants {
 	//90 degree values
 	public static final double drivetrainTurn1P = .03;
 	public static final double drivetrainTurn1I = 0;
-	public static final double drivetrainTurn1D = 0.1375;
+	public static final double drivetrainTurn1D = 0.2;
 	//5 degree values
 		//.5deg
-	public static final double drivetrainTurn2P = .1;
-	public static final double drivetrainTurn2I = 0;
+	public static final double drivetrainTurn2P = .01;
+	public static final double drivetrainTurn2I = 0.001;
 	public static final double drivetrainTurn2D = 0.0025;
 	
 	//jones wants to do only i
@@ -30,16 +32,16 @@ public class Constants {
 	public static final double drivetrainTurnI = 0.002;
 	public static final double drivetrainTurnD = 0.1;*/
 	
-	public static final double drivetrainTurn3P = .007;
-	public static final double drivetrainTurn3I = 0.004;
-	public static final double drivetrainTurn3D = 0.25;
+	//tiny lil values
+	public static final double drivetrainTurn3P = .004;
+	public static final double drivetrainTurn3I = 0.003;
+	public static final double drivetrainTurn3D = 0.15;
 	
 	
 	//public static final double drivetrainTurnD = 0.0025;
 	public static final double drivetrainTurnPID3Tolerance = 10; // degrees
-	public static final double drivetrainTurnPID2Tolerance = 5; // degrees
-	public static final double drivetrainTurnPID1Tolerance = .25; // degrees
-	public static final double drivetrainTurnMinPowerToMove = .15;
+	public static final double drivetrainTurnPID2Tolerance = 2; // degrees
+	public static final double drivetrainTurnPID1Tolerance = .2; // degrees
 
 	public static final double maxPowerDiffential = .05;
 	public static final double maxTurnPowerDifferential = .2;
@@ -52,9 +54,9 @@ public class Constants {
 	public static final double elevatorAbsoluteTolerance = 1500;
 
 	//public static final double elevatorShootingHeight = 103560; :: comp bot
-	public static final double elevatorShootingHeight = 98112;
-	public static final double elevatorHoldingHeight = 30000;
-	public static final double elevatorChevaldeFunHeight = 45000; //lowest height at which the intake can be raised and lowered
+	public static final int elevatorShootingHeight = 98112;
+	public static final int elevatorHoldingHeight = 30000;
+	public static final int elevatorChevaldeFunHeight = 45000; //lowest height at which the intake can be raised and lowered
 	public static final double resetSpeed = -.35;
 	
 	public static final double elevatorIntakeEngagedHeight = 30000;
@@ -68,15 +70,18 @@ public class Constants {
 	// sucking the ball in before the claw is ready
 
 	// INTAKE STUFF
+	public static final double intakeRollerSpeed = .5;
+	public static final double outtakeRollerSpeed = -.8;
+	
 	public static final double intakeTimeToLower = .5;
 	public static final double intakeTimeToRaise = .75;
-	public static final double intakeTimeToCenterBall = .25;
-	public static final double intakeSpeedToMatchArm = .5;
+	public static final double intakeTimeToCenterBall = 1;
+	public static final double intakeSpeedToMatchArm = .4;
 
 	// SHOOTER STUFF
 	public static final double timeToEngageDogGear = .25;
 	public static final double gearEngageSpeed = .5;
-	public static final double timeToPinch = .75;
+	public static final double timeToPinch = .5;
 	public static final double timeToUnpinch = .15;
 	public static final double timeToSettle = 1; // after 'ungrabbing' the
 													// ball with the claw at
@@ -99,7 +104,7 @@ public class Constants {
 	//TODO: Make distance range reasonable.
 	public static final double ShootingMinGoalDistance = 4;
 	public static final double ShootingMaxGoalDistance = 12;
-	public static final double ShootingJetsonCameraAngleOffset = -6;
+	public static final double ShootingJetsonCameraAngleOffset = -3.184;
 
 	// Networking stuff
 	public static final double jetsonConnectionLostTimeout = 1; // timeout until

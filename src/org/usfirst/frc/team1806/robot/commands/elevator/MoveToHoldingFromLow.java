@@ -33,7 +33,7 @@ public class MoveToHoldingFromLow extends Command {
 		Robot.elevatorSS.elevatorMoveAtSpeed(1);
 		Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
 		if (shouldSpin) {
-			Robot.intakeSS.runAtSpeed(.8);
+			Robot.intakeSS.runAtSpeed(Constants.intakeSpeedToMatchArm);
 		}
 	}
 

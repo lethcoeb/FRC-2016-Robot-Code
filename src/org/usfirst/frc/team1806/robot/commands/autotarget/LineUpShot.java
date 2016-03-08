@@ -15,6 +15,12 @@ public class LineUpShot extends Command {
 
 	boolean goalFound, withinRange, hasRumbled;
 	
+	boolean finished;
+	double targetAngle;
+	int stage;
+	double loops = 0;
+	double kLoopsUntilCheck = Constants.loopsToCheckSensorDisconnect;
+	
     public LineUpShot() {
         requires(Robot.drivetrainSS);
     	Robot.states.autoLiningUp = true;
@@ -29,6 +35,31 @@ public class LineUpShot extends Command {
     	withinRange = false;
     	hasRumbled = false;
     	
+    	Robot.states.driveControlModeTracker = DriveControlMode.AUTO;
+    	Robot.drivetrainSS.drivetrainTurnPIDReset();
+    	Robot.drivetrainSS.resetYaw();
+    	
+    	if(Math.abs(targetAngle) > 15){
+    		//use big ol' pid
+    		Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn1P, Constants.drivetrainTurn1I, Constants.drivetrainTurn1D);
+    		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID3Tolerance);
+    		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage1);
+    		stage = 3;
+    	}else if(Math.abs(targetAngle) > 5){
+    		Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn2P, Constants.drivetrainTurn2I, Constants.drivetrainTurn2D);
+    		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID2Tolerance);
+    		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage2);
+    		stage = 2;
+    	}else{
+    		//you hella close bruh use dat small loop
+    		Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn3P, Constants.drivetrainTurn3I, Constants.drivetrainTurn3D);
+    		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID1Tolerance);
+    		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage3);
+    		stage = 1;
+    	}
+    	
+    	Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(targetAngle);
+    	Robot.drivetrainSS.drivetrainTurnPIDEnable();
     	System.out.println("auto line up started");
     	
     }
@@ -51,15 +82,45 @@ public class LineUpShot extends Command {
     		}
     	}else if(goalFound && !withinRange){
     		//found goal now line up
-    		if(Robot.jr.isAngleAcceptable() && Robot.drivetrainSS.drivetrainTurnAbsolutePIDisOnTarget()){
-    			//if we are absolutely on target by vision processing, let's get some points
-    			System.out.println("on target");
-    			withinRange = true;
-    			
-    			Robot.drivetrainSS.drivetrainTurnPIDDisable();
-    			
-    		}
-    		else if(Robot.drivetrainSS.drivetrainTurnAbsolutePIDisOnTarget()){
+    		
+    		loops++;
+        	if(loops >= kLoopsUntilCheck){
+        		loops = 0;
+        		if(!Robot.drivetrainSS.isNavxConnected()){
+        			//navx is dead bruh kill it
+        			Robot.drivetrainSS.drivetrainTurnPIDDisable();
+        			finished = true;
+        		}
+        	}
+        	if(Robot.drivetrainSS.drivetrainTurnPIDisOnTarget()){
+        		System.out.println("PID on target");
+        		Robot.drivetrainSS.drivetrainTurnPIDDisable();
+        		Robot.drivetrainSS.drivetrainTurnPIDReset();
+        		if(stage == 3){
+        			//step down to stage 2
+        			stage = 2;
+        			Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn2P, Constants.drivetrainTurn2I, Constants.drivetrainTurn2D);
+        			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID2Tolerance);
+        			Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage2);
+        			Robot.drivetrainSS.drivetrainTurnPIDEnable();
+        			
+        			System.out.println("moving to stage 2");
+        		}else if(stage == 2){
+        			//step down to stage 1
+        			stage = 1;
+        			Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn3P, Constants.drivetrainTurn3I, Constants.drivetrainTurn3D);
+        			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID1Tolerance);
+        			Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage1);
+        			Robot.drivetrainSS.drivetrainTurnPIDEnable();
+        			
+        			System.out.println("moving to stage 1");
+        		}else if(stage == 1 && Robot.jr.isAngleAcceptable()){
+        			//should be done.
+        			withinRange = true;
+        			System.out.println("stage one done, ON TARGET");
+        		}
+        	}
+    		//else if(Robot.drivetrainSS.drivetrainTurnAbsolutePIDisOnTarget()){
     			/* If for some reason our original angle was wrong, being that we aren't in an
     			 * acceptable range according to the Jetson, yet we got to the angle it originally
     			 * said the goal was at, try to line up again to the new angle.
@@ -67,10 +128,10 @@ public class LineUpShot extends Command {
     			 * the PID is disabled and re-enabled in order to reset the navX and clear
     			 * accumulated error.
     			 */
-    			Robot.drivetrainSS.drivetrainTurnPIDDisable();
+    			/*Robot.drivetrainSS.drivetrainTurnPIDDisable();
     			Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
     			Robot.drivetrainSS.drivetrainTurnPIDEnable();
-    		}
+    		}*/
     	}else if(goalFound && withinRange && !hasRumbled){
     		System.out.println("rumbled");
     		new RumbleController(Robot.oi.dc).start();
