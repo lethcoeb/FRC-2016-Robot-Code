@@ -37,6 +37,7 @@ public class ResetElevator extends Command {
     	//}else{
     		//finished = true;
     //	}
+    		Robot.intakeSS.runAtSpeed(-Constants.intakeSpeedToMatchArm);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -62,7 +63,7 @@ public class ResetElevator extends Command {
     	Robot.elevatorSS.elevatorResetEncoder();
     	Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
     	Robot.states.elevatorOperatorControlModeTracker = ElevatorOperatorControlMode.AUTO;
-    	new MoveToHoldingFromLow(false).start();
+    	new MoveToHoldingFromLow(Robot.states.hasBall).start();
     }
 
     // Called when another command which requires one or more of the same

@@ -114,7 +114,7 @@ public class ElevatorSubsystem extends Subsystem {
 		return elevatorSRX.getPosition();
 	}
 
-	public double getElevatorSetpoint() {
+	public int getElevatorSetpoint() {
 		return elevatorSetpoint;
 	}
 

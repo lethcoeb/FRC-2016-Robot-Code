@@ -7,6 +7,7 @@ import org.usfirst.frc.team1806.robot.OperatorInterface;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotStates.IntakeControlMode;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
+import org.usfirst.frc.team1806.robot.commands.RumbleControllerConstant;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingFromLow;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -26,12 +27,12 @@ public class CollectBall extends Command {
 	boolean ballSensed = false;
 	boolean finished = false;
 	boolean clamping = false;
-	
+
 	public CollectBall() {
 		requires(Robot.intakeSS);
 		requires(Robot.elevatorSS);
 		requires(Robot.shooterSS);
-		
+
 		t = new Timer();
 	}
 
@@ -53,24 +54,39 @@ public class CollectBall extends Command {
 			Robot.intakeSS.intakeBall();
 			System.out.println("intake rolling");
 			intaking = true;
-		}else if(Robot.shooterSS.hasBallSensor() && intaking && !ballSensed){
-			//you successfully intaked a ball and now you need to wait a bit for it to center.
-			t.start();
+		} else if (Robot.shooterSS.hasBallSensor() && intaking && !ballSensed) {
+			// you successfully intaked a ball and now you need to wait a bit
+			// for it to center.
+			new RumbleControllerConstant(Robot.oi.dc).start();
 			ballSensed = true;
-			System.out.println("sensed ball, centering");
-		}else if(ballSensed && t.get() > kTimeToCenter){
-			//ball was sensed and you've waited long enough for it to center. raise up the ball.
-			Robot.shooterSS.pinchBall();
-			Robot.states.hasBall = true;
-			new RumbleController(Robot.oi.dc).start();
-			System.out.println("ball centered, done");
+			System.out.println("sensed ball");
+		} else if (ballSensed && !Robot.shooterSS.hasBallSensor()) {
+			// ball failed to be seen by sensor
+			Robot.oi.stopRumbles();
+			ballSensed = false;
+		}
+		
+		if(intaking && Robot.oi.oc.getButtonStart()){
 			clamping = true;
+			Robot.shooterSS.pinchBall();
 			t.reset();
 			t.start();
-		}else if(clamping && t.get() > .5){
-			finished = true;
-		}else if(!Robot.oi.dc.getButtonLB()){
-			//new RumbleController(Robot.oi.dc).start();
+		}
+
+		if (!Robot.oi.dc.getButtonLB() && !clamping) {
+			// new RumbleController(Robot.oi.dc).start();
+			if (ballSensed) {
+				clamping = true;
+				Robot.shooterSS.pinchBall();
+				t.reset();
+				t.start();
+			} else {
+				finished = true;
+			}
+		}
+
+		else if (clamping && t.get() > .25) {
+			t.stop();
 			finished = true;
 		}
 	}
@@ -82,13 +98,15 @@ public class CollectBall extends Command {
 
 	// Called once after isFinished returns true
 	protected void end() {
-		new MoveToHoldingFromLow(true).start();
-		Robot.intakeSS.stopIntaking();
+		Robot.oi.stopRumbles();
+		Robot.states.hasBall = ballSensed;
+		new MoveToHoldingFromLow(ballSensed).start();
 	}
 
 	// Called when another command which requires one or more of the same
 	// subsystems is scheduled to run
 	protected void interrupted() {
+		Robot.oi.stopRumbles();
 		Robot.intakeSS.stopIntaking();
 	}
 }

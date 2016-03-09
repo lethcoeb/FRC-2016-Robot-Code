@@ -1,31 +1,19 @@
 package org.usfirst.frc.team1806.robot.commands;
 
-import edu.wpi.first.wpilibj.Joystick.RumbleType;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
-import util.XboxController;
 
 /**
  *
  */
-public class RumbleController extends Command {
+public class RumbleControllerConstant extends Command {
 
-
-	Timer t;
-	XboxController xbc;
-	
-    public RumbleController(XboxController cont) {
-        t = new Timer();
-        xbc = cont;
+    public RumbleControllerConstant() {
+        // Use requires() here to declare subsystem dependencies
+        // eg. requires(chassis);
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	
-    	t.start();
-    	xbc.setRumble(RumbleType.kLeftRumble, 1);
-
-    	
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -34,7 +22,7 @@ public class RumbleController extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return true;
+        return false;
     }
 
     // Called once after isFinished returns true
