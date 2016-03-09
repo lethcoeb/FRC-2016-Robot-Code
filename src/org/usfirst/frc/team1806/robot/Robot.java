@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
+import org.usfirst.frc.team1806.robot.commands.autonomous.FourteenInchMode;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallNoSteal;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallSteal;
 import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
@@ -46,7 +47,7 @@ public class Robot extends IterativeRobot {
 	public static ShooterSubsystem shooterSS;
 	public static PowerDistributionPanel pdp;
 	public static Compressor compressor;
-	
+
 	public static OperatorInterface oi;
 	public static RobotStates states;
 
@@ -57,9 +58,9 @@ public class Robot extends IterativeRobot {
 	public static AutonomousReader ar;
 	public static SmartDashboardUpdater sdu;
 	public static RioVisionThread rvt;
-	
-	public static double getPDPResistance(int channel){
-	 return pdp.getVoltage() / pdp.getCurrent(channel);
+
+	public static double getPDPResistance(int channel) {
+		return pdp.getVoltage() / pdp.getCurrent(channel);
 	}
 
 	public void robotInit() {
@@ -73,9 +74,12 @@ public class Robot extends IterativeRobot {
 
 		oi = new OperatorInterface();
 		states = new RobotStates();
-		
-		if(elevatorSS.isBottomLimitHit()){
-			states.shooterArmPositionTracker = ShooterArmPosition.DOWN; //to speed up testing
+
+		if (elevatorSS.isBottomLimitHit()) {
+			states.shooterArmPositionTracker = ShooterArmPosition.DOWN; // to
+																		// speed
+																		// up
+																		// testing
 		}
 
 		jr = new JetsonReceiver();
@@ -83,12 +87,12 @@ public class Robot extends IterativeRobot {
 
 		ar = new AutonomousReader();
 		ar.start();
-		
+
 		sdu = new SmartDashboardUpdater();
-		
-		//rvt = new RioVisionThread();
-		//rvt.start();
-		
+
+		// rvt = new RioVisionThread();
+		// rvt.start();
+
 		compressor.setClosedLoopControl(false);
 
 	}
@@ -98,17 +102,15 @@ public class Robot extends IterativeRobot {
 	 * You can use it to reset any subsystem information you want to clear when
 	 * the robot is disabled.
 	 */
-	
+
 	public void disabledInit() {
 		oi.stopRumbles();
 	}
 
 	public void disabledPeriodic() {
-		
+
 		Scheduler.getInstance().run();
 		sdu.push();
-		
-		
 
 	}
 
@@ -125,16 +127,22 @@ public class Robot extends IterativeRobot {
 	 */
 	public void autonomousInit() {
 
-		/*
-		 * String autoSelected = SmartDashboard.getString("Auto Selector",
-		 * "Default"); switch(autoSelected) { case "My Auto": autonomousCommand
-		 * = new MyAutoCommand(); break; case "Default Auto": default:
-		 * autonomousCommand = new ExampleCommand(); break; }
-		 */
+		/*String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
+		switch (autoSelected) {
+		case "My Auto":
+			autonomousCommand = new MyAutoCommand();
+			break;
+		case "Default Auto":
+		default:
+			autonomousCommand = new ExampleCommand();
+			break;
+		}*/
 		
+		autonomousCommand = new FourteenInchMode();
+
 		ar.stopThread();
-		
-		ArrayList<String>  commandStrings = new ArrayList<String>();
+
+		ArrayList<String> commandStrings = new ArrayList<String>();
 		if (ar.CommandsReceived()) {
 			commandStrings = ar.getCommandStringArray();
 		}
@@ -169,8 +177,8 @@ public class Robot extends IterativeRobot {
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
 		// this line or comment it out.
-		//if (autonomousCommand != null)
-		//	autonomousCommand.cancel();
+		// if (autonomousCommand != null)
+		// autonomousCommand.cancel();
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
 	}
 
@@ -178,25 +186,26 @@ public class Robot extends IterativeRobot {
 	 * This function is called periodically during operator control
 	 */
 	boolean memes = false;
+
 	public void teleopPeriodic() {
 
 		Scheduler.getInstance().run();
 		oi.update();
 
 		/*
-		// automatic sensor listener, put this somewhere else bc it's so ugleh
-		if (Robot.shooterSS.hasBallSensor() && !Robot.states.hasBall
-				//FIXME oi.drt is dirty af
-				&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN && oi.dRT == 0) {
-			new PinchBall().start();
-		}*/
-		
-		if(pdp.getVoltage() < 9){
+		 * // automatic sensor listener, put this somewhere else bc it's so
+		 * ugleh if (Robot.shooterSS.hasBallSensor() && !Robot.states.hasBall
+		 * //FIXME oi.drt is dirty af && Robot.states.shooterArmPositionTracker
+		 * == ShooterArmPosition.DOWN && oi.dRT == 0) { new PinchBall().start();
+		 * }
+		 */
+
+		if (pdp.getVoltage() < 9) {
 			compressor.setClosedLoopControl(false);
-		}else{
+		} else {
 			compressor.setClosedLoopControl(true);
 		}
-		
+
 		sdu.push();
 	}
 

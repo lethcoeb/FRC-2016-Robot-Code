@@ -43,7 +43,7 @@ public class ElevatorSubsystem extends Subsystem {
 		elevatorSRX.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 		// starts in pid mode
 		elevatorSRX.changeControlMode(TalonControlMode.Position);
-		elevatorSRX.setPID(.05, 0.00000005, 0.01);
+		elevatorSRX.setPID(.05, 0.000005, 0.01);
 		elevatorSRX.reverseOutput(false);
 		elevatorSRX.reverseSensor(true);
 		elevatorSRX.configPeakOutputVoltage(14, -14);

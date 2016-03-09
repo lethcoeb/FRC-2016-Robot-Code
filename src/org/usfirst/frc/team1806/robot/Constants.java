@@ -6,9 +6,9 @@ public class Constants {
 
 	// FIXME this
 	public static final double encoderCountsPerRevolution = .01;
-	public static final double drivetrainMaxRotationPIDStage3 = 1; //degrees per second
+	public static final double drivetrainMaxRotationPIDStage1 = 1; //degrees per second
 	public static final double drivetrainMaxRotationPIDStage2 = .2; //degrees per second
-	public static final double drivetrainMaxRotationPIDStage1 = .15; //degrees per second
+	public static final double drivetrainMaxRotationPIDStage3 = .15; //degrees per second
 
 	// DRIVETRAIN THINGS
 	public static final double drivetrainDriveP = .5;
@@ -33,15 +33,20 @@ public class Constants {
 	public static final double drivetrainTurnD = 0.1;*/
 	
 	//tiny lil values
-	public static final double drivetrainTurn3P = .004;
-	public static final double drivetrainTurn3I = 0.003;
-	public static final double drivetrainTurn3D = 0.15;
+	public static final double drivetrainTurn3P = .01;
+	public static final double drivetrainTurn3I = 0;
+	//public static final double drivetrainTurn3D = 0.15;
+	public static final double drivetrainTurn3D = 0;
+
 	
 	
 	//public static final double drivetrainTurnD = 0.0025;
-	public static final double drivetrainTurnPID3Tolerance = 10; // degrees
+	public static final double drivetrainTurnPID1Tolerance = 10; // degrees
 	public static final double drivetrainTurnPID2Tolerance = 2; // degrees
-	public static final double drivetrainTurnPID1Tolerance = .2; // degrees
+	public static final double drivetrainTurnPID3Tolerance = .2; // degrees
+	
+	public static final double navxMinPitchToBeFlat = 4;
+	public static final double timeUntilFlat = .75;
 
 	public static final double maxPowerDiffential = .05;
 	public static final double maxTurnPowerDifferential = .2;
@@ -54,10 +59,11 @@ public class Constants {
 	public static final double elevatorAbsoluteTolerance = 1500;
 
 	//public static final double elevatorShootingHeight = 103560; :: comp bot
-	public static final int elevatorShootingHeight = 98112;
-	public static final int elevatorHoldingHeight = 30000;
+	public static final int elevatorShootingHeight = 91800;
+	public static final int elevatorHoldingHeight = 20000;
 	public static final int elevatorChevaldeFunHeight = 45000; //lowest height at which the intake can be raised and lowered
 	public static final double resetSpeed = -.35;
+	public static final double collectingIntakeStopOffset = -3000;
 	
 	public static final double elevatorIntakeEngagedHeight = 30000;
 	// position where the ball is no longer engaged w/ the intake while held
@@ -76,7 +82,7 @@ public class Constants {
 	public static final double intakeTimeToLower = .5;
 	public static final double intakeTimeToRaise = .75;
 	public static final double intakeTimeToCenterBall = 1;
-	public static final double intakeSpeedToMatchArm = .4;
+	public static final double intakeSpeedToMatchArm = .6;
 
 	// SHOOTER STUFF
 	public static final double timeToEngageDogGear = .25;

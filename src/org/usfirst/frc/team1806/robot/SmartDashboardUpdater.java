@@ -54,6 +54,12 @@ public class SmartDashboardUpdater {
 			SmartDashboard.putNumber("TurnPC error", Robot.drivetrainSS.getTurnPCError());
 
 			SmartDashboard.putNumber("angular velocity", Robot.drivetrainSS.getRotationalSpeed());
+			
+			SmartDashboard.putNumber("RightEncValue", Robot.drivetrainSS.getRightEncoderDistance());
+			SmartDashboard.putNumber("LeftEncValue", Robot.drivetrainSS.getLeftEncoderDistance());
+			
+			SmartDashboard.putNumber("NavxPitch", Robot.drivetrainSS.getPitch());
+			SmartDashboard.putNumber("NavxRoll", Robot.drivetrainSS.getRoll());
 		}
 
 	}

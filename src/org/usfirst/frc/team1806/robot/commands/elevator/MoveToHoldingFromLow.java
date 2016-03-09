@@ -18,10 +18,13 @@ public class MoveToHoldingFromLow extends Command {
 
 	public MoveToHoldingFromLow() {
 		requires(Robot.elevatorSS);
+		requires(Robot.intakeSS);
 	}
 
 	public MoveToHoldingFromLow(boolean spin) {
 		shouldSpin = spin;
+		requires(Robot.elevatorSS);
+		requires(Robot.intakeSS);
 	}
 
 	// Called just before this Command runs the first time
@@ -39,6 +42,15 @@ public class MoveToHoldingFromLow extends Command {
 
 	// Called repeatedly when this Command is scheduled to run
 	protected void execute() {
+		if (Robot.elevatorSS.getElevatorPosition() >=Constants.elevatorHoldingHeight + Constants.collectingIntakeStopOffset){
+			shouldSpin = false;
+		}
+		if (shouldSpin) {
+			Robot.intakeSS.runAtSpeed(Constants.intakeSpeedToMatchArm);
+		}
+		else{
+			Robot.intakeSS.stopIntaking();
+		}
 	}
 
 	// Make this return true when this Command no longer needs to run execute()
@@ -59,6 +71,7 @@ public class MoveToHoldingFromLow extends Command {
 	// Called when another command which requires one or more of the same
 	// subsystems is scheduled to run
 	protected void interrupted() {
+		System.out.println("MoveToHolding interrupted");
 		Robot.states.intakeControlModeTracker = IntakeControlMode.DRIVER;
 		Robot.elevatorSS.elevatorStopMovement();
 		Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;

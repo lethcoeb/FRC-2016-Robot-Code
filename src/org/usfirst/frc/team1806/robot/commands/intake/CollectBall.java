@@ -82,7 +82,7 @@ public class CollectBall extends Command {
 
 	// Called once after isFinished returns true
 	protected void end() {
-		new MoveToHoldingFromLow().start();
+		new MoveToHoldingFromLow(true).start();
 		Robot.intakeSS.stopIntaking();
 	}
 

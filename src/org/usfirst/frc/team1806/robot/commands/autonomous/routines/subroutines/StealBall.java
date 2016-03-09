@@ -17,6 +17,6 @@ public class StealBall extends CommandGroup {
         addSequential(new ThrowOutIntake());
         addSequential(new Wait(Constants.timeToDeployOnBall));
         addParallel(new IntakeBall());
-        addSequential(new DriveToPosition(-24));
+        addSequential(new DriveToPosition(-24, 1));
     }
 }

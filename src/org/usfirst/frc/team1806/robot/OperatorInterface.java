@@ -23,6 +23,11 @@ import org.usfirst.frc.team1806.robot.RobotStates.IntakePosition;
 import org.usfirst.frc.team1806.robot.RobotStates.IntakeRollerState;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterCocked;
+import org.usfirst.frc.team1806.robot.commands.ResetNavx;
+import org.usfirst.frc.team1806.robot.commands.autonomous.DriveOverAndTurn;
+import org.usfirst.frc.team1806.robot.commands.autonomous.DriveToPosition;
+import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
+import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAbsoluteAngle;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
@@ -65,6 +70,7 @@ public class OperatorInterface {
 	// TODO remove this
 	Joystick j;
 	JoystickButton a;
+	JoystickButton b;
 
 	public OperatorInterface() {
 
@@ -84,7 +90,10 @@ public class OperatorInterface {
 		// TODO remove this
 		j = new Joystick(0);
 		a = new JoystickButton(j, 1);
-		a.whenPressed(new TurnToAngle(90));
+		//a.whenPressed(new DriveOverAndTurn());
+		a.whenPressed(new DriveUntilFlat(-.6));
+		b = new JoystickButton(j, 2);
+		b.whenPressed(new ResetNavx());
 
 	}
 
@@ -127,6 +136,7 @@ public class OperatorInterface {
 
 		if (chevalDeFunLatch.update(oPOVUp)) {
 			m_commands.armDefenseCommandTracker = ArmDefenseCommand.CHEVALDEFUN;
+			System.out.println("chevaldefun");
 		} else if (elevatorLowBarModeLatch.update(oPOVDown)) {
 			m_commands.armDefenseCommandTracker = ArmDefenseCommand.LOWBAR;
 		} else {
@@ -238,6 +248,13 @@ public class OperatorInterface {
 					&& Robot.states.intakeRollerStateTracker != IntakeRollerState.STOPPED) {
 				Robot.intakeSS.stopIntaking();
 				Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
+			}
+		}
+		
+		//TODO clean this up
+		if(m_commands.intakeCommandTracker == RunIntakeCommand.STOP && Robot.states.intakeRollerStateTracker == IntakeRollerState.STOPPED){
+			if(Math.abs(orsY) > .2){
+				Robot.intakeSS.runAtSpeed(orsY);
 			}
 		}
 

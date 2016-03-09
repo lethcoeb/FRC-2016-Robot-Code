@@ -1,7 +1,9 @@
 package org.usfirst.frc.team1806.robot.subsystems;
 
 import org.usfirst.frc.team1806.robot.Constants;
+import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotMap;
+import org.usfirst.frc.team1806.robot.RobotStates.IntakeRollerState;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -26,18 +28,28 @@ public class IntakeSubsystem extends Subsystem {
 
 	public void intakeBall() {
 		roller.set(kIntakeRollerSpeed);
+		Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
 	}
 
 	public void outtakeBall() {
 		roller.set(kOuttakeRollerSpeed);
+		Robot.states.intakeRollerStateTracker = IntakeRollerState.OUTTAKING;
 	}
 	
 	public void runAtSpeed(double speed){
 		roller.set(speed);
+		if(speed > 0){
+			Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
+		}else if(speed < 0){
+			Robot.states.intakeRollerStateTracker = IntakeRollerState.OUTTAKING;
+		}else{
+			Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
+		}
 	}
 
 	public void stopIntaking() {
 		roller.set(0);
+		Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
 	}
 
 	public void deployIntake() {

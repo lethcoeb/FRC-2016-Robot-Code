@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj.command.Command;
 /**
  *
  */
-public class TurnToAngle extends Command {
+public class TurnToAbsoluteAngle extends Command {
 
 	boolean finished;
 	double targetAngle;
@@ -17,12 +17,12 @@ public class TurnToAngle extends Command {
 	double loops = 0;
 	double kLoopsUntilCheck = Constants.loopsToCheckSensorDisconnect;
 	
-    public TurnToAngle(double target) {
+    public TurnToAbsoluteAngle(double target) {
         requires(Robot.drivetrainSS);
         targetAngle = target;
     }
     
-    public TurnToAngle(double target, int accuracy){
+    public TurnToAbsoluteAngle(double target, int accuracy){
     	requires(Robot.drivetrainSS);
     	targetAngle = target;
     	//this constructor should be used if you want to turn without all 3 pid loop stages, as in you want less accuracy faster

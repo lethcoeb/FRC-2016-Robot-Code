@@ -40,13 +40,13 @@ public class OneBallNoSteal extends CommandGroup {
 			// starting right in front of defense
 			addParallel(new LowerIntake());
 			addSequential(new MoveToGrabPosition());
-			addSequential(new DriveToPosition(Constants.overDefense));
+			addSequential(new DriveToPosition(Constants.overDefense, 1));
 		} else {
 			// you're waiting
 			addParallel(new LowerIntake());
 			addParallel(new MoveToGrabPosition());
 			addSequential(new Wait(Constants.lowBarToShotDelaySeconds));
-			addSequential(new DriveToPosition(Constants.overDefensePlusDelay));
+			addSequential(new DriveToPosition(Constants.overDefensePlusDelay, 1));
 		}
 
 		//You have driven past the defense
@@ -54,7 +54,7 @@ public class OneBallNoSteal extends CommandGroup {
 
 		if (startingDefense == 1) {
 			//defense 1, low bar
-			addSequential(new DriveToPosition(Constants.lowBarToAngledShot));
+			addSequential(new DriveToPosition(Constants.lowBarToAngledShot, 1));
 			addParallel(new MoveToShootingHeight());
 			addSequential(new TurnToAngle(Constants.lowBarAngleToGoal));
 			addSequential(new TurnToVisionAngle());
@@ -63,7 +63,7 @@ public class OneBallNoSteal extends CommandGroup {
 		}else if(startingDefense == 2){
 			//defense 2
 			addSequential(new TurnToAngle(90));
-			addSequential(new DriveToPosition(Constants.defense2toDefense4));
+			addSequential(new DriveToPosition(Constants.defense2toDefense4, 1));
 			addParallel(new MoveToShootingHeight());
 			addSequential(new TurnToAngle(0));
 			addSequential(new TurnToVisionAngle());
@@ -87,7 +87,7 @@ public class OneBallNoSteal extends CommandGroup {
 		}else{
 			//defense 5
 			addSequential(new TurnToAngle(-90));
-			addSequential(new DriveToPosition(Constants.defense2toDefense4));
+			addSequential(new DriveToPosition(Constants.defense2toDefense4, 1));
 			addParallel(new MoveToShootingHeight());
 			addSequential(new TurnToAngle(0));
 			addSequential(new TurnToVisionAngle());

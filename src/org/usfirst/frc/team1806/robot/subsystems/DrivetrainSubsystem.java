@@ -39,7 +39,8 @@ public class DrivetrainSubsystem extends Subsystem {
     
     double lastPower, currPower, lastTurnPower, currTurnPower = 0;
     double PIDTolerance = 30;
-    double MaxRotationPID = Constants.drivetrainMaxRotationPIDStage3;
+    double MaxRotationPID = Constants.drivetrainMaxRotationPIDStage1;
+    double maxSpeed = 1;
     
     public DrivetrainSubsystem(){
     	right1 = new Talon(RobotMap.rightMotor1);
@@ -53,8 +54,12 @@ public class DrivetrainSubsystem extends Subsystem {
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);
+    	rightEncoder.setReverseDirection(true);
+    	leftEncoder.setReverseDirection(true);
     	rightEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
     	leftEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
+    	
+    	
     	
     	navx = new AHRS(Port.kMXP);
     	
@@ -67,7 +72,8 @@ public class DrivetrainSubsystem extends Subsystem {
 			
 			@Override
 			public double pidGet() {
-				return getAverageEncoderDistance();
+				//FIXME use two encoders
+				return getRightEncoderDistance();
 			}
 			
 			@Override
@@ -80,7 +86,10 @@ public class DrivetrainSubsystem extends Subsystem {
 			
 			@Override
 			public void pidWrite(double output) {
-				//TODO: Check if this is right
+				
+				if(Math.abs(output) > maxSpeed){
+					output = maxSpeed * Math.signum(output);
+				}
 				execute(output, getYaw() * .1);
 			}
 		};
@@ -150,12 +159,12 @@ public class DrivetrainSubsystem extends Subsystem {
 		turnPC.setContinuous(true);
 		turnPC.setInputRange(-180, 180);
 		turnPC.setOutputRange(-1, 1);
-		turnPC.setAbsoluteTolerance(Constants.drivetrainTurnPID3Tolerance);
+		turnPC.setAbsoluteTolerance(Constants.drivetrainTurnPID1Tolerance);
 		
 		turnAbsolutePC.setContinuous(true);
 		turnAbsolutePC.setInputRange(-180, 180);
 		turnAbsolutePC.setOutputRange(-1, 1);
-		turnAbsolutePC.setAbsoluteTolerance(Constants.drivetrainTurnPID3Tolerance);
+		turnAbsolutePC.setAbsoluteTolerance(Constants.drivetrainTurnPID1Tolerance);
 		
     }
     
@@ -218,7 +227,7 @@ public class DrivetrainSubsystem extends Subsystem {
     }
     
     public double getRightEncoderDistance(){
-    	return rightEncoder.getDistance();
+    	return -rightEncoder.getDistance();
     }
     
     public double getLeftEncoderDistance(){
@@ -229,14 +238,34 @@ public class DrivetrainSubsystem extends Subsystem {
     	return (rightEncoder.getDistance() + leftEncoder.getDistance())/2;
     }
     
+    public void drivetrainDrivePIDSetMaxSpeed(double speed){
+    	maxSpeed = speed;
+    }
+    
+    public void drivetrainDrivePIDResetMaxSpeed(){
+    	maxSpeed = 1;
+    }
+    
+    public void resetEncoders(){
+    	leftEncoder.reset();
+    	rightEncoder.reset();
+    }
     //NAVX
     
     public void resetYaw(){
     	navx.zeroYaw();
     }
     
+    public void resetNavx(){
+    	navx.reset();
+    }
+    
     public boolean isNavxConnected(){
     	return navx.isConnected();
+    }
+    
+    public boolean isNavxFlat(){
+    	return navx.getRoll() < Constants.navxMinPitchToBeFlat;
     }
     
     public double getTrueAngle(){
@@ -245,6 +274,14 @@ public class DrivetrainSubsystem extends Subsystem {
     
     public double getYaw(){
     	return navx.getYaw();
+    }
+    
+    public double getPitch(){
+    	return navx.getPitch();
+    }
+    
+    public double getRoll(){
+    	return navx.getRoll();
     }
     
     public double getRotationalSpeed(){
@@ -349,7 +386,23 @@ public class DrivetrainSubsystem extends Subsystem {
     }
     
     public boolean drivetrainTurnAbsolutePIDisOnTarget(){
-    	return turnAbsolutePC.onTarget();
+    	return Math.abs(turnAbsolutePC.getError()) < PIDTolerance && Math.abs(getRotationalSpeed()) < MaxRotationPID;
+    }
+    
+    public void drivetrainTurnAbsolutePIDchangePID(double p, double i, double d){
+    	turnAbsolutePC.setPID(p, i, d);
+    }
+    
+    public void drivetrainTurnAbsolutePIDchangeMaxRotation(double maxRot){
+    	MaxRotationPID = maxRot;
+    }
+    
+    public void drivetrainTurnAbsolutePIDReset(){
+    	turnAbsolutePC.reset();
+    }
+    
+    public void drivetrainTurnAbsolutePIDSetTolerance(double tolerance){
+    	PIDTolerance = tolerance;
     }
 
     public void initDefaultCommand() {

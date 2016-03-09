@@ -35,6 +35,10 @@ public class LineUpShot extends Command {
     	withinRange = false;
     	hasRumbled = false;
     	
+    	if(Robot.jr.isGoalFound()){
+    		targetAngle = Robot.jr.getAngleToGoal();
+    	}
+    	
     	Robot.states.driveControlModeTracker = DriveControlMode.AUTO;
     	Robot.drivetrainSS.drivetrainTurnPIDReset();
     	Robot.drivetrainSS.resetYaw();
@@ -42,8 +46,8 @@ public class LineUpShot extends Command {
     	if(Math.abs(targetAngle) > 15){
     		//use big ol' pid
     		Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn1P, Constants.drivetrainTurn1I, Constants.drivetrainTurn1D);
-    		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID3Tolerance);
-    		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage1);
+    		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID1Tolerance);
+    		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage3);
     		stage = 3;
     	}else if(Math.abs(targetAngle) > 5){
     		Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn2P, Constants.drivetrainTurn2I, Constants.drivetrainTurn2D);
@@ -53,8 +57,8 @@ public class LineUpShot extends Command {
     	}else{
     		//you hella close bruh use dat small loop
     		Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn3P, Constants.drivetrainTurn3I, Constants.drivetrainTurn3D);
-    		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID1Tolerance);
-    		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage3);
+    		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID3Tolerance);
+    		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage1);
     		stage = 1;
     	}
     	
@@ -76,7 +80,7 @@ public class LineUpShot extends Command {
     			goalFound = true;
     			Robot.states.driveControlModeTracker = DriveControlMode.AUTO;
     			System.out.println(Robot.jr.getAngleToGoal());
-    			Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
+    			//Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
         		Robot.drivetrainSS.drivetrainTurnPIDEnable();
         		
     		}
@@ -90,32 +94,47 @@ public class LineUpShot extends Command {
         			//navx is dead bruh kill it
         			Robot.drivetrainSS.drivetrainTurnPIDDisable();
         			finished = true;
+        			System.out.println("Kill early because navx die");
         		}
         	}
         	if(Robot.drivetrainSS.drivetrainTurnPIDisOnTarget()){
-        		System.out.println("PID on target");
-        		Robot.drivetrainSS.drivetrainTurnPIDDisable();
-        		Robot.drivetrainSS.drivetrainTurnPIDReset();
+        		//System.out.println("PID loop on target");
+        		
         		if(stage == 3){
         			//step down to stage 2
         			stage = 2;
+        			Robot.drivetrainSS.drivetrainTurnPIDDisable();
+            		Robot.drivetrainSS.drivetrainTurnPIDReset();
         			Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn2P, Constants.drivetrainTurn2I, Constants.drivetrainTurn2D);
         			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID2Tolerance);
         			Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage2);
+        			/*if(Robot.jr.isGoalFound()){
+        				Robot.drivetrainSS.drivetrainTurnAbsolutePIDSetSetpoint(Robot.jr.getAngleToGoal());
+        			}*/
         			Robot.drivetrainSS.drivetrainTurnPIDEnable();
+        			
         			
         			System.out.println("moving to stage 2");
         		}else if(stage == 2){
         			//step down to stage 1
         			stage = 1;
+        			Robot.drivetrainSS.drivetrainTurnPIDDisable();
+            		
         			Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn3P, Constants.drivetrainTurn3I, Constants.drivetrainTurn3D);
-        			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID1Tolerance);
-        			Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage1);
+        			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID3Tolerance);
+        			Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage3);
+        			if(Robot.jr.isGoalFound()){
+        				Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
+        			}
+        			Robot.drivetrainSS.drivetrainTurnPIDReset();
         			Robot.drivetrainSS.drivetrainTurnPIDEnable();
         			
         			System.out.println("moving to stage 1");
-        		}else if(stage == 1 && Robot.jr.isAngleAcceptable()){
+        		}else if(stage == 1/* && Robot.jr.isAngleAcceptable()*/){
         			//should be done.
+        			
+        			Robot.drivetrainSS.drivetrainTurnPIDDisable();
+            		Robot.drivetrainSS.drivetrainTurnPIDReset();
         			withinRange = true;
         			System.out.println("stage one done, ON TARGET");
         		}
