@@ -297,7 +297,7 @@ public class OperatorInterface {
 			}
 		} else if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.MANUAL) {
 			if (orsY > kJoystickDeadzone) {
-				Robot.elevatorSS.elevatorMoveAtSpeed(orsY);
+				Robot.elevatorSS.elevatorMoveAtSpeed(olsY);
 			} else {
 				Robot.elevatorSS.elevatorMoveAtSpeed(0);
 			}

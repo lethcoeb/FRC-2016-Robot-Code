@@ -85,7 +85,7 @@ public class CollectBall extends Command {
 			}
 		}
 
-		else if (clamping && t.get() > .25) {
+		else if (clamping && t.get() > .2) {
 			t.stop();
 			finished = true;
 		}
