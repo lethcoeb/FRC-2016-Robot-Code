@@ -36,6 +36,7 @@ public class BackwardsDrivingAuto extends CommandGroup {
         	}
     		addSequential(new TurnToAngle(Constants.autoBackwardsNearGoalAngles[lane], 3));
     		addSequential(new LineUpShot());
+    		addSequential(new DoNothing());
     	}   	
 
     }

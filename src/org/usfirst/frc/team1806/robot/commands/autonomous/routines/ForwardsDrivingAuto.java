@@ -37,6 +37,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
         	}
     		addSequential(new TurnToAngle(Constants.autoForwardsNearGoalAngles[lane], 3));
     		addSequential(new LineUpShot());
+    		addSequential(new DoNothing());
     	}
         // Add Commands here:
         // e.g. addSequential(new Command1());
