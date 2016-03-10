@@ -15,6 +15,11 @@ public class Constants {
 	public static final double drivetrainDriveI = 0;
 	public static final double drivetrainDriveD = 0;
 	public static final double drivetrainDrivePIDTolerance = 1; // inches
+	
+	//jones wants to do only i
+	public static final double drivetrainTurnP = .07;
+	public static final double drivetrainTurnI = 0.002;
+	public static final double drivetrainTurnD = 0.1;
 
 	//Stage 1 is for big turns (30+ deg), stage 2 is for 30 to 5 deg, stage 3 is for <5 degree turns
 	//90 degree values
@@ -27,10 +32,7 @@ public class Constants {
 	public static final double drivetrainTurn2I = 0.001;
 	public static final double drivetrainTurn2D = 0.0045;
 	
-	//jones wants to do only i
-	/*public static final double drivetrainTurnP = .07;
-	public static final double drivetrainTurnI = 0.002;
-	public static final double drivetrainTurnD = 0.1;*/
+
 	
 	//tiny lil values
 	public static final double drivetrainTurn3P = .005;

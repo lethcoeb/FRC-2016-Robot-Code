@@ -58,6 +58,9 @@ public class Robot extends IterativeRobot {
 	public static AutonomousReader ar;
 	public static SmartDashboardUpdater sdu;
 	public static RioVisionThread rvt;
+	
+	SendableChooser autonomous;
+	SendableChooser armUpOrDown;
 
 	public static double getPDPResistance(int channel) {
 		return pdp.getVoltage() / pdp.getCurrent(channel);
@@ -94,6 +97,10 @@ public class Robot extends IterativeRobot {
 		// rvt.start();
 
 		compressor.setClosedLoopControl(false);
+		
+		
+		
+		
 
 	}
 
@@ -126,6 +133,8 @@ public class Robot extends IterativeRobot {
 	 * to the switch structure below with additional strings & commands.
 	 */
 	public void autonomousInit() {
+		
+		Robot.drivetrainSS.shiftLow();
 
 		/*String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
 		switch (autoSelected) {
