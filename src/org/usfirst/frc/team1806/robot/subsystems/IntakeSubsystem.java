@@ -50,6 +50,7 @@ public class IntakeSubsystem extends Subsystem {
 	public void stopIntaking() {
 		roller.set(0);
 		Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
+		System.out.println("Stopping intake");
 	}
 
 	public void deployIntake() {

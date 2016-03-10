@@ -5,6 +5,7 @@ import org.usfirst.frc.team1806.robot.OperatorInterface;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
+import org.usfirst.frc.team1806.robot.commands.RumbleControllerConstant;
 
 import edu.wpi.first.wpilibj.command.Command;
 
@@ -43,13 +44,13 @@ public class LineUpShot extends Command {
     	Robot.drivetrainSS.drivetrainTurnPIDReset();
     	Robot.drivetrainSS.resetYaw();
     	
-    	if(Math.abs(targetAngle) > 15){
+    	if(Math.abs(targetAngle) > Constants.drivetrainTurnPID1Tolerance){
     		//use big ol' pid
     		Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn1P, Constants.drivetrainTurn1I, Constants.drivetrainTurn1D);
     		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID1Tolerance);
     		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage3);
     		stage = 3;
-    	}else if(Math.abs(targetAngle) > 5){
+    	}else if(Math.abs(targetAngle) > Constants.drivetrainTurnPID2Tolerance){
     		Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn2P, Constants.drivetrainTurn2I, Constants.drivetrainTurn2D);
     		Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID2Tolerance);
     		Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage2);
@@ -115,7 +116,7 @@ public class LineUpShot extends Command {
         			
         			
         			System.out.println("moving to stage 2");
-        		}else if(stage == 2){
+        		}else if(stage == 2 && Robot.jr.isAngleAcceptable()){
         			//step down to stage 1
         			stage = 1;
         			Robot.drivetrainSS.drivetrainTurnPIDDisable();
@@ -123,21 +124,28 @@ public class LineUpShot extends Command {
         			Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn3P, Constants.drivetrainTurn3I, Constants.drivetrainTurn3D);
         			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID3Tolerance);
         			Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage3);
-        			if(Robot.jr.isGoalFound()){
+        			/*if(Robot.jr.isGoalFound()){
         				Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
-        			}
+        				System.out.println(Robot.jr.getAngleToGoal());
+        			}*/
         			Robot.drivetrainSS.drivetrainTurnPIDReset();
         			Robot.drivetrainSS.drivetrainTurnPIDEnable();
         			
         			System.out.println("moving to stage 1");
-        		}else if(stage == 1/* && Robot.jr.isAngleAcceptable()*/){
+        			
+        			Robot.drivetrainSS.drivetrainTurnPIDDisable();
+            		Robot.drivetrainSS.drivetrainTurnPIDReset();
+        			withinRange = true;
+        			System.out.println("stage one done, ON TARGET");
+        			
+        		}/*else if(stage == 1 && Robot.jr.isAngleAcceptable()){
         			//should be done.
         			
         			Robot.drivetrainSS.drivetrainTurnPIDDisable();
             		Robot.drivetrainSS.drivetrainTurnPIDReset();
         			withinRange = true;
         			System.out.println("stage one done, ON TARGET");
-        		}
+        		}*/
         	}
     		//else if(Robot.drivetrainSS.drivetrainTurnAbsolutePIDisOnTarget()){
     			/* If for some reason our original angle was wrong, being that we aren't in an

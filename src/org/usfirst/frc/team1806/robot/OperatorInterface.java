@@ -91,7 +91,7 @@ public class OperatorInterface {
 		j = new Joystick(0);
 		a = new JoystickButton(j, 1);
 		//a.whenPressed(new DriveOverAndTurn());
-		a.whenPressed(new DriveUntilFlat(-.6));
+		//a.whenPressed(new LineUpShot2());
 		b = new JoystickButton(j, 2);
 		b.whenPressed(new ResetNavx());
 
@@ -136,7 +136,7 @@ public class OperatorInterface {
 
 		if (chevalDeFunLatch.update(oPOVUp)) {
 			m_commands.armDefenseCommandTracker = ArmDefenseCommand.CHEVALDEFUN;
-			System.out.println("chevaldefun");
+			//System.out.println("chevaldefun");
 		} else if (elevatorLowBarModeLatch.update(oPOVDown)) {
 			m_commands.armDefenseCommandTracker = ArmDefenseCommand.LOWBAR;
 		} else {
@@ -246,8 +246,8 @@ public class OperatorInterface {
 				}
 			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.STOP
 					&& Robot.states.intakeRollerStateTracker != IntakeRollerState.STOPPED) {
-				Robot.intakeSS.stopIntaking();
-				Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
+				//Robot.intakeSS.stopIntaking();
+				//Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
 			}
 		}
 		
@@ -259,16 +259,19 @@ public class OperatorInterface {
 		}
 
 		if (c.armDefenseCommandTracker == ArmDefenseCommand.NONE) {
-
+			
 		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.CHEVALDEFUN) {
+			System.out.println("Cheval de Fun Commencing!!!!!11111one");
+
 			if (c.intakeCommandTracker == RunIntakeCommand.STOP
-					&& Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorHoldingHeight) {
+					&& c.elevatorPositionRequestTracker == ElevatorPositionRequest.NONE) {
+				
 				new TempMoveToChevalDeFunHeight().start();
 				System.out.println("moving to temp chevaldefun");
 			}
 		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.LOWBAR) {
 			if (c.intakeCommandTracker == RunIntakeCommand.STOP
-					&& Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorHoldingHeight) {
+					&&c.elevatorPositionRequestTracker == ElevatorPositionRequest.NONE) {
 				new TempMoveToGrabHeight().start();
 				System.out.println("moving to temp grab height");
 			}
@@ -290,7 +293,7 @@ public class OperatorInterface {
 				new MoveToHoldingPID().start();
 			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.OTHER) {
 				if (Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorShootingHeight) {
-					new MoveToGrabPosition().start();
+					new MoveToHoldingPID().start();
 				} else {
 					new MoveToShootingHeight().start();
 				}

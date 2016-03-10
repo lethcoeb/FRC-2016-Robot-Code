@@ -54,19 +54,20 @@ public class CollectBall extends Command {
 			Robot.intakeSS.intakeBall();
 			System.out.println("intake rolling");
 			intaking = true;
-		} else if (Robot.shooterSS.hasBallSensor() && intaking && !ballSensed) {
+		} else if (Robot.shooterSS.hasBallSensor() && intaking && !ballSensed && !clamping) {
 			// you successfully intaked a ball and now you need to wait a bit
 			// for it to center.
 			new RumbleControllerConstant(Robot.oi.dc).start();
 			ballSensed = true;
 			System.out.println("sensed ball");
-		} else if (ballSensed && !Robot.shooterSS.hasBallSensor()) {
+		} else if (ballSensed && !Robot.shooterSS.hasBallSensor() && !clamping) {
 			// ball failed to be seen by sensor
 			Robot.oi.stopRumbles();
 			ballSensed = false;
 		}
 		
 		if(intaking && Robot.oi.oc.getButtonStart()){
+			ballSensed = true;
 			clamping = true;
 			Robot.shooterSS.pinchBall();
 			t.reset();
@@ -74,7 +75,6 @@ public class CollectBall extends Command {
 		}
 
 		if (!Robot.oi.dc.getButtonLB() && !clamping) {
-			// new RumbleController(Robot.oi.dc).start();
 			if (ballSensed) {
 				clamping = true;
 				Robot.shooterSS.pinchBall();
@@ -85,7 +85,7 @@ public class CollectBall extends Command {
 			}
 		}
 
-		else if (clamping && t.get() > .2) {
+		else if (clamping && t.get() > .3) {
 			t.stop();
 			finished = true;
 		}
@@ -100,6 +100,7 @@ public class CollectBall extends Command {
 	protected void end() {
 		Robot.oi.stopRumbles();
 		Robot.states.hasBall = ballSensed;
+		System.out.println(ballSensed);
 		new MoveToHoldingFromLow(ballSensed).start();
 	}
 

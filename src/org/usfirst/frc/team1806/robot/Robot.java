@@ -180,6 +180,7 @@ public class Robot extends IterativeRobot {
 		// if (autonomousCommand != null)
 		// autonomousCommand.cancel();
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
+		Robot.drivetrainSS.shiftLow();
 	}
 
 	/**
