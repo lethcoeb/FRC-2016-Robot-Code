@@ -34,7 +34,7 @@ public class BackwardsDrivingAuto extends CommandGroup {
         	if(lane == 1 || !leaveArmUp){
         		addSequential(new MoveToShootingHeight());
         	}
-    		addSequential(new TurnToAngle(Constants.autoBackwardsNearGoalAngles[lane], 3));
+    		addSequential(new TurnToAngle(Constants.autoBackwardsNearGoalAngles[lane-1], 3));
     		addSequential(new LineUpShot());
     		addSequential(new DoNothing());
     	}   	

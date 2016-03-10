@@ -35,7 +35,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
         	if(lane == 1 || !leaveArmUp){
         		addSequential(new MoveToShootingHeight());
         	}
-    		addSequential(new TurnToAngle(Constants.autoForwardsNearGoalAngles[lane], 3));
+    		addSequential(new TurnToAngle(Constants.autoForwardsNearGoalAngles[lane-1], 3));
     		addSequential(new LineUpShot());
     		addSequential(new DoNothing());
     	}
