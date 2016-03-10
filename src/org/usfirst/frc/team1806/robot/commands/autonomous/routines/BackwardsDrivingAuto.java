@@ -8,6 +8,7 @@ import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
+import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
 import edu.wpi.first.wpilibj.command.CommandGroup;
 
@@ -26,7 +27,7 @@ public class BackwardsDrivingAuto extends CommandGroup {
     		addParallel(new LowerIntake());
     		addSequential(new ResetElevator());
     	}
-    	addSequential(new DriveUntilFlat(-.6, 10));
+    	addSequential(new DriveUntilFlat(-.6, 6));
     	if(!shouldTakeShot){
     		addSequential(new DoNothing());
     	}
@@ -36,6 +37,7 @@ public class BackwardsDrivingAuto extends CommandGroup {
         	}
     		addSequential(new TurnToAngle(Constants.autoBackwardsNearGoalAngles[lane], 3));
     		addSequential(new LineUpShot());
+    		addSequential(new ShootThenCock());
     		addSequential(new DoNothing());
     	}   	
 

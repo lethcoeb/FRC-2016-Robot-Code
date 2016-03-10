@@ -90,7 +90,8 @@ public class Robot extends IterativeRobot {
 		states = new RobotStates();
 
 		if (elevatorSS.isBottomLimitHit()) {
-			states.shooterArmPositionTracker = ShooterArmPosition.DOWN; // to
+			Robot.elevatorSS.resetElevatorEncoder();
+			states.shooterArmPositionTracker = ShooterArmPosition.DOWN;// to
 																		// speed
 																		// up
 																		// testing
@@ -110,8 +111,8 @@ public class Robot extends IterativeRobot {
 		autonomous.addObject("Yes", "Y");
 		SmartDashboard.putData("Run Autonomous?", autonomous);
 		
-		autoArmUpOrDown.addDefault("No", true);
-		autoArmUpOrDown.addObject("Yes", false);
+		autoArmUpOrDown.addDefault("ArmUp", true);
+		autoArmUpOrDown.addObject("ArmDown", false);
 		SmartDashboard.putData("Reset Claw and put in hold position over defense?", autoArmUpOrDown);
 		
 		autoForwardOrBackward.addDefault("Backward", "B");
@@ -133,7 +134,7 @@ public class Robot extends IterativeRobot {
 		// rvt = new RioVisionThread();
 		// rvt.start();
 
-		compressor.setClosedLoopControl(false);
+		//compressor.setClosedLoopControl(false);
 		
 		
 		

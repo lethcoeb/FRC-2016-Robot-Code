@@ -9,6 +9,7 @@ import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
+import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
 import edu.wpi.first.wpilibj.command.CommandGroup;
 
@@ -26,7 +27,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
     		//if going low bar, get arm and intake ready for low bar
     		addParallel(new MoveToGrabPosition());
     	}
-    	addSequential(new DriveUntilFlat(.6, 10));
+    	addSequential(new DriveUntilFlat(.6, 6));
 
     	if(!shouldTakeShot){
     		addSequential(new DoNothing());
@@ -37,6 +38,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
         	}
     		addSequential(new TurnToAngle(Constants.autoForwardsNearGoalAngles[lane], 3));
     		addSequential(new LineUpShot());
+    		addSequential(new ShootThenCock());
     		addSequential(new DoNothing());
     	}
         // Add Commands here:
