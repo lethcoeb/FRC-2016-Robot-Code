@@ -1,6 +1,11 @@
 package org.usfirst.frc.team1806.robot;
 
 public class Constants {
+	
+	//lit new auto stuff
+	public static final double[] autoForwardsNearGoalAngles = {30, 15, 5, -3, -10};
+	public static final double[] autoBackwardsNearGoalAngles = {-150, -165, -175, 177, 170};
+	
 
 	
 
@@ -51,6 +56,7 @@ public class Constants {
 	
 	public static final double navxMinPitchToBeFlat = 4;
 	public static final double timeUntilFlat = .75;
+	public static final double timeUntilNotFlat = .5;
 
 	public static final double maxPowerDiffential = .05;
 	public static final double maxTurnPowerDifferential = .2;

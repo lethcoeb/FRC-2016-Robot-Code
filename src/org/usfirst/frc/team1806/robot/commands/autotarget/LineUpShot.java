@@ -4,7 +4,9 @@ import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.OperatorInterface;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
+import org.usfirst.frc.team1806.robot.RobotStates.Mode;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
+import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
 import edu.wpi.first.wpilibj.command.Command;
 
@@ -70,12 +72,14 @@ public class LineUpShot extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return (Robot.oi.dc.getRightTrigger() < .4);
+        return (Robot.oi.dc.getRightTrigger() < .4 && Robot.states.mode == Mode.AUTONOMOUS) || (hasRumbled && Robot.states.mode == Mode.AUTONOMOUS);
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	
+    	if(Robot.states.mode == Mode.AUTONOMOUS){
+    		new ShootThenCock().start();
+    	}
     	System.out.println("lineupshot finished");
     	
     	Robot.drivetrainSS.drivetrainTurnPIDDisable();

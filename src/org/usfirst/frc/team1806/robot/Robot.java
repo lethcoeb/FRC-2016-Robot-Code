@@ -19,9 +19,15 @@ import org.usfirst.frc.team1806.robot.subsystems.ShooterSubsystem;
 import java.util.ArrayList;
 
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
+import org.usfirst.frc.team1806.robot.RobotStates.Mode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
+import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.FourteenInchMode;
+import org.usfirst.frc.team1806.robot.commands.autonomous.routines.BackwardsDrivingAuto;
+import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoNothingAuto;
+import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoSomething;
+import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ForwardsDrivingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallNoSteal;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallSteal;
 import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
@@ -50,6 +56,7 @@ public class Robot extends IterativeRobot {
 
 	public static OperatorInterface oi;
 	public static RobotStates states;
+	
 
 	Command autonomousCommand;
 	SendableChooser xBall, robotStartingPos, waitPosition;
@@ -59,15 +66,19 @@ public class Robot extends IterativeRobot {
 	public static SmartDashboardUpdater sdu;
 	public static RioVisionThread rvt;
 	
-	SendableChooser autonomous;
-	SendableChooser armUpOrDown;
+	public static SendableChooser autonomous;
+	public static SendableChooser autoArmUpOrDown;
+	public static SendableChooser autoForwardOrBackward;
+	public static SendableChooser autoShoot;
+	public static SendableChooser autoLane;
 
 	public static double getPDPResistance(int channel) {
 		return pdp.getVoltage() / pdp.getCurrent(channel);
 	}
 
 	public void robotInit() {
-
+		//init subsystems
+		
 		drivetrainSS = new DrivetrainSubsystem();
 		elevatorSS = new ElevatorSubsystem();
 		intakeSS = new IntakeSubsystem();
@@ -84,14 +95,40 @@ public class Robot extends IterativeRobot {
 																		// up
 																		// testing
 		}
-
+		//jetson
 		jr = new JetsonReceiver();
 		jr.start();
-
+		//autoreader for future events
 		ar = new AutonomousReader();
 		ar.start();
+		
+		//Temp QaDAS. Make sure all object in same chooser are of same type.
+
 
 		sdu = new SmartDashboardUpdater();
+		autonomous.addDefault("No","N");
+		autonomous.addObject("Yes", "Y");
+		SmartDashboard.putData("Run Autonomous?", autonomous);
+		
+		autoArmUpOrDown.addDefault("No", true);
+		autoArmUpOrDown.addObject("Yes", false);
+		SmartDashboard.putData("Reset Claw and put in hold position over defense?", autoArmUpOrDown);
+		
+		autoForwardOrBackward.addDefault("Backward", "B");
+		autoForwardOrBackward.addObject("Forward", "F");
+		SmartDashboard.putData("Auto Direction", autoForwardOrBackward);
+		
+		
+		autoShoot.addDefault("No", false);
+		autoShoot.addObject("Yes", true);
+		SmartDashboard.putData("Shoot?", autoShoot);
+		
+		autoLane.addDefault("Low Bar", 1);
+		autoLane.addObject("2", 2);
+		autoLane.addObject("3", 3);
+		autoLane.addObject("4", 4);
+		autoLane.addObject("5", 5);
+		SmartDashboard.putData("Defense Position? (Selecting Low bar will override any arm settings)",autoLane);
 
 		// rvt = new RioVisionThread();
 		// rvt.start();
@@ -133,9 +170,19 @@ public class Robot extends IterativeRobot {
 	 * to the switch structure below with additional strings & commands.
 	 */
 	public void autonomousInit() {
-		
+		Robot.states.mode = Mode.AUTONOMOUS;
 		Robot.drivetrainSS.shiftLow();
-
+		if(autonomous.getSelected() == "N"){
+			autonomousCommand = new DoNothingAuto();
+		}
+		else{
+			if(autoForwardOrBackward.getSelected() == "F"){
+				autonomousCommand = new ForwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(), (boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
+			}
+			else{
+				autonomousCommand = new BackwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(), (boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
+			}
+		}
 		/*String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
 		switch (autoSelected) {
 		case "My Auto":
@@ -146,7 +193,7 @@ public class Robot extends IterativeRobot {
 			autonomousCommand = new ExampleCommand();
 			break;
 		}*/
-		
+		/* 
 		autonomousCommand = new FourteenInchMode();
 
 		ar.stopThread();
@@ -176,6 +223,7 @@ public class Robot extends IterativeRobot {
 	/**
 	 * This function is called periodically during autonomous
 	 */
+	}
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
 		sdu.push();
@@ -188,6 +236,7 @@ public class Robot extends IterativeRobot {
 		// this line or comment it out.
 		// if (autonomousCommand != null)
 		// autonomousCommand.cancel();
+		Robot.states.mode = Mode.TELEOP;
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
 		Robot.drivetrainSS.shiftLow();
 	}

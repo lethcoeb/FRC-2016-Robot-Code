@@ -3,6 +3,7 @@ package org.usfirst.frc.team1806.robot.commands.autonomous;
 import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
+import org.usfirst.frc.team1806.robot.RobotStates.Mode;
 
 import edu.wpi.first.wpilibj.command.Command;
 
@@ -103,7 +104,7 @@ public class TurnToAngle extends Command {
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
     	//LT for an override
-        return finished || Math.abs(Robot.oi.dc.getLeftTrigger()) > .5;
+        return finished || (Math.abs(Robot.oi.dc.getLeftTrigger()) > .5 && Robot.states.mode == Mode.AUTONOMOUS);
     }
 
     // Called once after isFinished returns true

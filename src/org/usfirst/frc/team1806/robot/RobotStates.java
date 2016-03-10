@@ -6,6 +6,9 @@ public class RobotStates {
 		reset();
 	}
 	
+	public enum Mode{
+		AUTONOMOUS, TELEOP
+	}
 	public enum IntakePosition{
 		DEPLOYED, RETRACTED, MOVING
 	}
@@ -54,9 +57,11 @@ public class RobotStates {
 	public ElevatorOperatorControlMode elevatorOperatorControlModeTracker;
 	public VisionTrackingState visionTrackingStateTracker;
 	public IntakeControlMode intakeControlModeTracker;
+	public Mode mode;
 	
 	
 	public void reset(){
+		mode = Mode.TELEOP;
 		intakePositionTracker = IntakePosition.RETRACTED;
 		shooterArmPositionTracker = ShooterArmPosition.UP;
 		driveControlModeTracker = DriveControlMode.DRIVER;
