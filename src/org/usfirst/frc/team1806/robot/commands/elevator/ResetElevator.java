@@ -37,30 +37,37 @@ public class ResetElevator extends Command {
     	//}else{
     		//finished = true;
     //	}
-    		Robot.intakeSS.runAtSpeed(-Constants.intakeSpeedToMatchArm);
+    		Robot.intakeSS.runAtSpeed(-Constants.intakeSpeedToMatchArm + .3);
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	/*if(Robot.elevatorSS.isBottomLimitHit()){
-    		finished = true;
+    	if(Robot.elevatorSS.isBottomLimitHit()){
+    		System.out.println("Finished resetting");
+        	Robot.elevatorSS.elevatorMoveAtSpeed(0);
+        	Robot.states.shooterArmPositionTracker = ShooterArmPosition.DOWN;
+        	Robot.elevatorSS.elevatorResetEncoder();
+        	Robot.intakeSS.stopIntaking();
+        	finished = true;
+    		//finished = true;
     	}else if(Robot.pdp.getCurrent(RobotMap.PDPelevatorSlot) >= 100){
     		//stalling, limit switch is broken
+    		System.out.println("Finished resetting");
+        	Robot.elevatorSS.elevatorMoveAtSpeed(0);
+        	Robot.states.shooterArmPositionTracker = ShooterArmPosition.DOWN;
+        	Robot.elevatorSS.elevatorResetEncoder();
+        	Robot.intakeSS.stopIntaking();
     		finished = true;
-    	}*/
+    	}
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
         //return finished;
-    	return Robot.elevatorSS.isBottomLimitHit() || Robot.pdp.getCurrent(RobotMap.PDPelevatorSlot) >= 100;
+    	return (finished) && !Robot.oi.dBack;
     }
 
     protected void end() {
-    	System.out.println("Finished resetting");
-    	Robot.elevatorSS.elevatorMoveAtSpeed(0);
-    	Robot.states.shooterArmPositionTracker = ShooterArmPosition.DOWN;
-    	Robot.elevatorSS.elevatorResetEncoder();
     	Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
     	Robot.states.elevatorOperatorControlModeTracker = ElevatorOperatorControlMode.AUTO;
     	new MoveToHoldingFromLow(Robot.states.hasBall).start();

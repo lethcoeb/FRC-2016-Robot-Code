@@ -23,14 +23,14 @@ public class DoNothing extends Command {
     protected void initialize() {
     	Robot.drivetrainSS.arcadeDrive(0, 0);
     	Robot.elevatorSS.elevatorDisable();
-    	Robot.intakeSS.retractIntake();
+    	//Robot.intakeSS.retractIntake();
     	Robot.shooterSS.pinchBall();
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
     	Robot.drivetrainSS.arcadeDrive(0, 0);
-    	Robot.elevatorSS.elevatorDisable();
+    	//Robot.elevatorSS.elevatorDisable();
     	Robot.intakeSS.runAtSpeed(0);
     	Robot.shooterSS.stopCocking();
     }

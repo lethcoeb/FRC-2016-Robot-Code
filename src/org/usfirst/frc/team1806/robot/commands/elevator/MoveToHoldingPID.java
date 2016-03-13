@@ -39,7 +39,7 @@ public class MoveToHoldingPID extends Command {
     }
 
     // Called once after isFinished returns true
-    protected void end() {
+    protected void end(){
     	Robot.elevatorSS.elevatorStopMovement();
 		Robot.states.shooterArmPositionTracker = ShooterArmPosition.HOLDING;
     }

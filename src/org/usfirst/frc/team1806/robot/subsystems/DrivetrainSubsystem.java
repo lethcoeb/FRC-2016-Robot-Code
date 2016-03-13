@@ -50,7 +50,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	left2 = new Talon(RobotMap.leftMotor2);
     	left3 = new Talon(RobotMap.leftMotor3);
     	
-    	shifter = new DoubleSolenoid(1, RobotMap.shiftLow, RobotMap.shiftHigh);
+    	shifter = new DoubleSolenoid(RobotMap.shiftLow, RobotMap.shiftHigh);
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);

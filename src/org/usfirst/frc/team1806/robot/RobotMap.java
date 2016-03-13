@@ -24,16 +24,17 @@ public class RobotMap {
     //double solenoids
     public static final int shiftLow = 0;
     public static final int shiftHigh = 1;
-    public static final int deployerExtend = 2;
-    public static final int deployerRetract = 3;
+    //this is flipped
+    public static final int deployerExtend = 3;
+    public static final int deployerRetract = 2;
     public static final int pincherPinch = 4;
     public static final int pincherRelease = 5;
     
     //single solenoids
     /*public static final int winchEngageSolenoid = 6;
     public static final int shooterReleaseSolenoid = 7;*/
-    public static final int winchEngageSolenoid = 1;
-    public static final int shooterReleaseSolenoid = 0;
+    public static final int winchEngageSolenoid = 6;
+    public static final int shooterReleaseSolenoid = 7;
     
     //SENSORS
     public static final int rightEncoderA = 2;

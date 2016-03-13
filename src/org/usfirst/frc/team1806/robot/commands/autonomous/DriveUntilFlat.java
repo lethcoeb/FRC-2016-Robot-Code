@@ -48,6 +48,13 @@ public class DriveUntilFlat extends Command {
 	protected void execute() {
 		Robot.drivetrainSS.arcadeDrive(maxSpeed, Robot.drivetrainSS.getYaw() * .1);
 
+		if (commandTimeout != null) {
+			if (timeoutTimer.get() >= commandTimeout) {
+				Robot.drivetrainSS.arcadeDrive(.1, 0);
+				finished = true;
+			}
+		}
+		
 		if(!hasHit){
 			if(!Robot.drivetrainSS.isNavxFlat()){
 				hasHit = true;
@@ -69,11 +76,7 @@ public class DriveUntilFlat extends Command {
 				flatTimer.reset();
 			}
 
-			if (commandTimeout != null) {
-				if (timeoutTimer.get() > commandTimeout) {
-					Robot.drivetrainSS.arcadeDrive(0, 0);
-				}
-			}
+			
 		}
 	}
 

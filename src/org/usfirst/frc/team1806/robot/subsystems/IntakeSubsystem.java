@@ -23,7 +23,7 @@ public class IntakeSubsystem extends Subsystem {
 
 	public IntakeSubsystem() {
 		roller = new Talon(RobotMap.intakeRoller);
-		deployer = new DoubleSolenoid(1, RobotMap.deployerExtend, RobotMap.deployerRetract);
+		deployer = new DoubleSolenoid(RobotMap.deployerExtend, RobotMap.deployerRetract);
 	}
 
 	public void intakeBall() {
@@ -50,7 +50,6 @@ public class IntakeSubsystem extends Subsystem {
 	public void stopIntaking() {
 		roller.set(0);
 		Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
-		System.out.println("Stopping intake");
 	}
 
 	public void deployIntake() {

@@ -5,6 +5,7 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
@@ -23,11 +24,14 @@ public class BackwardsDrivingAuto extends CommandGroup {
     		System.out.println("Becker pls.");
     		addSequential(new DoNothing());
     	}
+    	
+    	//always lower the intake at the start
+    	addSequential(new LowerIntake(2));
+    	
     	if(!leaveArmUp){
-    		addParallel(new LowerIntake());
-    		addSequential(new ResetElevator());
+    		addSequential(new MoveToHoldingPID());
     	}
-    	addSequential(new DriveUntilFlat(-.6, 6));
+    	addSequential(new DriveUntilFlat(-.8, 2));
     	if(!shouldTakeShot){
     		addSequential(new DoNothing());
     	}

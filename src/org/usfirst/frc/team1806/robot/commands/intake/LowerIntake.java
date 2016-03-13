@@ -15,10 +15,19 @@ public class LowerIntake extends Command {
 	double kTimeToLower = Constants.intakeTimeToLower;
 	
 	Timer timer;
+	boolean runWithTimeout;
+	double mTimeout;
 	
     public LowerIntake() {
         requires(Robot.intakeSS);
         timer = new Timer();
+        runWithTimeout = false;
+    }
+    
+    public LowerIntake(double timeout){
+    	timer = new Timer();
+    	runWithTimeout = true;
+    	mTimeout = timeout;
     }
 
     // Called just before this Command runs the first time
@@ -35,7 +44,12 @@ public class LowerIntake extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return timer.get() >= kTimeToLower;
+    	if(!runWithTimeout){
+    		return timer.get() >= kTimeToLower;
+    	}else{
+    		return timer.get() > mTimeout;
+    	}
+        
     }
 
     // Called once after isFinished returns true

@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Joystick.RumbleType;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import util.Latch;
 import util.XboxController;
@@ -57,10 +58,12 @@ public class OperatorInterface {
 
 	// d for driver ;)
 	double dlsY, drsX, dRT, dLT;
-	boolean dA, dB, dX, dY, dRB, dLB, dStart, dBack, dPOVUp, dPOVDown, dPOVLeft, dPOVRight;
-
+	boolean dA, dB, dX, dY, dRB, dLB, dStart, dPOVUp, dPOVDown, dPOVLeft, dPOVRight;
+	public boolean dBack;
+	
 	double olsY, orsY, oRT, oLT;
-	boolean oA, oB, oX, oY, oRB, oLB, oStart, oBack, oRsClick, oPOVUp, oPOVDown;
+	boolean oA, oB, oX, oY, oRB, oLB, oStart, oBack, oRsClick;
+	public boolean oPOVUp, oPOVDown;
 
 	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch,
 			chevalDeFunLatch, elevatorLowBarModeLatch;
@@ -91,14 +94,12 @@ public class OperatorInterface {
 		j = new Joystick(0);
 		a = new JoystickButton(j, 1);
 		//a.whenPressed(new DriveOverAndTurn());
-		//a.whenPressed(new LineUpShot2());
-		b = new JoystickButton(j, 2);
-		b.whenPressed(new ResetNavx());
+		a.whenPressed(new ResetNavx());
 
 	}
 
 	public void update() {
-
+		
 		updateInputs();
 
 		// drivetrain is separate because it's so important :-)
@@ -136,7 +137,7 @@ public class OperatorInterface {
 
 		if (chevalDeFunLatch.update(oPOVUp)) {
 			m_commands.armDefenseCommandTracker = ArmDefenseCommand.CHEVALDEFUN;
-			//System.out.println("chevaldefun");
+			System.out.println("chevaldefun");
 		} else if (elevatorLowBarModeLatch.update(oPOVDown)) {
 			m_commands.armDefenseCommandTracker = ArmDefenseCommand.LOWBAR;
 		} else {
@@ -209,6 +210,16 @@ public class OperatorInterface {
 
 	private void executeCommands(Commands c) {
 
+		
+		//TODO clean dis
+		if(oY){
+			Robot.shooterSS.releaseBall();
+			Robot.states.hasBall = false;
+		}else if(oA){
+			Robot.shooterSS.pinchBall();
+			Robot.states.hasBall = true;
+		}
+		
 		if (c.shiftRequestCommandTracker == ShiftRequest.HIGH
 				&& Robot.states.drivetrainGearTracker == DrivetrainGear.LOW
 				|| c.shiftRequestCommandTracker == ShiftRequest.LOW
@@ -228,7 +239,7 @@ public class OperatorInterface {
 			 * Robot.states.intakeControlModeTracker == IntakeControlMode.DRIVER
 			 */true) {
 			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall
-					&& Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.INTAKING) {
+					&& Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.INTAKING && !Robot.states.collectingBalling) {
 				if (Robot.elevatorSS.getElevatorSetpoint() != Constants.elevatorShootingHeight) {
 					// TODO is there a better way to do this other than reading
 					// the setpoint?
@@ -259,19 +270,14 @@ public class OperatorInterface {
 		}
 
 		if (c.armDefenseCommandTracker == ArmDefenseCommand.NONE) {
-			
-		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.CHEVALDEFUN) {
-			System.out.println("Cheval de Fun Commencing!!!!!11111one");
 
-			if (c.intakeCommandTracker == RunIntakeCommand.STOP
-					&& c.elevatorPositionRequestTracker == ElevatorPositionRequest.NONE) {
-				
+		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.CHEVALDEFUN) {
+			if (c.intakeCommandTracker == RunIntakeCommand.STOP) {
 				new TempMoveToChevalDeFunHeight().start();
 				System.out.println("moving to temp chevaldefun");
 			}
 		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.LOWBAR) {
-			if (c.intakeCommandTracker == RunIntakeCommand.STOP
-					&&c.elevatorPositionRequestTracker == ElevatorPositionRequest.NONE) {
+			if (c.intakeCommandTracker == RunIntakeCommand.STOP) {
 				new TempMoveToGrabHeight().start();
 				System.out.println("moving to temp grab height");
 			}
@@ -293,7 +299,7 @@ public class OperatorInterface {
 				new MoveToHoldingPID().start();
 			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.OTHER) {
 				if (Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorShootingHeight) {
-					new MoveToHoldingPID().start();
+					new MoveToGrabPosition().start();
 				} else {
 					new MoveToShootingHeight().start();
 				}

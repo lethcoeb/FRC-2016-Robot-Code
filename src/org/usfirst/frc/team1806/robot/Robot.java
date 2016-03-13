@@ -24,6 +24,7 @@ import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.FourteenInchMode;
+import org.usfirst.frc.team1806.robot.commands.autonomous.RobotReset;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.BackwardsDrivingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoNothingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoSomething;
@@ -71,6 +72,8 @@ public class Robot extends IterativeRobot {
 	public static SendableChooser autoForwardOrBackward;
 	public static SendableChooser autoShoot;
 	public static SendableChooser autoLane;
+	
+	boolean hasBeenEnabled = false;
 
 	public static double getPDPResistance(int channel) {
 		return pdp.getVoltage() / pdp.getCurrent(channel);
@@ -78,6 +81,7 @@ public class Robot extends IterativeRobot {
 
 	public void robotInit() {
 		//init subsystems
+		
 		
 		drivetrainSS = new DrivetrainSubsystem();
 		elevatorSS = new ElevatorSubsystem();
@@ -107,21 +111,30 @@ public class Robot extends IterativeRobot {
 
 
 		sdu = new SmartDashboardUpdater();
-		autonomous.addDefault("No","N");
-		autonomous.addObject("Yes", "Y");
+		
+		
+		autonomous = new SendableChooser();
+		autoArmUpOrDown = new SendableChooser();
+		autoForwardOrBackward = new SendableChooser();
+		autoShoot = new SendableChooser();
+		autoLane = new SendableChooser();
+		
+		
+		autonomous.addDefault("Run Auto: No","N");
+		autonomous.addObject("Run Auto: Yes", "Y");
 		SmartDashboard.putData("Run Autonomous?", autonomous);
 		
 		autoArmUpOrDown.addDefault("ArmUp", true);
 		autoArmUpOrDown.addObject("ArmDown", false);
 		SmartDashboard.putData("Reset Claw and put in hold position over defense?", autoArmUpOrDown);
 		
-		autoForwardOrBackward.addDefault("Backward", "B");
-		autoForwardOrBackward.addObject("Forward", "F");
+		autoForwardOrBackward.addDefault("DriveBackward", "B");
+		autoForwardOrBackward.addObject("DriveForward", "F");
 		SmartDashboard.putData("Auto Direction", autoForwardOrBackward);
 		
 		
-		autoShoot.addDefault("No", false);
-		autoShoot.addObject("Yes", true);
+		autoShoot.addDefault("Don't Shoot", false);
+		autoShoot.addObject("Shoot", true);
 		SmartDashboard.putData("Shoot?", autoShoot);
 		
 		autoLane.addDefault("Low Bar", 1);
@@ -134,12 +147,14 @@ public class Robot extends IterativeRobot {
 		// rvt = new RioVisionThread();
 		// rvt.start();
 
+
+
 		//compressor.setClosedLoopControl(false);
 		
 		
 		
 		
-
+		
 	}
 
 	/**
@@ -156,6 +171,12 @@ public class Robot extends IterativeRobot {
 
 		Scheduler.getInstance().run();
 		sdu.push();
+		
+		if(!hasBeenEnabled){
+			Robot.elevatorSS.elevatorSetPosition(-Constants.elevatorShootingHeight);
+		}
+		//System.out.println("Get POV: " + oi.oc.getPOV());
+		//System.out.println("Get POV Count: " + oi.oc.getPOVCount());
 
 	}
 
@@ -171,10 +192,11 @@ public class Robot extends IterativeRobot {
 	 * to the switch structure below with additional strings & commands.
 	 */
 	public void autonomousInit() {
+		hasBeenEnabled = true;
 		Robot.states.mode = Mode.AUTONOMOUS;
 		Robot.drivetrainSS.shiftLow();
 		if(autonomous.getSelected() == "N"){
-			autonomousCommand = new DoNothingAuto();
+			autonomousCommand = new RobotReset();
 		}
 		else{
 			if(autoForwardOrBackward.getSelected() == "F"){
@@ -184,6 +206,8 @@ public class Robot extends IterativeRobot {
 				autonomousCommand = new BackwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(), (boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
 			}
 		}
+		
+		autonomousCommand.start();
 		/*String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
 		switch (autoSelected) {
 		case "My Auto":
@@ -236,10 +260,11 @@ public class Robot extends IterativeRobot {
 		// continue until interrupted by another command, remove
 		// this line or comment it out.
 		// if (autonomousCommand != null)
-		// autonomousCommand.cancel();
+		// autonomousCommand.cancel();type name = new type();
+		hasBeenEnabled = true;
 		Robot.states.mode = Mode.TELEOP;
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
-		Robot.drivetrainSS.shiftLow();
+		Robot.states.shooterArmPositionTracker = ShooterArmPosition.HOLDING;
 	}
 
 	/**
