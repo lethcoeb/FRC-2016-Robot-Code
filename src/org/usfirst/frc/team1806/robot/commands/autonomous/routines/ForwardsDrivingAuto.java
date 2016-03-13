@@ -6,9 +6,11 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
+import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
 import edu.wpi.first.wpilibj.command.CommandGroup;
 
@@ -17,16 +19,20 @@ import edu.wpi.first.wpilibj.command.CommandGroup;
  */
 public class ForwardsDrivingAuto extends CommandGroup {
     
-    public  ForwardsDrivingAuto(boolean leaveArmUp, boolean shouldTakeShot, int lane) {
+    public  ForwardsDrivingAuto(boolean leaveArmUp, boolean shouldTakeShot, int lane)
+    {
+    	
+    	//always lower the intake at the start
+		addSequential(new LowerIntake());
+
     	if(lane == 1 || !leaveArmUp){
-    		addParallel(new LowerIntake());
-    		addSequential(new ResetElevator());
+    		addSequential(new MoveToHoldingPID());
     	}
     	if(lane == 1){
     		//if going low bar, get arm and intake ready for low bar
     		addParallel(new MoveToGrabPosition());
     	}
-    	addSequential(new DriveUntilFlat(.6, 10));
+    	addSequential(new DriveUntilFlat(.8, 3.5));
 
     	if(!shouldTakeShot){
     		addSequential(new DoNothing());
@@ -37,6 +43,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
         	}
     		addSequential(new TurnToAngle(Constants.autoForwardsNearGoalAngles[lane-1], 3));
     		addSequential(new LineUpShot());
+    		addSequential(new ShootThenCock());
     		addSequential(new DoNothing());
     	}
         // Add Commands here:

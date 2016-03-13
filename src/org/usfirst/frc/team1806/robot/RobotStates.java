@@ -45,6 +45,8 @@ public class RobotStates {
 		DRIVER, AUTOMATIC
 	}
 	
+	public boolean collectingBalling;
+	
 	public boolean autoLiningUp;
 	public boolean hasBall;
 	
@@ -73,6 +75,7 @@ public class RobotStates {
 		intakeControlModeTracker = IntakeControlMode.DRIVER;
 		hasBall = true;
 		autoLiningUp = false;
+		collectingBalling = false;
 	}
 	
 }

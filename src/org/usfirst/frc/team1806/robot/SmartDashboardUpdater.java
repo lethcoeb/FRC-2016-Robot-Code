@@ -43,9 +43,17 @@ public class SmartDashboardUpdater {
 
 			if (!Robot.jr.isGoalFound()) {
 				SmartDashboard.putString("Angle to goal", "N/A");
+				SmartDashboard.putString("LeftRight", "NotFound");
 			}else{
 				SmartDashboard.putString("Angle to goal", String.valueOf(Robot.jr.getAngleToGoal()));
+				if(Robot.jr.getAngleToGoal() > 0){
+					SmartDashboard.putString("LeftRight", "Right");
+				}else{
+					SmartDashboard.putString("LeftRight", "Left");
+				}
 			}
+			
+			
 			
 			SmartDashboard.putNumber("Navx Yaw", Robot.drivetrainSS.getYaw());
 			

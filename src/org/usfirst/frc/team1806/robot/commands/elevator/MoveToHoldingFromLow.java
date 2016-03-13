@@ -35,24 +35,22 @@ public class MoveToHoldingFromLow extends Command {
 		Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.PercentVbus);
 		Robot.elevatorSS.elevatorMoveAtSpeed(1);
 		Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
-		System.out.println("Should spin: " + shouldSpin);
 		if (shouldSpin) {
-			System.out.println("Matching arm");
-			//Robot.intakeSS.runAtSpeed(Constants.intakeSpeedToMatchArm);
 			Robot.intakeSS.runAtSpeed(Constants.intakeSpeedToMatchArm);
 		}
 	}
 
 	// Called repeatedly when this Command is scheduled to run
 	protected void execute() {
-		if ((Robot.elevatorSS.getElevatorPosition() >= Constants.elevatorHoldingHeight + Constants.collectingIntakeStopOffset) && shouldSpin){
+		if (Robot.elevatorSS.getElevatorPosition() >=Constants.elevatorHoldingHeight + Constants.collectingIntakeStopOffset){
 			shouldSpin = false;
-			System.out.println("No longer matching arm");
+		}
+		if (shouldSpin) {
+			Robot.intakeSS.runAtSpeed(Constants.intakeSpeedToMatchArm);
+		}
+		else{
 			Robot.intakeSS.stopIntaking();
 		}
-		/*if (shouldSpin) {
-			Robot.intakeSS.runAtSpeed(Constants.intakeSpeedToMatchArm);
-		}*/
 	}
 
 	// Make this return true when this Command no longer needs to run execute()

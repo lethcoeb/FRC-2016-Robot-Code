@@ -101,6 +101,10 @@ public class ElevatorSubsystem extends Subsystem {
 	public void elevatorResetEncoder() {
 		elevatorSRX.setEncPosition(0);
 	}
+	
+	public void elevatorSetPosition(int pos){
+		elevatorSRX.setEncPosition(pos);
+	}
 
 	public boolean isElevatorPIDEnabled() {
 		return elevatorSRX.getControlMode() == TalonControlMode.Position;

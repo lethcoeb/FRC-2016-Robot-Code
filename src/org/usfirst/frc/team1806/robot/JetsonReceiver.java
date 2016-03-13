@@ -116,7 +116,7 @@ public class JetsonReceiver extends Thread {
 	public boolean isAngleAcceptable(){
 		//Is the angle within the range specified in Constants?
 		//System.out.println("acceptable angle");
-		return Math.abs(angle) < Constants.ShootingmaxAngleError;
+		return Math.abs(angle + Constants.ShootingJetsonCameraAngleOffset) < Constants.ShootingmaxAngleError;
 		
 	}
 	public boolean isDistanceAcceptable(){

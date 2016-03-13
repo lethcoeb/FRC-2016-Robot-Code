@@ -62,7 +62,7 @@ public class LineUpShot extends Command {
     			Robot.drivetrainSS.drivetrainTurnPIDDisable();
     			
     		}
-    	}else if(goalFound && withinRange && !hasRumbled){
+    	}else if(goalFound && withinRange && !hasRumbled && Robot.states.mode == Mode.TELEOP){
     		System.out.println("rumbled");
     		new RumbleController(Robot.oi.dc).start();
     		hasRumbled = true;
@@ -72,17 +72,15 @@ public class LineUpShot extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return (Robot.oi.dc.getRightTrigger() < .4 && Robot.states.mode == Mode.AUTONOMOUS) || (hasRumbled && Robot.states.mode == Mode.AUTONOMOUS);
+        return (Robot.oi.dc.getRightTrigger() < .4 && Robot.states.mode == Mode.TELEOP) || (withinRange && Robot.states.mode == Mode.AUTONOMOUS);
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	if(Robot.states.mode == Mode.AUTONOMOUS){
-    		new ShootThenCock().start();
-    	}
     	System.out.println("lineupshot finished");
     	
     	Robot.drivetrainSS.drivetrainTurnPIDDisable();
+    	Robot.drivetrainSS.arcadeDrive(0, 0);
     	Robot.states.autoLiningUp = false;
     	Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
     }
