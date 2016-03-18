@@ -102,7 +102,7 @@ public class Robot extends IterativeRobot {
 		}
 		//jetson
 		jr = new JetsonReceiver();
-		jr.start();
+		//jr.start();
 		//autoreader for future events
 		ar = new AutonomousReader();
 		ar.start();
