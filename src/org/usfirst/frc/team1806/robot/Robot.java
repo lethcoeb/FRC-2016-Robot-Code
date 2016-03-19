@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 
 import org.usfirst.frc.team1806.robot.subsystems.ElevatorSubsystem;
 import org.usfirst.frc.team1806.robot.subsystems.IntakeSubsystem;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 import org.usfirst.frc.team1806.robot.RobotStates.Mode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
+import org.usfirst.frc.team1806.robot.commands.DriverControlDrivetrain;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.FourteenInchMode;
@@ -137,6 +139,7 @@ public class Robot extends IterativeRobot {
 		autoShoot.addObject("Shoot", true);
 		SmartDashboard.putData("Shoot?", autoShoot);
 		
+		
 		autoLane.addDefault("Low Bar", 1);
 		autoLane.addObject("2", 2);
 		autoLane.addObject("3", 3);
@@ -144,8 +147,8 @@ public class Robot extends IterativeRobot {
 		autoLane.addObject("5", 5);
 		SmartDashboard.putData("Defense Position? (Selecting Low bar will override any arm settings)",autoLane);
 
-		// rvt = new RioVisionThread();
-		// rvt.start();
+		//rvt = new RioVisionThread();
+		//rvt.start();
 
 
 
@@ -264,7 +267,8 @@ public class Robot extends IterativeRobot {
 		hasBeenEnabled = true;
 		Robot.states.mode = Mode.TELEOP;
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
-		Robot.states.shooterArmPositionTracker = ShooterArmPosition.HOLDING;
+		
+		new DriverControlDrivetrain().start();
 	}
 
 	/**

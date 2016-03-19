@@ -7,7 +7,7 @@ public class Constants {
 	public static final double[] autoBackwardsNearGoalAngles = {-150, -165, -175, 177, 170};
 	
 
-	
+	public static final double joystickDeadzone = .15;
 
 	// FIXME this
 	public static final double encoderCountsPerRevolution = .01;
@@ -22,7 +22,8 @@ public class Constants {
 	public static final double drivetrainDrivePIDTolerance = 1; // inches
 	
 	//jones wants to do only i
-	public static final double drivetrainTurnP = .07;
+	//public static final double drivetrainTurnP = .07;
+	public static final double drivetrainTurnP = .15;
 	public static final double drivetrainTurnI = 0.002;
 	public static final double drivetrainTurnD = 0.1;
 
@@ -67,7 +68,7 @@ public class Constants {
 	public static final double elevatorAbsoluteTolerance = 1500;
 
 	//public static final double elevatorShootingHeight = 103560; :: comp bot
-	public static final int elevatorShootingHeight = 98000;
+	public static final int elevatorShootingHeight = 94800;
 	public static final int elevatorHoldingHeight = 20000;
 	public static final int elevatorChevaldeFunHeight = 70000; //lowest height at which the intake can be raised and lowered
 	public static final double resetSpeed = -.35;
@@ -118,7 +119,7 @@ public class Constants {
 	//TODO: Make distance range reasonable.
 	public static final double ShootingMinGoalDistance = 4;
 	public static final double ShootingMaxGoalDistance = 12;
-	public static final double ShootingJetsonCameraAngleOffset = -9.2;
+	public static final double ShootingJetsonCameraAngleOffset = 0.628;
 
 	// Networking stuff
 	public static final double jetsonConnectionLostTimeout = 1; // timeout until

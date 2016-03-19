@@ -1,9 +1,16 @@
 package org.usfirst.frc.team1806.robot;
 
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class SmartDashboardUpdater {
 
+	NetworkTable towerTracker;
+	
+	public SmartDashboardUpdater(){
+		towerTracker = NetworkTable.getTable("TowerTracker");
+	}
+	
 	public void push() {
 
 		if (pushStates) {
@@ -41,7 +48,7 @@ public class SmartDashboardUpdater {
 			SmartDashboard.putString("intake control mode", Robot.states.intakeControlModeTracker.toString());
 			SmartDashboard.putNumber("Winch Resistence", Robot.getPDPResistance(RobotMap.PDPcockingWinchSlot));
 
-			if (!Robot.jr.isGoalFound()) {
+			/*if (!Robot.jr.isGoalFound()) {
 				SmartDashboard.putString("Angle to goal", "N/A");
 				SmartDashboard.putString("LeftRight", "NotFound");
 			}else{
@@ -51,7 +58,7 @@ public class SmartDashboardUpdater {
 				}else{
 					SmartDashboard.putString("LeftRight", "Left");
 				}
-			}
+			}*/
 			
 			
 			
@@ -68,6 +75,12 @@ public class SmartDashboardUpdater {
 			
 			SmartDashboard.putNumber("NavxPitch", Robot.drivetrainSS.getPitch());
 			SmartDashboard.putNumber("NavxRoll", Robot.drivetrainSS.getRoll());
+			
+			
+			//SmartDashboard.putBoolean("GoalFound", towerTracker.getBoolean("GoalFound", false));
+			//SmartDashboard.putNumber("AngleToGoal", towerTracker.getNumber("AngleToGoal", 0));
+			
+			
 		}
 
 	}

@@ -33,7 +33,7 @@ public class ShooterSubsystem extends Subsystem {
     	cockingMotor.setInverted(true);
     	cockedLimitSwitch = new DigitalInput(RobotMap.cockedShooterLimit);
     	puncherReleaseSolenoid = new Solenoid(RobotMap.shooterReleaseSolenoid);
-    	ballPincherSolenoid = new DoubleSolenoid(RobotMap.pincherPinch, RobotMap.pincherRelease);
+    	ballPincherSolenoid = new DoubleSolenoid(1, RobotMap.pincherPinch, RobotMap.pincherRelease);
     	ballSensor = new DigitalInput(RobotMap.hasBallSensor);
     }
     

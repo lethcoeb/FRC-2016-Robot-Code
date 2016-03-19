@@ -101,22 +101,6 @@ public class OperatorInterface {
 	public void update() {
 		
 		updateInputs();
-
-		// drivetrain is separate because it's so important :-)
-		if (Robot.states.driveControlModeTracker == DriveControlMode.DRIVER) {
-			if (Math.abs(dlsY) > kJoystickDeadzone && Math.abs(drsX) > kJoystickDeadzone) {
-				Robot.drivetrainSS.execute(dlsY, -drsX);
-			} else if (Math.abs(dlsY) > kJoystickDeadzone) {
-				Robot.drivetrainSS.execute(dlsY, 0);
-			} else if (Math.abs(drsX) > kJoystickDeadzone) {
-				Robot.drivetrainSS.execute(0, -drsX);
-			} else {
-				Robot.drivetrainSS.execute(0, 0);
-			}
-		} else {
-			// Automatic driving stuff
-		}
-
 		executeCommands(setCommands());
 
 	}
@@ -232,6 +216,7 @@ public class OperatorInterface {
 		}
 
 		if (c.autoLineUp == true && Robot.states.autoLiningUp == false) {
+			Robot.states.autoLiningUp = true;
 			new LineUpShot().start();
 		}
 

@@ -4,6 +4,8 @@ import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotMap;
 import org.usfirst.frc.team1806.robot.RobotStates.DrivetrainGear;
+import org.usfirst.frc.team1806.robot.commands.DriverControlDrivetrain;
+
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -36,7 +38,7 @@ public class DrivetrainSubsystem extends Subsystem {
     PIDController turnPC;
     PIDController turnAbsolutePC;
     
-    
+    final double kJoystickDeadzoneConstant = Constants.joystickDeadzone;
     double lastPower, currPower, lastTurnPower, currTurnPower = 0;
     double PIDTolerance = 30;
     double MaxRotationPID = Constants.drivetrainMaxRotationPIDStage1;
@@ -50,7 +52,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	left2 = new Talon(RobotMap.leftMotor2);
     	left3 = new Talon(RobotMap.leftMotor3);
     	
-    	shifter = new DoubleSolenoid(RobotMap.shiftLow, RobotMap.shiftHigh);
+    	shifter = new DoubleSolenoid(1, RobotMap.shiftLow, RobotMap.shiftHigh);
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);
@@ -181,13 +183,19 @@ public class DrivetrainSubsystem extends Subsystem {
     	right3.set(speed);
     }
     
+    public double zoneInput(double val){
+    	
+    	if(Math.abs(val) < kJoystickDeadzoneConstant){
+    		val = 0;
+    	}
+    	
+    	return val;
+    }
+    
     public void execute(double power, double turn){
     	
-    	
-    	//lastTurn = turn;
 		lastPower = currPower;
 		currPower = power;
-		//turn = pTurn;
 		
 		lastTurnPower = currTurnPower;
 		currTurnPower = turn;
@@ -209,7 +217,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	}
     	
     	arcadeDrive(currPower, currTurnPower);
-    	//arcadeDrive(currPower, turn);
+
     }
     
     public void arcadeDrive(double power, double turn){
@@ -407,6 +415,8 @@ public class DrivetrainSubsystem extends Subsystem {
     }
 
     public void initDefaultCommand() {
+    	
+    	setDefaultCommand(new DriverControlDrivetrain());
         // Set the default command for a subsystem here.
         //setDefaultCommand(new MySpecialCommand());
     }

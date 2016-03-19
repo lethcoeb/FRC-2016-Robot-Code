@@ -13,110 +13,67 @@ import java.util.concurrent.TimeoutException;
 
 import org.usfirst.frc.team1806.robot.RobotStates.VisionTrackingState;
 
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class JetsonReceiver extends Thread {
 
-	DatagramSocket ds;
-	DatagramPacket dp;
-	ByteBuffer bb;
-
-	String answer;
-	String serverAddress = "1234";
-	// Socket s;
-	BufferedReader input;
-
 	int isGoal;
+	boolean isGoalBool;
 	double distance;
-	double angle;
-
-	double then;
-	double now;
-	double deltaTime;
-
+	double rawAngle;
+	double offsetAngle;
+	
+	NetworkTable towerTracker;
+	
 	public JetsonReceiver() {
-		try {
-
-			ds = new DatagramSocket(5800);
-			bb = ByteBuffer.allocate(20);
-			// s = new Socket(serverAddress, 9090);
-			// input = new BufferedReader(new
-			// InputStreamReader(s.getInputStream()));
-		} catch (Exception e) {
-			System.out.println("Error initializing client: " + e);
-		}
-
-		now = System.currentTimeMillis();
-		then = System.currentTimeMillis();
-
+		towerTracker = NetworkTable.getTable("TowerTracker");
 	}
 
 	public void run() {
-
-		try {
-			ds.setSoTimeout((int) Constants.jetsonConnectionLostTimeout * 1000);
-		} catch (SocketException se) {
-			se.printStackTrace();
-		}
-
+		
+		
+		
 		while (true) {
-			try {
-
-				//System.out.println("Beginning to listening for packet...");
-				bb.position(0);
-				dp = new DatagramPacket(bb.array(), bb.capacity());
-				ds.receive(dp);
-				isGoal = bb.getInt();
-				distance = bb.getDouble();
-				angle = bb.getDouble();
+			
+				isGoal = (int) towerTracker.getNumber("GoalFound", 0);
+				distance = towerTracker.getNumber("DistanceToGoal", 0);
+				rawAngle = towerTracker.getNumber("AngleToGoal", 0);
 				
-				if(angle > 180){
-					angle = angle - 360;
+				if(isGoal == 1){
+					isGoalBool = true;
+				}else{
+					isGoalBool = false;
 				}
+								
+				makeAngleUsable();
 				
-				angle = angle + Constants.ShootingJetsonCameraAngleOffset;
 				
-				//angle = -angle;
-				// System.out.println("Goal found? : " + isGoal);
-				// System.out.println("Distance from goal: " + distance);
-				// System.out.println("angle from goal: " + angle);
+				SmartDashboard.putBoolean("IsGoalFound", isGoalBool);
+				SmartDashboard.putNumber("DistanceToGoal", distance);
+				SmartDashboard.putNumber("AngleToGoal", offsetAngle);
+				
+				
 
-				SmartDashboard.putNumber("Goal found", isGoal);
-				SmartDashboard.putNumber("Distance from goal", distance / 12);
-				SmartDashboard.putNumber("ANgle from goal", angle);
-
-				// System.out.println("run successfully");
-				then = now;
-				now = System.currentTimeMillis();
-				deltaTime = now - then;
-
-				//System.out.println("Time since last packet: " + deltaTime);
-
-				// If this try block completes all the way to here, it means you
-				// had no errors and you successfully received
-				// data from the jetson. So that means you should switch back to
-				// using image data from the Jetson if you were't already :-)
-				Robot.states.visionTrackingStateTracker = VisionTrackingState.JETSON;
-
-			} catch (Exception e) {
-				if (e instanceof SocketTimeoutException) {
-					// Failed to receive socket in time.
-					Robot.states.visionTrackingStateTracker = VisionTrackingState.ROBORIO;
-				} else if (e instanceof IOException) {
-					e.printStackTrace();
-				}
-			}
 		}
 	}
-
+	
+	public void makeAngleUsable(){
+		if(rawAngle > 180){
+			rawAngle = rawAngle - 360;
+		}
+		
+		offsetAngle = rawAngle + Constants.ShootingJetsonCameraAngleOffset;
+	}
+	
 	public double getAngleToGoal() {
-		return angle;
+		return offsetAngle;
 	}
 	
 	public boolean isAngleAcceptable(){
 		//Is the angle within the range specified in Constants?
 		//System.out.println("acceptable angle");
-		return Math.abs(angle + Constants.ShootingJetsonCameraAngleOffset) < Constants.ShootingmaxAngleError;
+		return Math.abs(offsetAngle) < Constants.ShootingmaxAngleError;
 		
 	}
 	public boolean isDistanceAcceptable(){
@@ -129,15 +86,7 @@ public class JetsonReceiver extends Thread {
 	}
 
 	public boolean isGoalFound() {
-		if (isGoal == 1) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public double getTimeSinceLastPacketReceived() {
-		return System.currentTimeMillis() - then;
+		return isGoalBool;
 	}
 
 }

@@ -22,6 +22,7 @@ public class TempMoveToGrabHeight extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
+    	Robot.elevatorSS.resetSrxPID();
     	if(Robot.states.hasBall){
     		Robot.intakeSS.runAtSpeed(-Constants.intakeSpeedToMatchArm + .15);
     	}

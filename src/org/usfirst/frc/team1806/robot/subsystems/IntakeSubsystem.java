@@ -23,7 +23,7 @@ public class IntakeSubsystem extends Subsystem {
 
 	public IntakeSubsystem() {
 		roller = new Talon(RobotMap.intakeRoller);
-		deployer = new DoubleSolenoid(RobotMap.deployerExtend, RobotMap.deployerRetract);
+		deployer = new DoubleSolenoid(1, RobotMap.deployerExtend, RobotMap.deployerRetract);
 	}
 
 	public void intakeBall() {
