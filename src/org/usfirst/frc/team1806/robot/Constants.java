@@ -3,7 +3,7 @@ package org.usfirst.frc.team1806.robot;
 public class Constants {
 	
 	//lit new auto stuff
-	public static final double[] autoForwardsNearGoalAngles = {30, 15, 5, -3, -10};
+	public static final double[] autoForwardsNearGoalAngles = {62, 15, 5, -3, -10};
 	public static final double[] autoBackwardsNearGoalAngles = {-150, -165, -175, 177, 170};
 	
 
@@ -72,7 +72,7 @@ public class Constants {
 	public static final double elevatorDownPIDd = 0;
 
 	//public static final double elevatorShootingHeight = 103560; :: comp bot
-	public static final int elevatorShootingHeight = 98000;
+	public static final int elevatorShootingHeight = 94500;
 	//public static final int elevatorHoldingHeight = 20000;
 	public static final int elevatorHoldingHeight = 26000;
 	public static final int elevatorChevaldeFunHeight = 70000; //lowest height at which the intake can be raised and lowered

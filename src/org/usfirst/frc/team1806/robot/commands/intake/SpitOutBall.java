@@ -35,7 +35,7 @@ public class SpitOutBall extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	if(!hasBegunOuttaking && Robot.elevatorSS.getElevatorPosition() < Constants.elevatorHoldingHeight - 3000){
+    	if(!hasBegunOuttaking && Robot.elevatorSS.getElevatorPosition() < Constants.elevatorHoldingHeight - 1500){
     		System.out.println("outtaking");
         	Robot.intakeSS.outtakeBall();
         	Robot.shooterSS.releaseBall();

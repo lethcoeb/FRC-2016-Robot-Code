@@ -203,7 +203,7 @@ public class OperatorInterface {
 			m_commands.manualCockCommandTracker = ManualCockCommand.NONE;
 		}
 		
-		if(incrementLatch.update(oA)){
+		if(incrementLatch.update(oX)){
 			new IncrementUp(125).start();
 		}
 

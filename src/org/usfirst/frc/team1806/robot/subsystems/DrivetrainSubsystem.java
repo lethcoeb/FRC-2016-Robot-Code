@@ -57,7 +57,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);
     	rightEncoder.setReverseDirection(true);
-    	leftEncoder.setReverseDirection(false);
+    	leftEncoder.setReverseDirection(true);
     	rightEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
     	leftEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
     	
@@ -146,7 +146,7 @@ public class DrivetrainSubsystem extends Subsystem {
 					output = output * (1-Constants.drivetrainTurnMinPowerToMove) + Constants.drivetrainTurnMinPowerToMove * Math.signum(output);
 				}*/
 				execute(0, -output);
-				//System.out.println(turnPC.getError());
+				System.out.println(-output);
 			}
 		};
 		

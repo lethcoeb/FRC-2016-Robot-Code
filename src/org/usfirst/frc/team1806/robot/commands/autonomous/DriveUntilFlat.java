@@ -16,6 +16,8 @@ public class DriveUntilFlat extends Command {
 	double maxSpeed;
 	double kTimeUntilFlat = Constants.timeUntilFlat;
 
+	Double minDistanceToTravel;
+
 	boolean finished = false;
 	boolean flat;
 	boolean hasHit = false;
@@ -33,6 +35,19 @@ public class DriveUntilFlat extends Command {
 		commandTimeout = timeout;
 	}
 
+	public DriveUntilFlat(double speed, double timeout, double minDistance) {
+		requires(Robot.drivetrainSS);
+		maxSpeed = speed;
+		commandTimeout = timeout;
+		minDistanceToTravel = Math.abs(minDistance);
+	}
+	
+	public DriveUntilFlat(double speed, boolean doesntMatter, double minDistance){
+		//hacky constructor to get a min distance without setting a timeout
+		maxSpeed = speed;
+		minDistanceToTravel = minDistance;
+	}
+
 	// Called just before this Command runs the first time
 	protected void initialize() {
 		timeoutTimer = new Timer();
@@ -41,6 +56,9 @@ public class DriveUntilFlat extends Command {
 		flatTimer.reset();
 		timeoutTimer.start();
 		Robot.states.driveControlModeTracker = DriveControlMode.AUTO;
+		if(minDistanceToTravel != null){
+			Robot.drivetrainSS.resetEncoders();
+		}
 		Robot.drivetrainSS.resetYaw();
 	}
 
@@ -54,17 +72,26 @@ public class DriveUntilFlat extends Command {
 				finished = true;
 			}
 		}
-		
-		if(!hasHit){
-			if(!Robot.drivetrainSS.isNavxFlat()){
+
+		if (!hasHit) {
+			if (!Robot.drivetrainSS.isNavxFlat()) {
 				hasHit = true;
 			}
 		}
-		
-		else{
+
+		else {
 			if (Robot.drivetrainSS.isNavxFlat()) {
 				if (flat && flatTimer.get() > kTimeUntilFlat) {
-					finished = true;
+					if (minDistanceToTravel != null) {
+						if (Math.abs(Robot.drivetrainSS.getLeftEncoderDistance()) > minDistanceToTravel
+								|| Math.abs(Robot.drivetrainSS.getRightEncoderDistance()) > minDistanceToTravel) {
+							finished = true;
+						} else {
+							finished = false;
+						}
+					} else {
+						finished = true;
+					}
 				} else if (!flat) {
 					flatTimer.reset();
 					flatTimer.start();
@@ -76,7 +103,6 @@ public class DriveUntilFlat extends Command {
 				flatTimer.reset();
 			}
 
-			
 		}
 	}
 

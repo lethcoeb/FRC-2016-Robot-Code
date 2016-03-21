@@ -30,11 +30,14 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveToPosition;
 import org.usfirst.frc.team1806.robot.commands.autonomous.FourteenInchMode;
 import org.usfirst.frc.team1806.robot.commands.autonomous.RobotReset;
+import org.usfirst.frc.team1806.robot.commands.autonomous.Turn90;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAbsoluteAngle;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.BackwardsDrivingAuto;
+import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ChevalDeFriseAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoNothingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoSomething;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ForwardsDrivingAuto;
+import org.usfirst.frc.team1806.robot.commands.autonomous.routines.LowBarAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallNoSteal;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallSteal;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
@@ -69,7 +72,6 @@ public class Robot extends IterativeRobot {
 
 	public static OperatorInterface oi;
 	public static RobotStates states;
-	
 
 	CommandGroup autonomousCommand;
 	SendableChooser xBall, robotStartingPos, waitPosition;
@@ -78,23 +80,27 @@ public class Robot extends IterativeRobot {
 	public static AutonomousReader ar;
 	public static SmartDashboardUpdater sdu;
 	public static RioVisionThread rvt;
-	
+
 	public static SendableChooser autonomous;
 	public static SendableChooser autoArmUpOrDown;
 	public static SendableChooser autoForwardOrBackward;
 	public static SendableChooser autoShoot;
 	public static SendableChooser autoLane;
-	
+	public static SendableChooser defenseToBeCrossed;
+
 	boolean hasBeenEnabled = false;
+
+	public enum Defenses {
+		LOWBAR, ROUGHTERRAIN, ROCKWALL, MOAT, RAMPARTS, PORTCULLIS, CHEVALDEFRISE, DRAWBRIDGE, SALLYPORT
+	}
 
 	public static double getPDPResistance(int channel) {
 		return pdp.getVoltage() / pdp.getCurrent(channel);
 	}
 
 	public void robotInit() {
-		//init subsystems
-		
-		
+		// init subsystems
+
 		drivetrainSS = new DrivetrainSubsystem();
 		elevatorSS = new ElevatorSubsystem();
 		intakeSS = new IntakeSubsystem();
@@ -112,62 +118,63 @@ public class Robot extends IterativeRobot {
 																		// up
 																		// testing
 		}
-		//jetson
+		// jetson
 		jr = new JetsonReceiver();
 		jr.start();
-		//autoreader for future events
+		// autoreader for future events
 		ar = new AutonomousReader();
 		ar.start();
-		
-		//Temp QaDAS. Make sure all object in same chooser are of same type.
 
+		// Temp QaDAS. Make sure all object in same chooser are of same type.
 
 		sdu = new SmartDashboardUpdater();
-		
-		
+
 		autonomous = new SendableChooser();
 		autoArmUpOrDown = new SendableChooser();
 		autoForwardOrBackward = new SendableChooser();
 		autoShoot = new SendableChooser();
 		autoLane = new SendableChooser();
-		
-		
-		autonomous.addDefault("Run Auto: No","N");
+		defenseToBeCrossed = new SendableChooser();
+
+		autonomous.addDefault("Run Auto: No", "N");
 		autonomous.addObject("Run Auto: Yes", "Y");
 		SmartDashboard.putData("Run Autonomous?", autonomous);
-		
+
 		autoArmUpOrDown.addDefault("ArmUp", true);
 		autoArmUpOrDown.addObject("ArmDown", false);
 		SmartDashboard.putData("Reset Claw and put in hold position over defense?", autoArmUpOrDown);
-		
+
 		autoForwardOrBackward.addDefault("DriveBackward", "B");
 		autoForwardOrBackward.addObject("DriveForward", "F");
 		SmartDashboard.putData("Auto Direction", autoForwardOrBackward);
-		
-		
+
 		autoShoot.addDefault("Don't Shoot", false);
 		autoShoot.addObject("Shoot", true);
 		SmartDashboard.putData("Shoot?", autoShoot);
-		
-		
+
 		autoLane.addDefault("Low Bar", 1);
 		autoLane.addObject("2", 2);
 		autoLane.addObject("3", 3);
 		autoLane.addObject("4", 4);
 		autoLane.addObject("5", 5);
-		SmartDashboard.putData("Defense Position? (Selecting Low bar will override any arm settings)",autoLane);
+		SmartDashboard.putData("Defense Position? (Selecting Low bar will override any arm settings)", autoLane);
 
-		//rvt = new RioVisionThread();
-		//rvt.start();
+		defenseToBeCrossed.addDefault("Rock Wall", Defenses.ROCKWALL);
+		defenseToBeCrossed.addObject("Low Bar", Defenses.LOWBAR);
+		defenseToBeCrossed.addObject("Rough Terrain", Defenses.ROUGHTERRAIN);
+		defenseToBeCrossed.addObject("Drawbridge", Defenses.DRAWBRIDGE);
+		defenseToBeCrossed.addObject("Sally Port", Defenses.SALLYPORT);
+		defenseToBeCrossed.addObject("Moat", Defenses.MOAT);
+		defenseToBeCrossed.addObject("Ramparts", Defenses.RAMPARTS);
+		defenseToBeCrossed.addObject("Portcullis", Defenses.PORTCULLIS);
+		defenseToBeCrossed.addObject("Cheval De Frise", Defenses.CHEVALDEFRISE);
+		SmartDashboard.putData("Defense to be crossed", defenseToBeCrossed);
 
+		// rvt = new RioVisionThread();
+		// rvt.start();
 
+		// compressor.setClosedLoopControl(false);
 
-		//compressor.setClosedLoopControl(false);
-		
-		
-		
-		
-		
 	}
 
 	/**
@@ -184,12 +191,12 @@ public class Robot extends IterativeRobot {
 
 		Scheduler.getInstance().run();
 		sdu.push();
-		
-		if(!hasBeenEnabled){
-			Robot.elevatorSS.elevatorSetPosition(-Constants.elevatorShootingHeight);
+
+		if (!hasBeenEnabled) {
+			Robot.elevatorSS.elevatorSetPosition(-97750);
 		}
-		//System.out.println("Get POV: " + oi.oc.getPOV());
-		//System.out.println("Get POV Count: " + oi.oc.getPOVCount());
+		// System.out.println("Get POV: " + oi.oc.getPOV());
+		// System.out.println("Get POV Count: " + oi.oc.getPOVCount());
 
 	}
 
@@ -205,85 +212,90 @@ public class Robot extends IterativeRobot {
 	 * to the switch structure below with additional strings & commands.
 	 */
 	public void autonomousInit() {
-		
+
 		Robot.states.mode = Mode.AUTONOMOUS;
 		hasBeenEnabled = true;
-		
-		autonomousCommand = new CommandGroup();
-		CommandGroup subgroupCommandGroup = new CommandGroup();
-		subgroupCommandGroup.addSequential(new Wait(4));
-		subgroupCommandGroup.addSequential(new MoveToShootingHeight());
-		
+
 		Robot.drivetrainSS.shiftLow();
 		Robot.drivetrainSS.resetYaw();
 		Robot.drivetrainSS.resetEncoders();
-		autonomousCommand.addSequential(new LowerIntake(.5));
-		autonomousCommand.addSequential(new MoveToHoldingPID());
-		//autonomousCommand.addParallel(subgroupCommandGroup);
-		autonomousCommand.addSequential(new DriveToPosition(21, .85));
-		autonomousCommand.addParallel(new MoveToShootingHeight());
-		autonomousCommand.addSequential(new TurnToAbsoluteAngle(62));
-		autonomousCommand.addSequential(new DriveToPosition(2, .5));
-		autonomousCommand.addSequential(new LineUpShot());
-		
-		
-		/*if(autonomous.getSelected() == "N"){
+
+		autonomousCommand = new CommandGroup();
+
+		/*
+		 * autonomousCommand.addSequential(new LowerIntake(.5));
+		 * autonomousCommand.addSequential(new MoveToHoldingPID());
+		 * autonomousCommand.addSequential(new DriveToPosition(21, .85));
+		 * autonomousCommand.addParallel(new MoveToShootingHeight());
+		 * autonomousCommand.addSequential(new TurnToAbsoluteAngle(62));
+		 * autonomousCommand.addSequential(new DriveToPosition(2, .5));
+		 * autonomousCommand.addSequential(new LineUpShot());
+		 */
+
+		/*if (autonomous.getSelected() == "N") {
 			autonomousCommand = new RobotReset();
-		}
-		else{
-			if(autoForwardOrBackward.getSelected() == "F"){
-				autonomousCommand = new ForwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(), (boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
+		} else {
+
+			// Portcullis or chevaldefrise override forwards or backwards -- be
+			// careful!!
+			if (defenseToBeCrossed.getSelected() == Defenses.PORTCULLIS) {
+				// Put portcullis auto here
 			}
-			else{
-				autonomousCommand = new BackwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(), (boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
+			else if (defenseToBeCrossed.getSelected() == Defenses.CHEVALDEFRISE) {
+				autonomousCommand.addSequential(
+						new ChevalDeFriseAuto((boolean) autoShoot.getSelected(), (int) autoLane.getSelected()));
+			}
+
+			else if (autoForwardOrBackward.getSelected() == "F") {
+				autonomousCommand = new ForwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(),
+						(boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
+			} else {
+				autonomousCommand = new BackwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(),
+						(boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
 			}
 		}*/
-		
+
+		//autonomousCommand.addSequential(new Turn90(2.5, true));
+
+		autonomousCommand.addSequential(new LowBarAuto());
 		autonomousCommand.start();
-		/*String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
-		switch (autoSelected) {
-		case "My Auto":
-			autonomousCommand = new MyAutoCommand();
-			break;
-		case "Default Auto":
-		default:
-			autonomousCommand = new ExampleCommand();
-			break;
-		}*/
-		/* 
-		autonomousCommand = new FourteenInchMode();
-
-		ar.stopThread();
-
-		ArrayList<String> commandStrings = new ArrayList<String>();
-		if (ar.CommandsReceived()) {
-			commandStrings = ar.getCommandStringArray();
-		}
-
-		// You got a routine boy, now parse it
-		if (commandStrings.get(0) == "OneBall") {
-			if (commandStrings.get(1) == "Steal") {
-				new OneBallSteal(commandStrings);
-			} else if (commandStrings.get(1) == "NoSteal") {
-				new OneBallNoSteal(commandStrings);
-			}
-		} else if (commandStrings.get(0) == "TwoBall") {
-			// run 2 ball auto
-			// literally a dream
-		}
-
-		// schedule the autonomous command (example)
-		if (autonomousCommand != null)
-			autonomousCommand.start();
+		/*
+		 * String autoSelected = SmartDashboard.getString("Auto Selector",
+		 * "Default"); switch (autoSelected) { case "My Auto": autonomousCommand
+		 * = new MyAutoCommand(); break; case "Default Auto": default:
+		 * autonomousCommand = new ExampleCommand(); break; }
+		 */
+		/*
+		 * autonomousCommand = new FourteenInchMode();
+		 * 
+		 * ar.stopThread();
+		 * 
+		 * ArrayList<String> commandStrings = new ArrayList<String>(); if
+		 * (ar.CommandsReceived()) { commandStrings =
+		 * ar.getCommandStringArray(); }
+		 * 
+		 * // You got a routine boy, now parse it if (commandStrings.get(0) ==
+		 * "OneBall") { if (commandStrings.get(1) == "Steal") { new
+		 * OneBallSteal(commandStrings); } else if (commandStrings.get(1) ==
+		 * "NoSteal") { new OneBallNoSteal(commandStrings); } } else if
+		 * (commandStrings.get(0) == "TwoBall") { // run 2 ball auto //
+		 * literally a dream }
+		 * 
+		 * // schedule the autonomous command (example) if (autonomousCommand !=
+		 * null) autonomousCommand.start(); }
+		 * 
+		 * /** This function is called periodically during autonomous
+		 */
 	}
 
-	/**
-	 * This function is called periodically during autonomous
-	 */
-	}
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
 		sdu.push();
+
+		if (Math.abs(Robot.drivetrainSS.getPitch()) > 70) {
+			autonomousCommand.cancel();
+		}
+
 	}
 
 	public void teleopInit() {
@@ -291,12 +303,13 @@ public class Robot extends IterativeRobot {
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
 		// this line or comment it out.
-		// if (autonomousCommand != null)
-		// autonomousCommand.cancel();type name = new type();
+		if (autonomousCommand != null) {
+			autonomousCommand.cancel();
+		}
 		hasBeenEnabled = true;
 		Robot.states.mode = Mode.TELEOP;
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
-		
+
 		new DriverControlDrivetrain().start();
 	}
 
@@ -318,11 +331,10 @@ public class Robot extends IterativeRobot {
 		 * }
 		 */
 
-		/*if (pdp.getVoltage() < 9) {
-			compressor.setClosedLoopControl(false);
-		} else {
-			compressor.setClosedLoopControl(true);
-		}*/
+		/*
+		 * if (pdp.getVoltage() < 9) { compressor.setClosedLoopControl(false); }
+		 * else { compressor.setClosedLoopControl(true); }
+		 */
 
 		sdu.push();
 	}

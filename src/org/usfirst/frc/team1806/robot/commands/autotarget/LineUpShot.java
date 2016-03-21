@@ -9,6 +9,7 @@ import org.usfirst.frc.team1806.robot.commands.DriverControlDrivetrain;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
 import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
@@ -21,6 +22,8 @@ public class LineUpShot extends Command {
 	double targetAngle;
 	double voltage;
 	int stage;
+	
+	Timer autoTimer;
 
 	public LineUpShot() {
 		requires(Robot.drivetrainSS);
@@ -36,6 +39,8 @@ public class LineUpShot extends Command {
 		hasRumbled = false;
 		Robot.drivetrainSS.drivetrainTurnAbsolutePIDchangePID(Constants.drivetrainTurnP, Constants.drivetrainTurnI,
 				Constants.drivetrainTurnD);
+		
+		autoTimer = new Timer();
 
 		System.out.println("auto line up started");
 
@@ -66,7 +71,7 @@ public class LineUpShot extends Command {
 			}
 		} else if (goalFound && !withinRange) {
 			// found goal now line up
-			if (Math.abs(targetAngle - Robot.drivetrainSS.getYaw()) < .5) {
+			if (Math.abs(targetAngle - Robot.drivetrainSS.getYaw()) < .5){
 
 				System.out.println("on target");
 				withinRange = true;
@@ -75,10 +80,18 @@ public class LineUpShot extends Command {
 
 			}else{
 				evaluateSpeed();
+				autoTimer.reset();
+				autoTimer.start();
+				while(autoTimer.get() <= .1){
+					
+				}
+				
 			}
 		} else if (goalFound && withinRange && !hasRumbled && Robot.states.mode == Mode.TELEOP) {
 			System.out.println("rumbled");
 			new RumbleController(Robot.oi.dc).start();
+			//This makes the command recursive
+			//withinRange = false;
 			hasRumbled = true;
 		}
 
@@ -86,7 +99,7 @@ public class LineUpShot extends Command {
 
 	// Make this return true when this Command no longer needs to run execute()
 	protected boolean isFinished() {
-		return (Robot.oi.dc.getRightTrigger() < .4 && Robot.states.mode == Mode.TELEOP)
+		return ((hasRumbled || Robot.oi.dc.getRightTrigger() < .5) && Robot.states.mode == Mode.TELEOP)
 				|| (withinRange && Robot.states.mode == Mode.AUTONOMOUS);
 	}
 
@@ -105,11 +118,14 @@ public class LineUpShot extends Command {
 				new LineUpShot().start();
 			}else{
 				Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
+				new DriverControlDrivetrain().start();
 			}
 			
-			new DriverControlDrivetrain().start();
+			
 		}else if(Robot.states.mode == Mode.AUTONOMOUS){
-			if(Math.abs(Robot.jr.getAngleToGoal()) > .75){
+			
+			
+			if(Math.abs(Robot.jr.getAngleToGoal()) > .5){
 				new LineUpShot().start();
 			}else{
 				new ShootThenCock().start();
@@ -134,13 +150,28 @@ public class LineUpShot extends Command {
 		if(Math.abs(targetAngle - Robot.drivetrainSS.getYaw()) > 10){
 			//10 degree stage
 			stage = 3;
-			Robot.drivetrainSS.arcadeDrive(0, -.3 * Math.signum(targetAngle)  * 12.75/voltage);
-		}else if(Math.abs(targetAngle  - Robot.drivetrainSS.getYaw()) > 1){
+			Robot.drivetrainSS.arcadeDrive(0, -.3 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
+			
+			
+			
+		}
+		
+		else if(Math.abs(targetAngle  - Robot.drivetrainSS.getYaw()) > 5){
+			Robot.drivetrainSS.arcadeDrive(0, -.25 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
+		}
+		
+		else if(Math.abs(targetAngle  - Robot.drivetrainSS.getYaw()) > 3.5){
+			Robot.drivetrainSS.arcadeDrive(0, -.20 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
+		}
+		
+		else if(Math.abs(targetAngle  - Robot.drivetrainSS.getYaw()) > 2){
 			stage = 2;
-			Robot.drivetrainSS.arcadeDrive(0, -.19 * Math.signum(targetAngle)  * 12.75/voltage);
-		}else if(Math.abs(targetAngle - Robot.drivetrainSS.getYaw()) >= .5){
+			Robot.drivetrainSS.arcadeDrive(0, -.195 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
+		}else if(Math.abs(targetAngle - Robot.drivetrainSS.getYaw()) >= .4){
 			stage = 1;
-			Robot.drivetrainSS.arcadeDrive(0, -.19 * Math.signum(targetAngle) * 12.75/voltage);
+			Robot.drivetrainSS.arcadeDrive(0, -.19 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
+		}else{
+			Robot.drivetrainSS.arcadeDrive(0, 0);
 		}
 	}
 }

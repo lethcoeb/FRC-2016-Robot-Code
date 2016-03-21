@@ -39,15 +39,11 @@ public class ShooterSubsystem extends Subsystem {
     
     public void cockShooterEngageGear(){
     	//go at slow speed so the gear can catch
-    	//kgearengagespeed
     	cockingMotor.set(.25);
-    	//cockingMotor.set(.1);
-
     }
     
     public void cockShooterFullSpeed(){
     	cockingMotor.set(.6);
-
     }
     
     public void cockShooterReleaseDogGear(){
@@ -83,8 +79,7 @@ public class ShooterSubsystem extends Subsystem {
     }
 
     public void initDefaultCommand() {
-        // Set the default command for a subsystem here.
-        //setDefaultCommand(new MySpecialCommand());
+
     }
 }
 

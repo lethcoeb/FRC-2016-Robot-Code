@@ -78,7 +78,8 @@ public class TurnToAbsoluteAngle extends Command {
     			//step down to stage 2
     			stage = 2;
     			Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn2P, Constants.drivetrainTurn2I, Constants.drivetrainTurn2D);
-    			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID2Tolerance);
+    			//Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID2Tolerance);
+    			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(10);
     			Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage2);
     			Robot.drivetrainSS.drivetrainTurnPIDEnable();
     			

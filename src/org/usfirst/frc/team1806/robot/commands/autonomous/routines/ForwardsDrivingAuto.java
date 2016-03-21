@@ -5,6 +5,7 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
@@ -32,7 +33,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
     	}
     	if(lane == 1){
     		//if going low bar, get arm and intake ready for low bar
-    		addParallel(new MoveToGrabPosition_Deprecated());
+    		addParallel(new MoveToGrabPosition());
     	}
     	addSequential(new DriveUntilFlat(.8, 3.5));
 
