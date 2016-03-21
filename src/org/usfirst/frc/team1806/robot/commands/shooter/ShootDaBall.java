@@ -2,6 +2,7 @@ package org.usfirst.frc.team1806.robot.commands.shooter;
 
 import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.Robot;
+import org.usfirst.frc.team1806.robot.RobotStates.ShooterCocked;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
@@ -26,6 +27,7 @@ public class ShootDaBall extends Command {
     	Robot.shooterSS.releaseBall();
     	//ezpz
     	Robot.shooterSS.cockShooterReleaseDogGear();
+    	Robot.states.shooterCockedTracker = ShooterCocked.NOTCOCKED;
     }
 
     // Called repeatedly when this Command is scheduled to run

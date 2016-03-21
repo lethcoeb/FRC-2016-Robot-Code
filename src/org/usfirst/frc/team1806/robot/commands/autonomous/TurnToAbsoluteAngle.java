@@ -85,13 +85,15 @@ public class TurnToAbsoluteAngle extends Command {
     			System.out.println("moving to stage 2");
     		}else if(stage == 2){
     			//step down to stage 1
-    			stage = 1;
+    			/*stage = 1;
     			Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn3P, Constants.drivetrainTurn3I, Constants.drivetrainTurn3D);
     			Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.drivetrainTurnPID3Tolerance);
     			Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.drivetrainMaxRotationPIDStage3);
     			Robot.drivetrainSS.drivetrainTurnPIDEnable();
     			
-    			System.out.println("moving to stage 1");
+    			System.out.println("moving to stage 1");*/
+    			
+    			finished = true;
     		}else if(stage == 1 && Robot.jr.isAngleAcceptable()){
     			//should be done.
     			finished = true;

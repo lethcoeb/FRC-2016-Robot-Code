@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.SerialPort;
 import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.command.CommandGroup;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -24,15 +25,24 @@ import org.usfirst.frc.team1806.robot.RobotStates.Mode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.commands.DriverControlDrivetrain;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
+import org.usfirst.frc.team1806.robot.commands.Wait;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
+import org.usfirst.frc.team1806.robot.commands.autonomous.DriveToPosition;
 import org.usfirst.frc.team1806.robot.commands.autonomous.FourteenInchMode;
 import org.usfirst.frc.team1806.robot.commands.autonomous.RobotReset;
+import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAbsoluteAngle;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.BackwardsDrivingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoNothingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoSomething;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ForwardsDrivingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallNoSteal;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallSteal;
+import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
+import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
 import org.usfirst.frc.team1806.robot.commands.shooter.PinchBall;
 import org.usfirst.frc.team1806.robot.commands.shooter.SecureBall;
@@ -61,7 +71,7 @@ public class Robot extends IterativeRobot {
 	public static RobotStates states;
 	
 
-	Command autonomousCommand;
+	CommandGroup autonomousCommand;
 	SendableChooser xBall, robotStartingPos, waitPosition;
 
 	public static JetsonReceiver jr;
@@ -195,10 +205,29 @@ public class Robot extends IterativeRobot {
 	 * to the switch structure below with additional strings & commands.
 	 */
 	public void autonomousInit() {
-		hasBeenEnabled = true;
+		
 		Robot.states.mode = Mode.AUTONOMOUS;
+		hasBeenEnabled = true;
+		
+		autonomousCommand = new CommandGroup();
+		CommandGroup subgroupCommandGroup = new CommandGroup();
+		subgroupCommandGroup.addSequential(new Wait(4));
+		subgroupCommandGroup.addSequential(new MoveToShootingHeight());
+		
 		Robot.drivetrainSS.shiftLow();
-		if(autonomous.getSelected() == "N"){
+		Robot.drivetrainSS.resetYaw();
+		Robot.drivetrainSS.resetEncoders();
+		autonomousCommand.addSequential(new LowerIntake(.5));
+		autonomousCommand.addSequential(new MoveToHoldingPID());
+		//autonomousCommand.addParallel(subgroupCommandGroup);
+		autonomousCommand.addSequential(new DriveToPosition(21, .85));
+		autonomousCommand.addParallel(new MoveToShootingHeight());
+		autonomousCommand.addSequential(new TurnToAbsoluteAngle(62));
+		autonomousCommand.addSequential(new DriveToPosition(2, .5));
+		autonomousCommand.addSequential(new LineUpShot());
+		
+		
+		/*if(autonomous.getSelected() == "N"){
 			autonomousCommand = new RobotReset();
 		}
 		else{
@@ -208,7 +237,7 @@ public class Robot extends IterativeRobot {
 			else{
 				autonomousCommand = new BackwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(), (boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
 			}
-		}
+		}*/
 		
 		autonomousCommand.start();
 		/*String autoSelected = SmartDashboard.getString("Auto Selector", "Default");
@@ -289,11 +318,11 @@ public class Robot extends IterativeRobot {
 		 * }
 		 */
 
-		if (pdp.getVoltage() < 9) {
+		/*if (pdp.getVoltage() < 9) {
 			compressor.setClosedLoopControl(false);
 		} else {
 			compressor.setClosedLoopControl(true);
-		}
+		}*/
 
 		sdu.push();
 	}

@@ -7,8 +7,8 @@ import org.usfirst.frc.team1806.robot.commands.Wait;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveToPosition;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToVisionAngle;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition_Deprecated;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
@@ -39,12 +39,12 @@ public class OneBallNoSteal extends CommandGroup {
 		if (!kDelay) {
 			// starting right in front of defense
 			addParallel(new LowerIntake());
-			addSequential(new MoveToGrabPosition());
+			addSequential(new MoveToGrabPosition_Deprecated());
 			addSequential(new DriveToPosition(Constants.overDefense, 1));
 		} else {
 			// you're waiting
 			addParallel(new LowerIntake());
-			addParallel(new MoveToGrabPosition());
+			addParallel(new MoveToGrabPosition_Deprecated());
 			addSequential(new Wait(Constants.lowBarToShotDelaySeconds));
 			addSequential(new DriveToPosition(Constants.overDefensePlusDelay, 1));
 		}
@@ -55,44 +55,44 @@ public class OneBallNoSteal extends CommandGroup {
 		if (startingDefense == 1) {
 			//defense 1, low bar
 			addSequential(new DriveToPosition(Constants.lowBarToAngledShot, 1));
-			addParallel(new MoveToShootingHeight());
+			addParallel(new MoveToShootingHeight_Deprecated());
 			addSequential(new TurnToAngle(Constants.lowBarAngleToGoal));
 			addSequential(new TurnToVisionAngle());
 			addSequential(new ShootThenCock());
-			addSequential(new MoveToGrabPosition());
+			addSequential(new MoveToGrabPosition_Deprecated());
 		}else if(startingDefense == 2){
 			//defense 2
 			addSequential(new TurnToAngle(90));
 			addSequential(new DriveToPosition(Constants.defense2toDefense4, 1));
-			addParallel(new MoveToShootingHeight());
+			addParallel(new MoveToShootingHeight_Deprecated());
 			addSequential(new TurnToAngle(0));
 			addSequential(new TurnToVisionAngle());
 			addSequential(new ShootThenCock());
-			addSequential(new MoveToGrabPosition());
+			addSequential(new MoveToGrabPosition_Deprecated());
 		}else if(startingDefense == 3){
-			addParallel(new MoveToShootingHeight());
+			addParallel(new MoveToShootingHeight_Deprecated());
 			addSequential(new TurnToAngle(Constants.defense3angleToGoal));
 			addSequential(new TurnToVisionAngle());
 			addSequential(new ShootThenCock());
-			addSequential(new MoveToGrabPosition());
+			addSequential(new MoveToGrabPosition_Deprecated());
 			
 			//defense 3
 		}else if(startingDefense == 4){
 			//defense 4
 			//basically already on target
-			addParallel(new MoveToShootingHeight());
+			addParallel(new MoveToShootingHeight_Deprecated());
 			addSequential(new TurnToVisionAngle());
 			addSequential(new ShootThenCock());
-			addSequential(new MoveToGrabPosition());
+			addSequential(new MoveToGrabPosition_Deprecated());
 		}else{
 			//defense 5
 			addSequential(new TurnToAngle(-90));
 			addSequential(new DriveToPosition(Constants.defense2toDefense4, 1));
-			addParallel(new MoveToShootingHeight());
+			addParallel(new MoveToShootingHeight_Deprecated());
 			addSequential(new TurnToAngle(0));
 			addSequential(new TurnToVisionAngle());
 			addSequential(new ShootThenCock());
-			addSequential(new MoveToGrabPosition());
+			addSequential(new MoveToGrabPosition_Deprecated());
 		}
 
 	}

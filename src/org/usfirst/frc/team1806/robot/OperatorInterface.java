@@ -6,6 +6,7 @@ import edu.wpi.first.wpilibj.Joystick.RumbleType;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.command.CommandGroup;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import util.Latch;
 import util.XboxController;
@@ -31,12 +32,18 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAbsoluteAngle;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
+import org.usfirst.frc.team1806.robot.commands.elevator.IncrementUp;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToLocationPID;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.TempMoveToChevalDeFunHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.TempMoveToGrabHeight;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
+import org.usfirst.frc.team1806.robot.commands.elevator.SetStateHolding;
+import org.usfirst.frc.team1806.robot.commands.elevator.SetStateShooting;
 import org.usfirst.frc.team1806.robot.commands.intake.CollectBall;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.intake.RaiseIntake;
@@ -66,16 +73,18 @@ public class OperatorInterface {
 	public boolean oPOVUp, oPOVDown;
 
 	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch,
-			chevalDeFunLatch, elevatorLowBarModeLatch;
+			chevalDeFunLatch, elevatorLowBarModeLatch, incrementLatch;
 
 	final double kJoystickDeadzone = .15;
 
 	// TODO remove this
 	Joystick j;
+	Joystick j2;
 	JoystickButton a;
 	JoystickButton b;
 
 	public OperatorInterface() {
+		
 
 		dc = new XboxController(0);
 		oc = new XboxController(1);
@@ -87,14 +96,19 @@ public class OperatorInterface {
 		cockingRequestLatch = new Latch();
 		chevalDeFunLatch = new Latch();
 		elevatorLowBarModeLatch = new Latch();
+		incrementLatch = new Latch();
 
 		m_commands = new Commands();
 
 		// TODO remove this
 		j = new Joystick(0);
+		j2 = new Joystick(1);
 		a = new JoystickButton(j, 1);
+		b = new JoystickButton(j2, 1);
 		//a.whenPressed(new DriveOverAndTurn());
-		a.whenPressed(new ResetNavx());
+		//a.whenPressed(new ResetNavx());
+		b.whenPressed(new IncrementUp(750));
+		
 
 	}
 
@@ -160,7 +174,7 @@ public class OperatorInterface {
 		}
 
 		if (moveShooterLatch.update(dB)) {
-			// reposition it
+			// reposition shooter from holding to shooting height or vice versa
 			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.SWITCH;
 		} else {
 			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.NONE;
@@ -187,6 +201,10 @@ public class OperatorInterface {
 			m_commands.manualCockCommandTracker = ManualCockCommand.COCK;
 		} else {
 			m_commands.manualCockCommandTracker = ManualCockCommand.NONE;
+		}
+		
+		if(incrementLatch.update(oA)){
+			new IncrementUp(125).start();
 		}
 
 		return m_commands;
@@ -225,12 +243,15 @@ public class OperatorInterface {
 			 */true) {
 			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall
 					&& Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.INTAKING && !Robot.states.collectingBalling) {
-				if (Robot.elevatorSS.getElevatorSetpoint() != Constants.elevatorShootingHeight) {
+				if (Robot.elevatorSS.getElevatorSetpoint() != Constants.elevatorShootingHeight && Robot.states.shooterCockedTracker == ShooterCocked.COCKED) {
 					// TODO is there a better way to do this other than reading
 					// the setpoint?
 					new CollectBall().start();
+					Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
+				}else if(Robot.states.shooterCockedTracker == ShooterCocked.NOTCOCKED){
+					//new ManualCock().start();
 				}
-				Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
+				
 			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.OUTTAKE) {
 				if (Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.OUTTAKING
 						&& (Robot.elevatorSS.getElevatorPosition() < 8000
@@ -280,13 +301,21 @@ public class OperatorInterface {
 				&& Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.AUTO) {
 			if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
 				new MoveToShootingHeight().start();
+				//new MoveToLocationPID(Constants.elevatorShootingHeight).start();
+				//new MoveToShootingHeight().start();
 			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.UP) {
 				new MoveToHoldingPID().start();
+				//new MoveToLocationPID(Constants.elevatorHoldingHeight).start();
+				//new MoveToHoldingPID().start();
 			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.OTHER) {
-				if (Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorShootingHeight) {
-					new MoveToGrabPosition().start();
-				} else {
+				if (Robot.elevatorSS.getElevatorSetpoint() == Constants.elevatorHoldingHeight) {
 					new MoveToShootingHeight().start();
+					//new MoveToLocationPID(Constants.elevatorShootingHeight).start();
+					//new MoveToHoldingPID().start();
+				} else {
+					new MoveToHoldingPID().start();
+					//new MoveToLocationPID(Constants.elevatorHoldingHeight).start();
+					//new MoveToShootingHeight().start();
 				}
 			}
 		} else if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.MANUAL) {

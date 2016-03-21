@@ -17,7 +17,8 @@ import edu.wpi.first.wpilibj.command.Command;
 public class ResetElevator extends Command {
 
 	boolean finished = false;
-
+	boolean failedToStart = false;
+	
 	public ResetElevator() {
 		requires(Robot.elevatorSS);
 	}
@@ -37,6 +38,7 @@ public class ResetElevator extends Command {
 			Robot.intakeSS.runAtSpeed(-Constants.intakeSpeedToMatchArm + .3);
 		} else {
 			finished = true;
+			failedToStart = true;
 		}
 	}
 
@@ -68,7 +70,9 @@ public class ResetElevator extends Command {
 	protected void end() {
 		Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
 		Robot.states.elevatorOperatorControlModeTracker = ElevatorOperatorControlMode.AUTO;
-		new MoveToHoldingFromLow(Robot.states.hasBall).start();
+		if(!failedToStart){
+			new MoveToHoldingFromLow(Robot.states.hasBall).start();
+		}
 	}
 
 	// Called when another command which requires one or more of the same

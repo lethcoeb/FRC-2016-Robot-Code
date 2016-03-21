@@ -5,9 +5,11 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
@@ -30,7 +32,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
     	}
     	if(lane == 1){
     		//if going low bar, get arm and intake ready for low bar
-    		addParallel(new MoveToGrabPosition());
+    		addParallel(new MoveToGrabPosition_Deprecated());
     	}
     	addSequential(new DriveUntilFlat(.8, 3.5));
 

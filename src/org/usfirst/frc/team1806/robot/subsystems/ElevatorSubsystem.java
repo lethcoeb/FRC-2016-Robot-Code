@@ -38,16 +38,17 @@ public class ElevatorSubsystem extends Subsystem {
 		bottomLimit = new DigitalInput(RobotMap.bottomElevatorLimit);
 		// topLimit = new DigitalInput(RobotMap.topElevatorLimit);
 
-		// TODO delete me
 		elevatorSRX = new CANTalon(0);
 		elevatorSRX.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 		// starts in pid mode
 		elevatorSRX.changeControlMode(TalonControlMode.Position);
-		elevatorSRX.setPID(.05, 0.000005, 0.01);
+		//elevatorSRX.setPID(0, 0, 0);
+		elevatorSRX.setPID(Constants.elevatorPIDp, Constants.elevatorPIDi, Constants.elevatorPIDd);
 		elevatorSRX.reverseOutput(false);
 		elevatorSRX.reverseSensor(true);
-		elevatorSRX.configPeakOutputVoltage(14, -14);
-		elevatorSRX.setCloseLoopRampRate(1);
+		elevatorSRX.setAllowableClosedLoopErr(0);
+		//elevatorSRX.configPeakOutputVoltage(14, -14);
+		//elevatorSRX.setCloseLoopRampRate(1);
 		//elevatorSRX.
 		elevatorSRX.enable();
 
@@ -55,42 +56,48 @@ public class ElevatorSubsystem extends Subsystem {
 
 	public void elevatorEnable() {
 		elevatorSRX.enable();
+		elevatorSRX.enableControl();
 	}
 
 	public void elevatorDisable() {
 		elevatorSRX.disable();
 	}
-
+	
+	public double elevatorGetPowerOutput(){
+		return elevatorSRX.getOutputVoltage();
+	}
+	
+	public void elevatorSetPIDValues(double p, double i, double d){
+		elevatorSRX.setP(p);
+		elevatorSRX.setI(i);
+		elevatorSRX.setD(d);
+	}
+	
 	public void elevatorSetControlMode(TalonControlMode cm) {
 		elevatorSRX.changeControlMode(cm);
 	}
 
-	public void elevatorSetSetpoint(int setpoint) {
-		elevatorSRX.setSetpoint(setpoint);
-		elevatorSetpoint = setpoint;
+	public void elevatorSetSetpoint(double setpoint) {
+		System.out.println(setpoint);
+		elevatorSRX.set(setpoint);
+		elevatorSetpoint = (int) setpoint;
 	}
 
 	public void elevatorMoveAtSpeed(double speed) {
 		// for manual mode - directly set speed
-		if(speed == 0){
-			elevatorSRX.set(0);
-		}
-		else if (isBottomLimitHit() && speed < 0) {
-			
-				elevatorSRX.set(0);
-			
+		
+		if (isBottomLimitHit() && speed < 0) {
+			speed = 0;
 			Robot.states.shooterArmPositionTracker = ShooterArmPosition.DOWN;
-		} else {
-			//hella set it to whatever
-			if (elevatorSRX.getControlMode() != TalonControlMode.PercentVbus) {
-				elevatorSRX.changeControlMode(TalonControlMode.PercentVbus);
-			}
-			elevatorSRX.set(speed);
 		}
+		
+		elevatorSetControlMode(TalonControlMode.PercentVbus);
+		elevatorSRX.set(speed);
 
 	}
 
 	public void elevatorStopMovement() {
+		//elevatorSRX.disableControl();
 		if (elevatorSRX.getControlMode() == TalonControlMode.Position) {
 			elevatorSRX.disable();
 		} else {
@@ -111,7 +118,9 @@ public class ElevatorSubsystem extends Subsystem {
 	}
 
 	public boolean isElevatorPIDOnTarget() {
-		return Math.abs(elevatorSRX.getPosition() - elevatorSRX.getSetpoint()) < Constants.elevatorAbsoluteTolerance;
+		//System.out.println(Math.abs(elevatorSRX.getPosition() - elevatorSRX.getSetpoint()));
+		System.out.println(elevatorSRX.getClosedLoopError());
+		return Math.abs(elevatorSRX.getClosedLoopError()) < Constants.elevatorAbsoluteTolerance;
 	}
 
 	public double getElevatorPosition() {
@@ -133,6 +142,7 @@ public class ElevatorSubsystem extends Subsystem {
 		elevatorSRX.reset();
 		elevatorSRX.disable();
 		elevatorSRX.enable();
+		elevatorSRX.enableControl();
 	}
 
 	/*

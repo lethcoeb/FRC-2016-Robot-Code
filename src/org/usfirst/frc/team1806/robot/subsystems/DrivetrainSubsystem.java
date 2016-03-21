@@ -57,7 +57,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);
     	rightEncoder.setReverseDirection(true);
-    	leftEncoder.setReverseDirection(true);
+    	leftEncoder.setReverseDirection(false);
     	rightEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
     	leftEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
     	
@@ -92,7 +92,7 @@ public class DrivetrainSubsystem extends Subsystem {
 				if(Math.abs(output) > maxSpeed){
 					output = maxSpeed * Math.signum(output);
 				}
-				execute(output, getYaw() * .1);
+				execute(output, getYaw() * .05);
 			}
 		};
 		

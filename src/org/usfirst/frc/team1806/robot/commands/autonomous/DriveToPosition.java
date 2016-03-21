@@ -35,11 +35,12 @@ public class DriveToPosition extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return Math.abs(Robot.drivetrainSS.getRightEncoderDistance()) > Math.abs(kTargetPos);
+        return Math.abs(Robot.drivetrainSS.getRightEncoderDistance()) > Math.abs(kTargetPos) || Math.abs(Robot.drivetrainSS.getLeftEncoderDistance()) > Math.abs(kTargetPos);
     }
 
     // Called once after isFinished returns true
     protected void end() {
+    	Robot.drivetrainSS.arcadeDrive(-.5 * Math.signum(kTargetPos), 0);
     	Robot.drivetrainSS.drivetrainDrivePIDResetMaxSpeed();
     	Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
     	Robot.drivetrainSS.drivetrainDrivePIDDisable();
@@ -48,6 +49,7 @@ public class DriveToPosition extends Command {
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
+    	Robot.drivetrainSS.arcadeDrive(-.5 * Math.signum(kTargetPos), 0);
     	Robot.drivetrainSS.drivetrainDrivePIDResetMaxSpeed();
     	Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
     	Robot.drivetrainSS.drivetrainDrivePIDDisable();

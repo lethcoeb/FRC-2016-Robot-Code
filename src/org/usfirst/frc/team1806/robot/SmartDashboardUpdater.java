@@ -41,12 +41,12 @@ public class SmartDashboardUpdater {
 			SmartDashboard.putBoolean("optical", Robot.shooterSS.hasBallSensor());
 
 			SmartDashboard.putNumber("True Angle", Robot.drivetrainSS.getTrueAngle());
-			SmartDashboard.putNumber("Winch current", Robot.pdp.getCurrent(13));
+		//	SmartDashboard.putNumber("Winch current", Robot.pdp.getCurrent(13));
 
-			SmartDashboard.putNumber("total current", Robot.pdp.getTotalCurrent());
+			//SmartDashboard.putNumber("total current", Robot.pdp.getTotalCurrent());
 
 			SmartDashboard.putString("intake control mode", Robot.states.intakeControlModeTracker.toString());
-			SmartDashboard.putNumber("Winch Resistence", Robot.getPDPResistance(RobotMap.PDPcockingWinchSlot));
+			//SmartDashboard.putNumber("Winch Resistence", Robot.getPDPResistance(RobotMap.PDPcockingWinchSlot));
 
 			/*if (!Robot.jr.isGoalFound()) {
 				SmartDashboard.putString("Angle to goal", "N/A");

@@ -1,25 +1,22 @@
-package org.usfirst.frc.team1806.robot.commands;
+package org.usfirst.frc.team1806.robot.commands.elevator;
 
-import edu.wpi.first.wpilibj.Timer;
+import org.usfirst.frc.team1806.robot.Robot;
+import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
+
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
  *
  */
-public class Wait extends Command {
-	
-	Timer t;
-	double kWaitSeconds;
-	
-    public Wait(double seconds) {
-        t = new Timer();
-        kWaitSeconds = seconds;
-        t.reset();
-        t.start();
+public class SetStateGrab extends Command {
+
+    public SetStateGrab() {
+    	requires(Robot.elevatorSS);
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
+    	Robot.states.shooterArmPositionTracker = ShooterArmPosition.DOWN;
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -28,12 +25,11 @@ public class Wait extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return t.get() >= kWaitSeconds;
+        return true;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	System.out.println("Done waiting!!!!!");
     }
 
     // Called when another command which requires one or more of the same

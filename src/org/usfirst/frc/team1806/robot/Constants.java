@@ -62,19 +62,26 @@ public class Constants {
 
 	public static final int loopsToCheckSensorDisconnect = 10;
 	// ELEVATOR THINGS
-	public static final double elevatorPIDp = .01;
+
+	public static final double elevatorPIDp = 0.15;
 	public static final double elevatorPIDi = 0;
 	public static final double elevatorPIDd = 0;
-	public static final double elevatorAbsoluteTolerance = 1500;
+	public static final double elevatorAbsoluteTolerance = 500;
+	public static final double elevatorDownPIDp = .12;
+	public static final double elevatorDownPIDi = 0;
+	public static final double elevatorDownPIDd = 0;
 
 	//public static final double elevatorShootingHeight = 103560; :: comp bot
-	public static final int elevatorShootingHeight = 94800;
-	public static final int elevatorHoldingHeight = 20000;
+	public static final int elevatorShootingHeight = 98000;
+	//public static final int elevatorHoldingHeight = 20000;
+	public static final int elevatorHoldingHeight = 26000;
 	public static final int elevatorChevaldeFunHeight = 70000; //lowest height at which the intake can be raised and lowered
 	public static final double resetSpeed = -.35;
 	public static final double collectingIntakeStopOffset = -3000;
 	
 	public static final double elevatorIntakeEngagedHeight = 30000;
+	
+	public static final double elevatorPIDEngageDistance = 10000;
 	// position where the ball is no longer engaged w/ the intake while held
 	// with the claw. After the elevator surpasses this height,
 	// it's safe to move the elevator around without using the collector to help
@@ -119,7 +126,7 @@ public class Constants {
 	//TODO: Make distance range reasonable.
 	public static final double ShootingMinGoalDistance = 4;
 	public static final double ShootingMaxGoalDistance = 12;
-	public static final double ShootingJetsonCameraAngleOffset = 0.628;
+	public static final double ShootingJetsonCameraAngleOffset = 0;
 
 	// Networking stuff
 	public static final double jetsonConnectionLostTimeout = 1; // timeout until
