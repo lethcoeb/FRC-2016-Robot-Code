@@ -33,6 +33,7 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAbsoluteAngle;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.IncrementUp;
+import org.usfirst.frc.team1806.robot.commands.elevator.ManualMove;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
@@ -73,7 +74,7 @@ public class OperatorInterface {
 	public boolean oPOVUp, oPOVDown;
 
 	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch,
-			chevalDeFunLatch, elevatorLowBarModeLatch, incrementLatch;
+			chevalDeFunLatch, elevatorLowBarModeLatch, incrementLatch, testLatch;
 
 	final double kJoystickDeadzone = .15;
 
@@ -97,6 +98,7 @@ public class OperatorInterface {
 		chevalDeFunLatch = new Latch();
 		elevatorLowBarModeLatch = new Latch();
 		incrementLatch = new Latch();
+		testLatch = new Latch();
 
 		m_commands = new Commands();
 
@@ -173,7 +175,7 @@ public class OperatorInterface {
 			m_commands.autoLineUp = false;
 		}
 
-		if (moveShooterLatch.update(dB)) {
+		if (moveShooterLatch.update(oB)) {
 			// reposition shooter from holding to shooting height or vice versa
 			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.SWITCH;
 		} else {
@@ -186,7 +188,7 @@ public class OperatorInterface {
 			m_commands.shootRequestTracker = ShootRequest.NONE;
 		}
 
-		if (elevatorManualAutoLatch.update(dc.getButtonRS())) {
+		if (elevatorManualAutoLatch.update(oc.getButtonRB())) {
 			if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.AUTO) {
 				m_commands.elevatorControlModeTracker = ElevatorControlMode.MANUAL;
 			} else {
@@ -269,9 +271,11 @@ public class OperatorInterface {
 		}
 		
 		//TODO clean this up
-		if(m_commands.intakeCommandTracker == RunIntakeCommand.STOP && Robot.states.intakeRollerStateTracker == IntakeRollerState.STOPPED){
+		if(m_commands.intakeCommandTracker == RunIntakeCommand.STOP){
 			if(Math.abs(orsY) > .2){
 				Robot.intakeSS.runAtSpeed(orsY);
+			}else{
+				Robot.intakeSS.stopIntaking();
 			}
 		}
 
@@ -290,10 +294,10 @@ public class OperatorInterface {
 		}
 
 		if (c.elevatorControlModeTracker == ElevatorControlMode.AUTO) {
+			Robot.elevatorSS.elevatorStopMovement();
 			Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
 			Robot.states.elevatorOperatorControlModeTracker = ElevatorOperatorControlMode.AUTO;
-		} else if (c.elevatorControlModeTracker == ElevatorControlMode.MANUAL) {
-			Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.PercentVbus);
+		} else if (c.elevatorControlModeTracker == ElevatorControlMode.MANUAL && !(Robot.states.elevatorOperatorControlModeTracker == RobotStates.ElevatorOperatorControlMode.MANUAL)) {
 			Robot.states.elevatorOperatorControlModeTracker = ElevatorOperatorControlMode.MANUAL;
 		}
 
@@ -319,10 +323,10 @@ public class OperatorInterface {
 				}
 			}
 		} else if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.MANUAL) {
-			if (orsY > kJoystickDeadzone) {
+			if(Math.abs(olsY) > .15){
 				Robot.elevatorSS.elevatorMoveAtSpeed(olsY);
-			} else {
-				Robot.elevatorSS.elevatorMoveAtSpeed(0);
+			}else{
+				Robot.elevatorSS.elevatorStopMovement();
 			}
 		}
 

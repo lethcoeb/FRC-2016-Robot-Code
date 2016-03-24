@@ -50,6 +50,12 @@ public class ElevatorSubsystem extends Subsystem {
 		//elevatorSRX.configPeakOutputVoltage(14, -14);
 		//elevatorSRX.setCloseLoopRampRate(1);
 		//elevatorSRX.
+		
+		elevatorSRX.setForwardSoftLimit(100000);
+		elevatorSRX.enableForwardSoftLimit(true);
+		elevatorSRX.setReverseSoftLimit(-500);
+		elevatorSRX.enableReverseSoftLimit(true);
+		
 		elevatorSRX.enable();
 
 	}

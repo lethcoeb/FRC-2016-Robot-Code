@@ -327,7 +327,7 @@ public class DrivetrainSubsystem extends Subsystem {
     }
     
     public boolean drivetrainDrivePIDisOnTarget(){
-    	return drivePC.onTarget();
+    	return Math.abs(drivePC.getError()) < Constants.drivetrainDrivePIDTolerance;
     }
     
     public void drivetrainTurnPIDEnable(){

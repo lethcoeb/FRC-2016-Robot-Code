@@ -10,16 +10,17 @@ public class Constants {
 	public static final double joystickDeadzone = .15;
 
 	// FIXME this
-	public static final double encoderCountsPerRevolution = .01;
+	//public static final double encoderCountsPerRevolution = .01;
+	public static final double encoderCountsPerRevolution = .0947368421;
 	public static final double drivetrainMaxRotationPIDStage1 = 1; //degrees per second
 	public static final double drivetrainMaxRotationPIDStage2 = .2; //degrees per second
 	public static final double drivetrainMaxRotationPIDStage3 = .15; //degrees per second
 
 	// DRIVETRAIN THINGS
-	public static final double drivetrainDriveP = .5;
-	public static final double drivetrainDriveI = 0;
-	public static final double drivetrainDriveD = 0;
-	public static final double drivetrainDrivePIDTolerance = 1; // inches
+	public static final double drivetrainDriveP = .025;
+	public static final double drivetrainDriveI = 0.0001;
+	public static final double drivetrainDriveD = 0.03;
+	public static final double drivetrainDrivePIDTolerance = 2; // inches
 	
 	//jones wants to do only i
 	//public static final double drivetrainTurnP = .07;

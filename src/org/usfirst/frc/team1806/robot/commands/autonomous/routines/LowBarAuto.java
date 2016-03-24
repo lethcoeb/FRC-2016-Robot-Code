@@ -23,14 +23,14 @@ public class LowBarAuto extends CommandGroup {
     	
     	CommandGroup beforeLowBar = new CommandGroup();
     	beforeLowBar.addParallel(lowerArms);
-    	beforeLowBar.addSequential(new DriveToPosition(3, .4));
+    	beforeLowBar.addSequential(new DriveToPosition(30, .4));
     	
     	addSequential(beforeLowBar);
     	
-    	addSequential(new DriveToPosition(17, .75));
+    	addSequential(new DriveToPosition(155, .75));
     	addParallel(new MoveToLocationPID(97750));
     	addSequential(new TurnToAbsoluteAngle(62));
-		addSequential(new DriveToPosition(4, .5));
+		addSequential(new DriveToPosition(44, .5));
 		addSequential(new SetStateShooting());
 		addSequential(new LineUpShot());
     	

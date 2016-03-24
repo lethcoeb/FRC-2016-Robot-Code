@@ -50,6 +50,8 @@ public class RobotStates {
 	public boolean autoLiningUp;
 	public boolean hasBall;
 	
+	public int overshoot;
+	
 	public IntakePosition intakePositionTracker;
 	public ShooterArmPosition shooterArmPositionTracker;
 	public DriveControlMode driveControlModeTracker;
@@ -76,6 +78,7 @@ public class RobotStates {
 		hasBall = true;
 		autoLiningUp = false;
 		collectingBalling = false;
+		overshoot = 0;
 	}
 	
 }

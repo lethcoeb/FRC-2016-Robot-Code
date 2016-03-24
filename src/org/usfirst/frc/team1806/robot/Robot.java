@@ -174,6 +174,10 @@ public class Robot extends IterativeRobot {
 		// rvt.start();
 
 		// compressor.setClosedLoopControl(false);
+		
+		
+		SmartDashboard.putNumber("PulsePower", .24);
+		SmartDashboard.putNumber("PulseWidth", .01);
 
 	}
 
@@ -194,6 +198,7 @@ public class Robot extends IterativeRobot {
 
 		if (!hasBeenEnabled) {
 			Robot.elevatorSS.elevatorSetPosition(-97750);
+			//Robot.elevatorSS.elevatorSetPosition(-Constants.elevatorShootingHeight);
 		}
 		// System.out.println("Get POV: " + oi.oc.getPOV());
 		// System.out.println("Get POV Count: " + oi.oc.getPOVCount());
@@ -257,6 +262,8 @@ public class Robot extends IterativeRobot {
 
 		//autonomousCommand.addSequential(new Turn90(2.5, true));
 
+		//autonomousCommand.addSequential(new ChevalDeFriseAuto(false, 2));
+		//autonomousCommand.addSequential(new DriveToPosition(72, .6));
 		autonomousCommand.addSequential(new LowBarAuto());
 		autonomousCommand.start();
 		/*
@@ -303,9 +310,10 @@ public class Robot extends IterativeRobot {
 		// teleop starts running. If you want the autonomous to
 		// continue until interrupted by another command, remove
 		// this line or comment it out.
-		if (autonomousCommand != null) {
+		
+		/*if (autonomousCommand != null) {
 			autonomousCommand.cancel();
-		}
+		}*/
 		hasBeenEnabled = true;
 		Robot.states.mode = Mode.TELEOP;
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
@@ -337,6 +345,7 @@ public class Robot extends IterativeRobot {
 		 */
 
 		sdu.push();
+		
 	}
 
 	/**

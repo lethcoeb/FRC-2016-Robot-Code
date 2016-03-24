@@ -1,5 +1,7 @@
 package org.usfirst.frc.team1806.robot.commands.autotarget;
 
+import javax.print.attribute.standard.Compression;
+
 import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.OperatorInterface;
 import org.usfirst.frc.team1806.robot.Robot;
@@ -11,6 +13,7 @@ import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  *
@@ -18,12 +21,21 @@ import edu.wpi.first.wpilibj.command.Command;
 public class LineUpShot extends Command {
 
 	boolean goalFound, withinRange, hasRumbled;
-	
+
 	double targetAngle;
 	double voltage;
 	int stage;
-	
+
 	Timer autoTimer;
+	double pulsePower;
+	double pulseWidth;
+
+	boolean finished;
+
+	boolean PIDEnabled = false;
+
+	int loops = 0;
+	int goalLoops;
 
 	public LineUpShot() {
 		requires(Robot.drivetrainSS);
@@ -32,320 +44,147 @@ public class LineUpShot extends Command {
 
 	// Called just before this Command runs the first time
 	protected void initialize() {
+		
+		Robot.compressor.stop();
+
+		// Determine angle from goal
+
+		
+		
+		targetAngle = Robot.jr.getAngleToGoal();
+		
+		if(Math.abs(targetAngle) > 15){
+			goalLoops = Math.abs((int) ((targetAngle / .1) * .6));
+		}else if(Math.abs(targetAngle) > 8){
+			goalLoops = Math.abs((int) ((targetAngle / .1) * .65));
+		}else if(Math.abs(targetAngle) > 4){
+			goalLoops = Math.abs((int) ((targetAngle / .1) * .8));
+		}else{
+			goalLoops = Math.abs((int) ((targetAngle / .1) * .5));
+		}
+		
+		goalLoops = goalLoops - Robot.states.overshoot;
+		if(goalLoops < 2){
+			goalLoops = 2;
+		}
+		System.out.println(goalLoops);
+		
+
+		pulsePower = SmartDashboard.getNumber("PulsePower");
+		pulseWidth = SmartDashboard.getNumber("PulseWidth");
 
 		Robot.drivetrainSS.resetYaw();
-		goalFound = false;
-		withinRange = false;
-		hasRumbled = false;
-		Robot.drivetrainSS.drivetrainTurnAbsolutePIDchangePID(Constants.drivetrainTurnP, Constants.drivetrainTurnI,
-				Constants.drivetrainTurnD);
 		
 		autoTimer = new Timer();
-
-		System.out.println("auto line up started");
+		autoTimer.reset();
+		autoTimer.start();
 
 	}
 
 	// Called repeatedly when this Command is scheduled to run
 	protected void execute() {
 
-		if (!goalFound) {
-			// allow driver to move the drivetrain to where the robot sees the
-			// goal
-			if (Robot.jr.isGoalFound()) {
-				System.out.println("goal found!");
-				goalFound = true;
-				Robot.states.driveControlModeTracker = DriveControlMode.AUTO;
-				System.out.println(Robot.jr.getAngleToGoal());
-				targetAngle = Robot.jr.getAngleToGoal();
-				Robot.drivetrainSS.shiftLow();
-				evaluateSpeed();
-				
-				
-
-			} else if (Robot.states.mode == Mode.TELEOP) {
-				Robot.drivetrainSS.execute(Robot.drivetrainSS.zoneInput(Robot.oi.dc.getLeftJoyY()),
-						Robot.drivetrainSS.zoneInput(-Robot.oi.dc.getRightJoyX()));
-			} else if (Robot.states.mode == Mode.AUTONOMOUS) {
-				// TODO make a 'autosearch' function
-			}
-		} else if (goalFound && !withinRange) {
-			// found goal now line up
-			if (Math.abs(targetAngle - Robot.drivetrainSS.getYaw()) < .5){
-
-				System.out.println("on target");
-				withinRange = true;
-				Robot.drivetrainSS.arcadeDrive(0, 0);
-
-
-			}else{
-				evaluateSpeed();
+		if (loops < goalLoops) {
+			if (autoTimer.get() >= pulseWidth) {
+				loops++;
 				autoTimer.reset();
 				autoTimer.start();
-				while(autoTimer.get() <= .1){
-					
-				}
-				
+				Robot.drivetrainSS.arcadeDrive(0, pulsePower * -Math.signum(targetAngle));
 			}
-		} else if (goalFound && withinRange && !hasRumbled && Robot.states.mode == Mode.TELEOP) {
-			System.out.println("rumbled");
-			new RumbleController(Robot.oi.dc).start();
-			//This makes the command recursive
-			//withinRange = false;
-			hasRumbled = true;
+		}else{
+			//done
+			Robot.drivetrainSS.arcadeDrive(0, 0);
+			finished = true;
+		}
+		
+		if(Math.abs(Robot.drivetrainSS.getYaw() - targetAngle) < .5 || (Robot.states.mode == Mode.TELEOP && Robot.oi.dc.getRightTrigger() < .5)){
+			finished = true;
 		}
 
 	}
 
 	// Make this return true when this Command no longer needs to run execute()
 	protected boolean isFinished() {
-		return ((hasRumbled || Robot.oi.dc.getRightTrigger() < .5) && Robot.states.mode == Mode.TELEOP)
-				|| (withinRange && Robot.states.mode == Mode.AUTONOMOUS);
+		/*
+		 * return ((hasRumbled || Robot.oi.dc.getRightTrigger() < .5) &&
+		 * Robot.states.mode == Mode.TELEOP) || (withinRange &&
+		 * Robot.states.mode == Mode.AUTONOMOUS);
+		 */
+		return finished;
 	}
 
 	// Called once after isFinished returns true
 	protected void end() {
+		
+		/*autoTimer.reset();
+		autoTimer.start();
+		
+		while(autoTimer.get() < .1){
+			
+		}*/
+		
+		Robot.states.overshoot = Math.abs((int) ((Math.abs(Robot.drivetrainSS.getYaw() - targetAngle) / .1)));
+		
 		System.out.println("lineupshot finished");
 
-		Robot.drivetrainSS.drivetrainTurnPIDDisable();
 		Robot.drivetrainSS.arcadeDrive(0, 0);
 		Robot.states.autoLiningUp = false;
 
-		if (Robot.states.mode == Mode.TELEOP) {
+		if (Robot.states.mode == Mode.TELEOP && Robot.oi.dc.getRightTrigger() < .5) {
+
+			Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
+			new DriverControlDrivetrain().start();
+			Robot.states.overshoot = 0;
+			Robot.compressor.setClosedLoopControl(true);
+			Robot.compressor.start();
+
+		}else
+		
+		if(Robot.states.mode == Mode.AUTONOMOUS){
+			autoTimer.reset();
+			autoTimer.start();
 			
-			
-			if(Robot.oi.dc.getRightTrigger() > .5){
-				new LineUpShot().start();
-			}else{
-				Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
-				new DriverControlDrivetrain().start();
+			while(autoTimer.get() < .2){
+				
 			}
 			
-			
-		}else if(Robot.states.mode == Mode.AUTONOMOUS){
-			
-			
-			if(Math.abs(Robot.jr.getAngleToGoal()) > .5){
+			if(Math.abs(Robot.drivetrainSS.getYaw() - targetAngle) >= .4){
 				new LineUpShot().start();
 			}else{
 				new ShootThenCock().start();
+				
+				Robot.compressor.setClosedLoopControl(true);
+				Robot.compressor.start();
 			}
 		}
+		
+		else if(Math.abs(Robot.drivetrainSS.getYaw() - targetAngle) >= .5){
+			new LineUpShot().start();
+		}
+		
+		else if (Robot.states.mode == Mode.AUTONOMOUS) {
+
+			new ShootThenCock().start();
+			
+			Robot.compressor.setClosedLoopControl(true);
+			Robot.compressor.start();
+
+		}
+		
 	}
 
 	// Called when another command which requires one or more of the same
 	// subsystems is scheduled to run
 	protected void interrupted() {
-		Robot.drivetrainSS.drivetrainTurnPIDDisable();
+
 		Robot.states.autoLiningUp = false;
 
 		if (Robot.states.mode == Mode.TELEOP) {
 			Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
 			new DriverControlDrivetrain().start();
 		}
-	}
-	
-	private void evaluateSpeed(){
-		voltage = Robot.pdp.getVoltage();
-		if(Math.abs(targetAngle - Robot.drivetrainSS.getYaw()) > 10){
-			//10 degree stage
-			stage = 3;
-			Robot.drivetrainSS.arcadeDrive(0, -.3 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
-			
-			
-			
-		}
 		
-		else if(Math.abs(targetAngle  - Robot.drivetrainSS.getYaw()) > 5){
-			Robot.drivetrainSS.arcadeDrive(0, -.25 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
-		}
-		
-		else if(Math.abs(targetAngle  - Robot.drivetrainSS.getYaw()) > 3.5){
-			Robot.drivetrainSS.arcadeDrive(0, -.20 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
-		}
-		
-		else if(Math.abs(targetAngle  - Robot.drivetrainSS.getYaw()) > 2){
-			stage = 2;
-			Robot.drivetrainSS.arcadeDrive(0, -.195 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
-		}else if(Math.abs(targetAngle - Robot.drivetrainSS.getYaw()) >= .4){
-			stage = 1;
-			Robot.drivetrainSS.arcadeDrive(0, -.19 * Math.signum(targetAngle  - Robot.drivetrainSS.getYaw()));
-		}else{
-			Robot.drivetrainSS.arcadeDrive(0, 0);
-		}
+		Robot.compressor.setClosedLoopControl(true);
+		Robot.compressor.start();
 	}
 }
-
-/*
- * Broken stuff from 3/9/2013 8:07 PM. package
- * org.usfirst.frc.team1806.robot.commands.autotarget;
- * 
- * 
- * import org.usfirst.frc.team1806.robot.Constants; import
- * org.usfirst.frc.team1806.robot.OperatorInterface; import
- * org.usfirst.frc.team1806.robot.Robot; import
- * org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode; import
- * org.usfirst.frc.team1806.robot.commands.RumbleController; import
- * org.usfirst.frc.team1806.robot.commands.RumbleControllerConstant;
- * 
- * import edu.wpi.first.wpilibj.command.Command;
- * 
- * /**
- *
- */
-/*
- * public class LineUpShot extends Command {
- * 
- * boolean goalFound, withinRange, hasRumbled;
- * 
- * boolean finished; double targetAngle; int stage; double loops = 0; double
- * kLoopsUntilCheck = Constants.loopsToCheckSensorDisconnect;
- * 
- * public LineUpShot() { requires(Robot.drivetrainSS); Robot.states.autoLiningUp
- * = true;
- * 
- * }
- * 
- * // Called just before this Command runs the first time protected void
- * initialize() {
- * 
- * //Robot.drivetrainSS.resetYaw(); goalFound = false; withinRange = false;
- * hasRumbled = false;
- * 
- * if(Robot.jr.isGoalFound()){ targetAngle = Robot.jr.getAngleToGoal(); }
- * 
- * Robot.states.driveControlModeTracker = DriveControlMode.AUTO;
- * Robot.drivetrainSS.drivetrainTurnPIDReset(); Robot.drivetrainSS.resetYaw();
- * 
- * if(Math.abs(targetAngle) > Constants.drivetrainTurnPID1Tolerance){ //use big
- * ol' pid
- * Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn1P,
- * Constants.drivetrainTurn1I, Constants.drivetrainTurn1D);
- * Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.
- * drivetrainTurnPID1Tolerance);
- * Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.
- * drivetrainMaxRotationPIDStage3); stage = 3; }else if(Math.abs(targetAngle) >
- * Constants.drivetrainTurnPID2Tolerance){
- * Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn2P,
- * Constants.drivetrainTurn2I, Constants.drivetrainTurn2D);
- * Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.
- * drivetrainTurnPID2Tolerance);
- * Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.
- * drivetrainMaxRotationPIDStage2); stage = 2; }else{ //you hella close bruh use
- * dat small loop
- * Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn3P,
- * Constants.drivetrainTurn3I, Constants.drivetrainTurn3D);
- * Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.
- * drivetrainTurnPID3Tolerance);
- * Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.
- * drivetrainMaxRotationPIDStage1); stage = 1; }
- * 
- * Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(targetAngle);
- * Robot.drivetrainSS.drivetrainTurnPIDEnable(); System.out.println(
- * "auto line up started");
- * 
- * }
- * 
- * // Called repeatedly when this Command is scheduled to run protected void
- * execute() {
- * 
- * //System.out.println(Robot.jr.getAngleToGoal());
- * 
- * if(!goalFound){ //allow driver to move the drivetrain to where the bot sees
- * the goal if(Robot.jr.isGoalFound()){ System.out.println("goal found!");
- * goalFound = true; Robot.states.driveControlModeTracker =
- * DriveControlMode.AUTO; System.out.println(Robot.jr.getAngleToGoal());
- * //Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
- * Robot.drivetrainSS.drivetrainTurnPIDEnable();
- * 
- * } }else if(goalFound && !withinRange){ //found goal now line up
- * 
- * loops++; if(loops >= kLoopsUntilCheck){ loops = 0;
- * if(!Robot.drivetrainSS.isNavxConnected()){ //navx is dead bruh kill it
- * Robot.drivetrainSS.drivetrainTurnPIDDisable(); finished = true;
- * System.out.println("Kill early because navx die"); } }
- * if(Robot.drivetrainSS.drivetrainTurnPIDisOnTarget()){ //System.out.println(
- * "PID loop on target");
- * 
- * if(stage == 3){ //step down to stage 2 stage = 2;
- * Robot.drivetrainSS.drivetrainTurnPIDDisable();
- * Robot.drivetrainSS.drivetrainTurnPIDReset();
- * Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn2P,
- * Constants.drivetrainTurn2I, Constants.drivetrainTurn2D);
- * Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.
- * drivetrainTurnPID2Tolerance);
- * Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.
- * drivetrainMaxRotationPIDStage2); /*if(Robot.jr.isGoalFound()){
- * Robot.drivetrainSS.drivetrainTurnAbsolutePIDSetSetpoint(Robot.jr.
- * getAngleToGoal()); }
- */
-/*
- * Robot.drivetrainSS.drivetrainTurnPIDEnable();
- * 
- * 
- * System.out.println("moving to stage 2"); }else if(stage == 2 &&
- * Robot.jr.isAngleAcceptable()){ //step down to stage 1 stage = 1;
- * Robot.drivetrainSS.drivetrainTurnPIDDisable();
- * 
- * Robot.drivetrainSS.drivetrainTurnPIDchangePID(Constants.drivetrainTurn3P,
- * Constants.drivetrainTurn3I, Constants.drivetrainTurn3D);
- * Robot.drivetrainSS.drivetrainTurnPIDSetTolerance(Constants.
- * drivetrainTurnPID3Tolerance);
- * Robot.drivetrainSS.drivetrainTurnPIDchangeMaxRotation(Constants.
- * drivetrainMaxRotationPIDStage3); /*if(Robot.jr.isGoalFound()){
- * Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
- * System.out.println(Robot.jr.getAngleToGoal()); }
- */
-/*
- * Robot.drivetrainSS.drivetrainTurnPIDReset();
- * Robot.drivetrainSS.drivetrainTurnPIDEnable();
- * 
- * System.out.println("moving to stage 1");
- * 
- * Robot.drivetrainSS.drivetrainTurnPIDDisable();
- * Robot.drivetrainSS.drivetrainTurnPIDReset(); withinRange = true;
- * System.out.println("stage one done, ON TARGET");
- * 
- * }/*else if(stage == 1 && Robot.jr.isAngleAcceptable()){ //should be done.
- * 
- * Robot.drivetrainSS.drivetrainTurnPIDDisable();
- * Robot.drivetrainSS.drivetrainTurnPIDReset(); withinRange = true;
- * System.out.println("stage one done, ON TARGET"); }
- */
-/*
- * } //else if(Robot.drivetrainSS.drivetrainTurnAbsolutePIDisOnTarget()){ /* If
- * for some reason our original angle was wrong, being that we aren't in an
- * acceptable range according to the Jetson, yet we got to the angle it
- * originally said the goal was at, try to line up again to the new angle.
- * 
- * the PID is disabled and re-enabled in order to reset the navX and clear
- * accumulated error.
- */
-/*
- * Robot.drivetrainSS.drivetrainTurnPIDDisable();
- * Robot.drivetrainSS.drivetrainTurnPIDSetSetpoint(Robot.jr.getAngleToGoal());
- * Robot.drivetrainSS.drivetrainTurnPIDEnable(); }
- */
-/*
- * }else if(goalFound && withinRange && !hasRumbled){
- * System.out.println("rumbled"); new RumbleController(Robot.oi.dc).start();
- * hasRumbled = true; }
- * 
- * }
- * 
- * // Make this return true when this Command no longer needs to run execute()
- * protected boolean isFinished() { return (Robot.oi.dc.getRightTrigger() < .4);
- * }
- * 
- * // Called once after isFinished returns true protected void end() {
- * 
- * System.out.println("lineupshot finished");
- * 
- * Robot.drivetrainSS.drivetrainTurnPIDDisable(); Robot.states.autoLiningUp =
- * false; Robot.states.driveControlModeTracker = DriveControlMode.DRIVER; }
- * 
- * // Called when another command which requires one or more of the same //
- * subsystems is scheduled to run protected void interrupted() {
- * Robot.drivetrainSS.drivetrainTurnPIDDisable(); Robot.states.autoLiningUp =
- * false; Robot.states.driveControlModeTracker = DriveControlMode.DRIVER; } }
- */

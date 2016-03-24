@@ -3,31 +3,30 @@ package org.usfirst.frc.team1806.robot.commands.autonomous;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
  *
  */
-public class DriveToPosition extends Command {
+public class DriveForTime extends Command {
+
+	double timee, speedd;
+	Timer t;
 	
-	double kTargetPos;
-	double maxPIDSpeed;
-	
-    public DriveToPosition(double inches, double maxSpeed) {
+    public DriveForTime(double time, double speed) {
         requires(Robot.drivetrainSS);
-        kTargetPos = inches;
-        maxPIDSpeed = maxSpeed;
-        //this.setTimeout((maxSpeed/inches) * 72);
+        timee = time;
+        speedd = speed;
+        t = new Timer();
+        t.reset();
+        t.start();
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-    	Robot.drivetrainSS.drivetrainDrivePIDSetMaxSpeed(maxPIDSpeed);
-    	Robot.drivetrainSS.resetYaw();
-    	Robot.drivetrainSS.resetEncoders();
     	Robot.states.driveControlModeTracker = DriveControlMode.AUTO;
-    	Robot.drivetrainSS.drivetrainDrivePIDEnable();
-    	Robot.drivetrainSS.drivetrainDrivePIDSetSetpoint(kTargetPos);
+    	Robot.drivetrainSS.arcadeDrive(speedd, Robot.drivetrainSS.getYaw() * .05);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -36,25 +35,19 @@ public class DriveToPosition extends Command {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        //return Math.abs(Robot.drivetrainSS.getRightEncoderDistance()) > Math.abs(kTargetPos) || Math.abs(Robot.drivetrainSS.getLeftEncoderDistance()) > Math.abs(kTargetPos);
-    	return Robot.drivetrainSS.drivetrainDrivePIDisOnTarget();
+        return t.get() >= timee;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-    	System.out.println("DriveToPosition finished");
     	Robot.drivetrainSS.arcadeDrive(0, 0);
-    	Robot.drivetrainSS.drivetrainDrivePIDResetMaxSpeed();
     	Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
-    	Robot.drivetrainSS.drivetrainDrivePIDDisable();
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
     	Robot.drivetrainSS.arcadeDrive(0, 0);
-    	Robot.drivetrainSS.drivetrainDrivePIDResetMaxSpeed();
     	Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
-    	Robot.drivetrainSS.drivetrainDrivePIDDisable();
     }
 }
