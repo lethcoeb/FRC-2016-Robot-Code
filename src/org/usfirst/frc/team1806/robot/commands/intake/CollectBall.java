@@ -28,7 +28,10 @@ public class CollectBall extends Command {
 	boolean ballSensed = false;
 	boolean finished = false;
 	boolean clamping = false;
-
+	boolean pinched = false;
+	boolean ok = false;
+	
+	
 	public CollectBall() {
 		requires(Robot.intakeSS);
 		requires(Robot.elevatorSS);
@@ -69,9 +72,12 @@ public class CollectBall extends Command {
 			ballSensed = false;
 		}
 		
-		if(intaking && Robot.oi.oc.getButtonStart()){
+		if(intaking && ballSensed && !ok){
+			ok = true;
+			System.out.println("pinching");
 			clamping = true;
 			Robot.shooterSS.pinchBall();
+			pinched = true;
 			t.reset();
 			t.start();
 		}
@@ -80,16 +86,14 @@ public class CollectBall extends Command {
 			// new RumbleController(Robot.oi.dc).start();
 			if (ballSensed) {
 				clamping = true;
-				Robot.shooterSS.pinchBall();
-				Robot.oi.stopRumbles();
-				t.reset();
-				t.start();
+				
 			} else {
 				finished = true;
 			}
 		}
 
-		else if (clamping && t.get() > .2) {
+		else if (clamping && t.get() >= .2) {
+			System.out.println("finishing");
 			t.stop();
 			finished = true;
 		}
@@ -102,9 +106,10 @@ public class CollectBall extends Command {
 
 	// Called once after isFinished returns true
 	protected void end() {
+		t.stop();
 		Robot.oi.stopRumbles();
-		Robot.states.hasBall = ballSensed;
-		new MoveToHoldingFromLow(ballSensed).start();
+		Robot.states.hasBall = pinched;
+		new MoveToHoldingFromLow(pinched).start();
 		Robot.states.collectingBalling = false;
 	}
 

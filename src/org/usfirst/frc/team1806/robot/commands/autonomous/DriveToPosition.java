@@ -52,6 +52,7 @@ public class DriveToPosition extends Command {
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
+    	System.out.println("DriveToPosition interrupted");
     	Robot.drivetrainSS.arcadeDrive(0, 0);
     	Robot.drivetrainSS.drivetrainDrivePIDResetMaxSpeed();
     	Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;

@@ -101,13 +101,15 @@ public class Robot extends IterativeRobot {
 	public void robotInit() {
 		// init subsystems
 
+		
 		drivetrainSS = new DrivetrainSubsystem();
 		elevatorSS = new ElevatorSubsystem();
 		intakeSS = new IntakeSubsystem();
 		shooterSS = new ShooterSubsystem();
 		pdp = new PowerDistributionPanel();
 		compressor = new Compressor();
-
+		
+		
 		oi = new OperatorInterface();
 		states = new RobotStates();
 
@@ -118,13 +120,16 @@ public class Robot extends IterativeRobot {
 																		// up
 																		// testing
 		}
+		
+		
+		
 		// jetson
 		jr = new JetsonReceiver();
 		jr.start();
 		// autoreader for future events
 
-		ar = new AutonomousReader();
-		ar.start();
+		//ar = new AutonomousReader();
+		//ar.start();
 
 		// Temp QaDAS. Make sure all object in same chooser are of same type.
 
@@ -170,6 +175,7 @@ public class Robot extends IterativeRobot {
 		defenseToBeCrossed.addObject("Portcullis", Defenses.PORTCULLIS);
 		defenseToBeCrossed.addObject("Cheval De Frise", Defenses.CHEVALDEFRISE);
 		SmartDashboard.putData("Defense to be crossed", defenseToBeCrossed);
+		
 
 		// rvt = new RioVisionThread();
 		// rvt.start();
@@ -177,9 +183,9 @@ public class Robot extends IterativeRobot {
 		// compressor.setClosedLoopControl(false);
 		
 		
-		SmartDashboard.putNumber("PulsePower", .24);
+		SmartDashboard.putNumber("PulsePower", .20);
 		SmartDashboard.putNumber("PulseWidth", .01);
-
+		
 	}
 
 	/**
@@ -198,7 +204,7 @@ public class Robot extends IterativeRobot {
 		sdu.push();
 
 		if (!hasBeenEnabled) {
-			Robot.elevatorSS.elevatorSetPosition(-97750);
+			Robot.elevatorSS.elevatorSetPosition(-98800);
 			//Robot.elevatorSS.elevatorSetPosition(-Constants.elevatorShootingHeight);
 		}
 		// System.out.println("Get POV: " + oi.oc.getPOV());
@@ -238,7 +244,7 @@ public class Robot extends IterativeRobot {
 		 * autonomousCommand.addSequential(new LineUpShot());
 		 */
 
-		/*if (autonomous.getSelected() == "N") {
+		if (autonomous.getSelected() == "N") {
 			autonomousCommand = new RobotReset();
 		} else {
 
@@ -250,6 +256,8 @@ public class Robot extends IterativeRobot {
 			else if (defenseToBeCrossed.getSelected() == Defenses.CHEVALDEFRISE) {
 				autonomousCommand.addSequential(
 						new ChevalDeFriseAuto((boolean) autoShoot.getSelected(), (int) autoLane.getSelected()));
+			}else if(defenseToBeCrossed.getSelected() == Defenses.LOWBAR){
+				autonomousCommand.addSequential(new LowBarAuto());
 			}
 
 			else if (autoForwardOrBackward.getSelected() == "F") {
@@ -259,13 +267,12 @@ public class Robot extends IterativeRobot {
 				autonomousCommand = new BackwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(),
 						(boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
 			}
-		}*/
+		}
 
 		//autonomousCommand.addSequential(new Turn90(2.5, true));
 
 		//autonomousCommand.addSequential(new ChevalDeFriseAuto(false, 2));
 		//autonomousCommand.addSequential(new DriveToPosition(72, .6));
-		autonomousCommand.addSequential(new LowBarAuto());
 		autonomousCommand.start();
 		/*
 		 * String autoSelected = SmartDashboard.getString("Auto Selector",
@@ -300,7 +307,7 @@ public class Robot extends IterativeRobot {
 		Scheduler.getInstance().run();
 		sdu.push();
 
-		if (Math.abs(Robot.drivetrainSS.getPitch()) > 70) {
+		if (Math.abs(Robot.drivetrainSS.getPitch()) > 65) {
 			autonomousCommand.cancel();
 		}
 
@@ -312,13 +319,14 @@ public class Robot extends IterativeRobot {
 		// continue until interrupted by another command, remove
 		// this line or comment it out.
 		
-		/*if (autonomousCommand != null) {
+		if (autonomousCommand != null) {
 			autonomousCommand.cancel();
-		}*/
+		}
 		hasBeenEnabled = true;
 		Robot.states.mode = Mode.TELEOP;
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
 
+		Robot.states.autoLiningUp = false;
 		new DriverControlDrivetrain().start();
 	}
 
@@ -344,6 +352,12 @@ public class Robot extends IterativeRobot {
 		 * if (pdp.getVoltage() < 9) { compressor.setClosedLoopControl(false); }
 		 * else { compressor.setClosedLoopControl(true); }
 		 */
+		
+		if(states.autoLiningUp){
+			if(Robot.oi.dRT < .4){
+				new DriverControlDrivetrain().start();
+			}
+		}
 
 		sdu.push();
 		

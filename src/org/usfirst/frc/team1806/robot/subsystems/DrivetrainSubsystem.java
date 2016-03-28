@@ -56,8 +56,8 @@ public class DrivetrainSubsystem extends Subsystem {
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);
-    	rightEncoder.setReverseDirection(true);
-    	leftEncoder.setReverseDirection(true);
+    	//rightEncoder.setReverseDirection(true);
+    	//leftEncoder.setReverseDirection(true);
     	rightEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
     	leftEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
     	

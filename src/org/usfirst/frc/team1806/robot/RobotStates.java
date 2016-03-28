@@ -49,6 +49,7 @@ public class RobotStates {
 	
 	public boolean autoLiningUp;
 	public boolean hasBall;
+	public boolean lowBarring;
 	
 	public int overshoot;
 	
@@ -78,6 +79,7 @@ public class RobotStates {
 		hasBall = true;
 		autoLiningUp = false;
 		collectingBalling = false;
+		lowBarring = false;
 		overshoot = 0;
 	}
 	

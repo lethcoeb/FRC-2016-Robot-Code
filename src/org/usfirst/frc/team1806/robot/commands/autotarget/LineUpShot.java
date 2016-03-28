@@ -45,6 +45,7 @@ public class LineUpShot extends Command {
 	// Called just before this Command runs the first time
 	protected void initialize() {
 		
+		Robot.drivetrainSS.shiftLow();
 		Robot.compressor.stop();
 
 		// Determine angle from goal
@@ -70,8 +71,8 @@ public class LineUpShot extends Command {
 		System.out.println(goalLoops);
 		
 
-		pulsePower = SmartDashboard.getNumber("PulsePower");
-		pulseWidth = SmartDashboard.getNumber("PulseWidth");
+		pulsePower = .20;
+		pulseWidth = .01;
 
 		Robot.drivetrainSS.resetYaw();
 		

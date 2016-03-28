@@ -34,14 +34,14 @@ public class RobotMap {
 	    //single solenoids
 	    /*public static final int winchEngageSolenoid = 6;
 	    public static final int shooterReleaseSolenoid = 7;*/
-	    public static final int winchEngageSolenoid = 1;
-	    public static final int shooterReleaseSolenoid = 0;
+	    public static final int winchEngageSolenoid = 6;
+	    public static final int shooterReleaseSolenoid = 7;
 	    
 	    //SENSORS
-	    public static final int rightEncoderA = 2;
-	    public static final int rightEncoderB = 3;
-	    public static final int leftEncoderA = 5;
-	    public static final int leftEncoderB = 4;
+	    public static final int rightEncoderA = 0;
+	    public static final int rightEncoderB = 1;
+	    public static final int leftEncoderA = 2;
+	    public static final int leftEncoderB = 3;
 	    public static final int cockedShooterLimit = 9;
 	    //4
 	    //5

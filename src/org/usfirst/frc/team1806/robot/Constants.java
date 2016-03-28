@@ -30,7 +30,7 @@ public class Constants {
 
 	//Stage 1 is for big turns (30+ deg), stage 2 is for 30 to 5 deg, stage 3 is for <5 degree turns
 	//90 degree values
-	public static final double drivetrainTurn1P = .03;
+	public static final double drivetrainTurn1P = .035;
 	public static final double drivetrainTurn1I = 0;
 	public static final double drivetrainTurn1D = 0.2;
 	//5 degree values
@@ -42,7 +42,7 @@ public class Constants {
 
 	
 	//tiny lil values
-	public static final double drivetrainTurn3P = .01;
+	public static final double drivetrainTurn3P = .03;
 	public static final double drivetrainTurn3I = 0;
 	//public static final double drivetrainTurn3D = 0.15;
 	public static final double drivetrainTurn3D = 0;
@@ -73,7 +73,7 @@ public class Constants {
 	public static final double elevatorDownPIDd = 0;
 
 	//public static final double elevatorShootingHeight = 103560; :: comp bot
-	public static final int elevatorShootingHeight = 94500;
+	public static final int elevatorShootingHeight = 96000;
 	//public static final int elevatorHoldingHeight = 20000;
 	public static final int elevatorHoldingHeight = 26000;
 	public static final int elevatorChevaldeFunHeight = 70000; //lowest height at which the intake can be raised and lowered

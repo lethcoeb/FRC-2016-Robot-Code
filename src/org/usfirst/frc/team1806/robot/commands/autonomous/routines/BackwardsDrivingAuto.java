@@ -1,6 +1,7 @@
 package org.usfirst.frc.team1806.robot.commands.autonomous.routines;
 
 import org.usfirst.frc.team1806.robot.Constants;
+import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveToPosition;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
@@ -30,13 +31,13 @@ public class BackwardsDrivingAuto extends CommandGroup {
 		} else {
 
 			// always lower the intake at the start
-			addSequential(new LowerIntake(1));
+			addSequential(new LowerIntake(.5));
 
 			if (!leaveArmUp) {
 				addSequential(new MoveToHoldingPID());
 			}
 			//addSequential(new DriveUntilFlat(-.6, 3, 25));
-			addSequential(new DriveToPosition(-14, .6));
+			addSequential(new DriveToPosition(-125, .6));
 			if (!shouldTakeShot) {
 				addSequential(new DoNothing());
 			} else {
@@ -46,17 +47,19 @@ public class BackwardsDrivingAuto extends CommandGroup {
 				
 				if(lane == 5){
 					addSequential(new Turn90(1.5, false));
-					addSequential(new DriveToPosition(-8, .5));
+					addSequential(new DriveToPosition(-60, .5));
 					addSequential(new Turn90(1.5, false));
 				}else if(lane == 2){
 					addSequential(new Turn90(1.5, true));
-					addSequential(new DriveToPosition(-8, .5));
+					addSequential(new DriveToPosition(-60, .5));
 					addSequential(new Turn90(1.5, true));
 				}else{
 					addSequential(new TurnToAngle(Constants.autoBackwardsNearGoalAngles[lane], 3));
 				}
 				
-				addSequential(new LineUpShot());
+				if((boolean) Robot.autoShoot.getSelected()){
+					addSequential(new LineUpShot());
+				}
 				addSequential(new DoNothing());
 			}
 

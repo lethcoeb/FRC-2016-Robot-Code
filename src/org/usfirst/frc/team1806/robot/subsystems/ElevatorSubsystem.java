@@ -124,13 +124,16 @@ public class ElevatorSubsystem extends Subsystem {
 	}
 
 	public boolean isElevatorPIDOnTarget() {
-		//System.out.println(Math.abs(elevatorSRX.getPosition() - elevatorSRX.getSetpoint()));
-		System.out.println(elevatorSRX.getClosedLoopError());
-		return Math.abs(elevatorSRX.getClosedLoopError()) < Constants.elevatorAbsoluteTolerance;
+		System.out.println(Math.abs(elevatorSRX.getPosition() - elevatorSRX.getSetpoint()));
+		return Math.abs(elevatorSRX.getPosition() - elevatorSRX.getSetpoint()) < Constants.elevatorAbsoluteTolerance;
 	}
 
 	public double getElevatorPosition() {
 		return elevatorSRX.getPosition();
+	}
+	
+	public TalonControlMode getElevatorControlMode(){
+		return elevatorSRX.getControlMode();
 	}
 
 	public int getElevatorSetpoint() {
