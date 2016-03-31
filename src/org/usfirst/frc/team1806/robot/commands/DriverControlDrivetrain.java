@@ -30,7 +30,7 @@ public class DriverControlDrivetrain extends Command {
     	
     	dlsY = Robot.oi.dc.getLeftJoyY();
     	drsX = Robot.oi.dc.getRightJoyX();
-    	a = Robot.oi.dc.getButtonA();
+    	a = Robot.oi.dc.getButtonStart();
     	
     	if (Robot.states.driveControlModeTracker == DriveControlMode.DRIVER) {
 			if (Math.abs(dlsY) > kJoystickDeadzone && Math.abs(drsX) > kJoystickDeadzone) {
@@ -45,9 +45,9 @@ public class DriverControlDrivetrain extends Command {
 		} else {
 			// Automatic driving stuff
 		}
-    	if(a && !Robot.drivetrainSS.isAutoShifting()){
+    	if(a && !Robot.drivetrainSS.isAutoShifting() && Robot.drivetrainSS.isInLowGear()){
     		Robot.drivetrainSS.enableAutoShift();
-    	} else if(!a && Robot.drivetrainSS.isAutoShifting()){
+    	} else if(!a && Robot.drivetrainSS.isAutoShifting() && Robot.drivetrainSS.isInHighGear()){
     		Robot.drivetrainSS.disableAutoShift();
     	} else {
     		Robot.drivetrainSS.disableAutoShift();
