@@ -46,9 +46,9 @@ public class DriverControlDrivetrain extends Command {
 			// Automatic driving stuff
 		}
     	if(!Robot.drivetrainSS.isLiningUp()){
-    		if(a && !Robot.drivetrainSS.isAutoShifting() && Robot.drivetrainSS.isInLowGear()){
+    		if(a && !Robot.drivetrainSS.isAutoShifting()){
     			Robot.drivetrainSS.enableAutoShift();
-    		} else if(!a && Robot.drivetrainSS.isAutoShifting() && Robot.drivetrainSS.isInHighGear()){
+    		} else if(!a && Robot.drivetrainSS.isAutoShifting()){
     			Robot.drivetrainSS.disableAutoShift();
     		} else {
     			Robot.drivetrainSS.disableAutoShift();
