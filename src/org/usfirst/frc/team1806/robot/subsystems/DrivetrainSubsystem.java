@@ -44,7 +44,8 @@ public class DrivetrainSubsystem extends Subsystem {
     double maxSpeed = 1;
     Boolean autoShift;
     Boolean lowGearLock;
-    
+	Boolean liningUpShot;
+
     public DrivetrainSubsystem(){
     	right1 = new Talon(RobotMap.rightMotor1);
     	right2 = new Talon(RobotMap.rightMotor2);
@@ -473,6 +474,16 @@ public class DrivetrainSubsystem extends Subsystem {
 	}
 	public void enableAutoShift() {
 		autoShift = true;
+	}
+	public void setLiningUp(){
+		liningUpShot = true;
+	}
+	
+	public void disableLiningUp(){
+		liningUpShot = false;
+	}
+	public boolean isLiningUp(){
+		return liningUpShot;
 	}
 	private void shiftAutomatically() {
 		// shifts if neccessary, returns whether shifting was done
