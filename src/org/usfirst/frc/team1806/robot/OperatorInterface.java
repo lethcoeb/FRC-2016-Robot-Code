@@ -78,7 +78,7 @@ public class OperatorInterface {
 	public boolean oPOVUp, oPOVDown;
 
 	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch,
-			chevalDeFunLatch, elevatorLowBarModeLatch, incrementLatch, testLatch, eggIntakeLatch;
+			chevalDeFunLatch, elevatorLowBarModeLatch, incrementLatch, testLatch, eggIntakeLatch, autoShifting;
 
 	public static Latch lowBarLatch;
 
@@ -106,7 +106,7 @@ public class OperatorInterface {
 		testLatch = new Latch();
 		lowBarLatch = new Latch();
 		eggIntakeLatch = new Latch();
-
+		autoShifting = new Latch();
 		m_commands = new Commands();
 
 		// TODO remove this
@@ -379,7 +379,6 @@ public class OperatorInterface {
 			new ResetElevator().start();
 		}
 	}
-
 	private void updateInputs() {
 
 		// driver buttons

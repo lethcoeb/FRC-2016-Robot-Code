@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.Talon;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.SerialPort.Port;
 import edu.wpi.first.wpilibj.command.Subsystem;
 
@@ -42,8 +43,7 @@ public class DrivetrainSubsystem extends Subsystem {
     double PIDTolerance = 30;
     double MaxRotationPID = Constants.drivetrainMaxRotationPIDStage1;
     double maxSpeed = 1;
-    Boolean autoShift;
-    Boolean lowGearLock;
+    Boolean autoShift = false;
     
     public DrivetrainSubsystem(){
     	right1 = new Talon(RobotMap.rightMotor1);
@@ -53,7 +53,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	left2 = new Talon(RobotMap.leftMotor2);
     	left3 = new Talon(RobotMap.leftMotor3);
     	
-    	shifter = new DoubleSolenoid(RobotMap.shiftLow, RobotMap.shiftHigh);
+    	shifter = new DoubleSolenoid(1, RobotMap.shiftLow, RobotMap.shiftHigh);
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);
@@ -219,8 +219,9 @@ public class DrivetrainSubsystem extends Subsystem {
 		if (autoShift) {
 			shiftAutomatically();
 		} else {
+			//System.out.println("We out here fam ");
 			shiftLow();
-		}
+		} 
     	arcadeDrive(currPower, currTurnPower);
 
     }
@@ -420,15 +421,10 @@ public class DrivetrainSubsystem extends Subsystem {
     }
     //////////////////////////////////////////////
 	public boolean isInLowGear() {
-		return shifter.get() == DoubleSolenoid.Value.kReverse;
+		return Robot.states.drivetrainGearTracker == DrivetrainGear.LOW;
 	}
-
 	public boolean isInHighGear() {
-		return shifter.get() == DoubleSolenoid.Value.kForward;
-	}
-
-	public void lowGearLockDisable() {
-		lowGearLock = false;
+		return Robot.states.drivetrainGearTracker == DrivetrainGear.HIGH;
 	}
 	public double getDriveSpeedFPS() {
 		return Math.abs(getDriveVelocityFPS());
@@ -439,7 +435,7 @@ public class DrivetrainSubsystem extends Subsystem {
 		//FOR NAVX WHICH SUCKS
 		//return getDriveVelocity() * 3.28083989501;
 		
-		 return getDriveVelocity() / 12;
+		 return getDriveVelocity() * 3.28083989501;
 	}
 	public double getDriveVelocity() {
 		// returns the average speed of the left and right side in inches per
@@ -449,16 +445,16 @@ public class DrivetrainSubsystem extends Subsystem {
 		// getVelocity is in m/s
 		
 		//return SWATLib.convertTo2DVector(navX.getVelocityX(), navX.getVelocityY());
-		//return navX.getVelocityX();
+		return navx.getVelocityX();
 		
 		// Old version, using encoders:
-		return ((leftEncoder.getRate() + rightEncoder.getRate()) / 2);
+		//return ((leftEncoder.getRate() + rightEncoder.getRate()) / 2);
 	}
 	public boolean isSpeedingUp() {
 		return getDriveAccelFPSPS() > Constants.drivetrainAccelerationThreshold;
 	}
 	public double getDriveAccelFPSPS() {		
-		return navx.getRawAccelY();
+		return navx.getRawAccelX();
 		// Old version:
 		//return (currentSpeed - lastSpeed) / period;
 	}
@@ -475,36 +471,44 @@ public class DrivetrainSubsystem extends Subsystem {
 		autoShift = true;
 	}
 	private void shiftAutomatically() {
+		Timer shiftingTimer = new Timer();
 		// shifts if neccessary, returns whether shifting was done
-		if (getDriveSpeedFPS() > Constants.drivetrainUpshiftSpeedThreshold
-				&& Math.abs(currPower) > Constants.drivetrainUpshiftPowerThreshold && isSpeedingUp() && isInLowGear()
-				&& !lowGearLock) {
+		if (getDriveVelocityFPS() > Constants.drivetrainUpshiftSpeedThreshold
+				&& Math.abs(currPower) > Constants.drivetrainUpshiftPowerThreshold /* && isSpeedingUp()*/ && isInLowGear()) {
 			// Normal Upshift
 			// if fast enough to need to upshift, driver is applying sufficient
 			// throttle, the robot is speeding up and it's in low gear, upshift
+			shiftingTimer.reset();
+			shiftingTimer.start();
+			System.out.println("TOP");
 			shiftHigh();
-		} else if (getDriveSpeedFPS() > Constants.drivetrainMaxLowGearSpeed && isInLowGear()
-				&& !lowGearLock) {
+		} else if (getDriveSpeedFPS() > Constants.drivetrainMaxLowGearSpeed && isInLowGear()) {
 			// the rev limiter was hit because driver wasn't hitting the
 			// throttle hard enough to change gear
+			shiftingTimer.reset();
+			shiftingTimer.start();
+			System.out.println("BOTTOM");
 			shiftHigh();
 		} else if (getDriveSpeedFPS() < Constants.drivetrainMaxLowGearSpeed
-				&& Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold && isSlowingDown()
-				&& isInHighGear()) {
+				&& Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold && /* isSlowingDown () 
+				&&*/ isInHighGear() && shiftingTimer.get() > 1) {
 			// if the robot is slowing down while the driver is applying
 			// sufficient power, and is at a reasonable speed to be in low gear,
 			// downshift.
 			// Think of a pushing match that started at high speed
+			System.out.println("downshift top");
 			shiftLow();
 		} else if (getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold
-				&& Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold && isInHighGear()) {
+				&& Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold && isInHighGear() && shiftingTimer.get() > 1) {
 				shiftLow();
+				System.out.println("downshift middle");
 		} else if (getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold
-				&& Math.abs(currPower) < Constants.drivetrainDownshiftPowerThreshold && isInHighGear()) {
+				&& Math.abs(currPower) < Constants.drivetrainDownshiftPowerThreshold && isInHighGear() && shiftingTimer.get() > 1) {
 			// if the robot is slowing down, not being given considerable
 			// throttle
 			// a coasting/stopping downshift
 			shiftLow();
+			System.out.println("downshift bottom");
 		}
 	}
     public void initDefaultCommand() {

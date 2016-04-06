@@ -11,11 +11,11 @@ public class Constants {
 
 	// FIXME this
 	// Shifting constants
-	public final static double drivetrainMaxLowGearSpeed = 6; //exceeding this speed will force an autoshift to high gear.
+	public final static double drivetrainMaxLowGearSpeed = 4; //exceeding this speed will force an autoshift to high gear.
 	public final static double drivetrainPowerDownshiftPowerThreshold = .97 ; //power must be over this
 	public final static double drivetrainDownshiftPowerThreshold = .2; // power must be less than this
 	public final static double drivetrainDownshiftSpeedThreshold = 3; //speed must be less than this
-	public final static double drivetrainUpshiftPowerThreshold = .75; //power must be more than this
+	public final static double drivetrainUpshiftPowerThreshold = .5; //power must be more than this
 	public final static double drivetrainAccelerationThreshold = .02; // applied for determining actual accel for shifting
 	public final static double drivetrainUpshiftSpeedThreshold = 4.5; //speed must be more than this
 	//public static final double encoderCountsPerRevolution = .01;

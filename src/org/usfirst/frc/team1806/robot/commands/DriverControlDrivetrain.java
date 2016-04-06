@@ -4,6 +4,7 @@ import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
@@ -12,10 +13,10 @@ import edu.wpi.first.wpilibj.command.Command;
 public class DriverControlDrivetrain extends Command {
 	
 	double kJoystickDeadzone = .15;
-	
+	Timer timer;
 	double dlsY;
 	double drsX;
-	Boolean a;
+	double a;
     public DriverControlDrivetrain() {
         requires(Robot.drivetrainSS);
     }
@@ -27,11 +28,11 @@ public class DriverControlDrivetrain extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	
+    	Timer timer = new Timer();
     	dlsY = Robot.oi.dc.getLeftJoyY();
     	drsX = Robot.oi.dc.getRightJoyX();
-    	a = Robot.oi.dc.getButtonStart();
-    	
+    	a = Robot.oi.dc.getLeftTrigger();
+    	timer.reset();
     	if (Robot.states.driveControlModeTracker == DriveControlMode.DRIVER) {
 			if (Math.abs(dlsY) > kJoystickDeadzone && Math.abs(drsX) > kJoystickDeadzone) {
 				Robot.drivetrainSS.execute(dlsY, -drsX);
@@ -45,13 +46,13 @@ public class DriverControlDrivetrain extends Command {
 		} else {
 			// Automatic driving stuff
 		}
-    	if(a && !Robot.drivetrainSS.isAutoShifting() && Robot.drivetrainSS.isInLowGear()){
+    
+    	if(Robot.oi.dc.getLeftTrigger() >= .6 && !Robot.drivetrainSS.isAutoShifting()){
     		Robot.drivetrainSS.enableAutoShift();
-    	} else if(!a && Robot.drivetrainSS.isAutoShifting() && Robot.drivetrainSS.isInHighGear()){
-    		Robot.drivetrainSS.disableAutoShift();
-    	} else {
-    		Robot.drivetrainSS.disableAutoShift();
+    	} else if(Robot.oi.dc.getLeftTrigger() < .6 && Robot.drivetrainSS.isAutoShifting()) {
+    			Robot.drivetrainSS.disableAutoShift();
     	}
+    	
     }
 
     // Make this return true when this Command no longer needs to run execute()
