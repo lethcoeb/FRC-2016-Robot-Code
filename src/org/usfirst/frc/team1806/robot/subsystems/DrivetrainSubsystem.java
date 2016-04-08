@@ -483,18 +483,18 @@ public class DrivetrainSubsystem extends Subsystem {
 	private void shiftAutomatically() {
 		System.out.println(getDriveSpeedFPS());
 		// shifts if neccessary, returns whether shifting was done
-		if (getDriveSpeedFPS() > Constants.drivetrainUpshiftSpeedThreshold
-				&& Math.abs(currPower) > Constants.drivetrainUpshiftPowerThreshold && isInLowGear()) {
+		if (/*getDriveSpeedFPS()  > Constants.drivetrainUpshiftSpeedThreshold
+				&&*/ Math.abs(currPower) > Constants.drivetrainUpshiftPowerThreshold && isInLowGear()) {
 			// Normal Upshift
 			// if fast enough to need to upshift, driver is applying sufficient
 			// throttle, the robot is speeding up and it's in low gear, upshift
 			shiftHigh();
-		} else if (getDriveSpeedFPS() > Constants.drivetrainMaxLowGearSpeed && isInLowGear() ) {
+		} /*else if (getDriveSpeedFPS() > Constants.drivetrainMaxLowGearSpeed && isInLowGear() ) {
 			// the rev limiter was hit because driver wasn't hitting the
 			// throttle hard enough to change gear
 			shiftHigh();
-		} else if (getDriveSpeedFPS() < Constants.drivetrainMaxLowGearSpeed
-				&& Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold
+		} */else if (/*getDriveSpeedFPS() < Constants.drivetrainMaxLowGearSpeed
+				&&*/ Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold
 				&& isInHighGear()) {
 			// if the robot is slowing down while the driver is applying
 			// sufficient power, and is at a reasonable speed to be in low gear,
@@ -502,11 +502,11 @@ public class DrivetrainSubsystem extends Subsystem {
 			// Think of a pushing match that started at high speed
 			shiftLow();
 		}
-		if (getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold
-				&& Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold && isInHighGear()) {
+		if (/*getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold
+				&&*/ Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold && isInHighGear()) {
 			shiftLow();
-		} else if (getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold
-				&& Math.abs(currPower) < Constants.drivetrainDownshiftPowerThreshold && isInHighGear()) {
+		} else if (/*getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold
+				&&*/ Math.abs(currPower) < Constants.drivetrainDownshiftPowerThreshold && isInHighGear()) {
 			// if the robot is slowing down, not being given considerable
 			// throttle
 			// a coasting/stopping downshift
