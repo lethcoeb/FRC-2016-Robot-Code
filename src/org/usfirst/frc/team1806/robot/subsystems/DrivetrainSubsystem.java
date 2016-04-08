@@ -219,7 +219,7 @@ public class DrivetrainSubsystem extends Subsystem {
     		}
     	}
     	if(autoShift){
-    	shiftAutomatically();
+    	newShift();
     	} else {
     		shiftLow();
     	}
@@ -480,11 +480,10 @@ public class DrivetrainSubsystem extends Subsystem {
 	public boolean isLiningUp(){
 		return liningUpShot;
 	}
-	private void shiftAutomatically() {
-		System.out.println(getDriveSpeedFPS());
+	/*private void shiftAutomatically() {
 		// shifts if neccessary, returns whether shifting was done
 		if (/*getDriveSpeedFPS()  > Constants.drivetrainUpshiftSpeedThreshold
-				&&*/ Math.abs(currPower) > Constants.drivetrainUpshiftPowerThreshold && isInLowGear()) {
+				&& isSpeedingUp()  && Math.abs(currPower) > Constants.drivetrainUpshiftPowerThreshold && isInLowGear()) {
 			// Normal Upshift
 			// if fast enough to need to upshift, driver is applying sufficient
 			// throttle, the robot is speeding up and it's in low gear, upshift
@@ -493,23 +492,43 @@ public class DrivetrainSubsystem extends Subsystem {
 			// the rev limiter was hit because driver wasn't hitting the
 			// throttle hard enough to change gear
 			shiftHigh();
-		} */else if (/*getDriveSpeedFPS() < Constants.drivetrainMaxLowGearSpeed
-				&&*/ Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold
-				&& isInHighGear()) {
+		} else if (/*getDriveSpeedFPS() < Constants.drivetrainMaxLowGearSpeed
+				&& Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold
+				&& isInHighGear() /*&& isSlowingDown() ) {
 			// if the robot is slowing down while the driver is applying
 			// sufficient power, and is at a reasonable speed to be in low gear,
+			 */
 			// downshift.
 			// Think of a pushing match that started at high speed
+			System.out.println("1");
 			shiftLow();
 		}
 		if (/*getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold
-				&&*/ Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold && isInHighGear()) {
+				&& Math.abs(currPower) > Constants.drivetrainPowerDownshiftPowerThreshold && isInHighGear()) {
 			shiftLow();
+			System.out.println("2");
 		} else if (/*getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold
-				&&*/ Math.abs(currPower) < Constants.drivetrainDownshiftPowerThreshold && isInHighGear()) {
+				&& Math.abs(currPower) < Constants.drivetrainDownshiftPowerThreshold && isInHighGear()) {
 			// if the robot is slowing down, not being given considerable
 			// throttle
 			// a coasting/stopping downshift
+			shiftLow();
+			System.out.println("3");
+		}
+	}
+*/
+		}
+	private void newShift(){
+		if(Math.abs(currPower) > (Constants.drivetrainUpshiftPowerThreshold + .25) && isInLowGear()){
+			/*
+			 * If it pushes the current value to over the power threshold 
+			 * and its in low gear, then it'll shift to high hear.
+			 */
+			shiftHigh();
+		} else if(Math.abs(currPower) < (Constants.drivetrainPowerDownshiftPowerThreshold + .1) && isInHighGear()){
+			/*
+			 * If it goes under the PowerDownShiftPowerThreshhold and its in high gear, then we shift
+			 */
 			shiftLow();
 		}
 	}
