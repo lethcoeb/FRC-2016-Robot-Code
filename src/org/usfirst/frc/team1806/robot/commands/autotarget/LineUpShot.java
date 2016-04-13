@@ -48,8 +48,6 @@ public class LineUpShot extends Command {
 		Robot.compressor.stop();
 
 		// Determine angle from goal
-
-		Robot.drivetrainSS.setLiningUp();
 		
 		targetAngle = Robot.jr.getAngleToGoal();
 		
@@ -122,7 +120,6 @@ public class LineUpShot extends Command {
 		while(autoTimer.get() < .1){
 			
 		}*/
-		Robot.drivetrainSS.disableLiningUp();
 		Robot.states.overshoot = Math.abs((int) ((Math.abs(Robot.drivetrainSS.getYaw() - targetAngle) / .1)));
 		
 		System.out.println("lineupshot finished");

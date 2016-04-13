@@ -28,11 +28,9 @@ public class DriverControlDrivetrain extends Command {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
-    	Timer timer = new Timer();
     	dlsY = Robot.oi.dc.getLeftJoyY();
     	drsX = Robot.oi.dc.getRightJoyX();
     	a = Robot.oi.dc.getLeftTrigger();
-    	timer.reset();
     	if (Robot.states.driveControlModeTracker == DriveControlMode.DRIVER) {
 			if (Math.abs(dlsY) > kJoystickDeadzone && Math.abs(drsX) > kJoystickDeadzone) {
 				Robot.drivetrainSS.execute(dlsY, -drsX);
