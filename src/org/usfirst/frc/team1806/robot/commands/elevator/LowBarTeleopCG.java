@@ -14,7 +14,7 @@ public class LowBarTeleopCG extends CommandGroup {
     	addSequential(new SetStateLowBarring(true));
     	addSequential(new RunAtSpeed(-.3));
     	addSequential(new MoveToLocationPID(0));
-    	addSequential(new RunAtSpeed(0));
+    	addParallel(new RunAtSpeed(0));
     	addSequential(new SetStateGrab());
     	
     }

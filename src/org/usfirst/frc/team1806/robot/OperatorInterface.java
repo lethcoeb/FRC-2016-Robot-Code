@@ -79,19 +79,13 @@ public class OperatorInterface {
 
 	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch,
 			chevalDeFunLatch, elevatorLowBarModeLatch, incrementLatch, testLatch, eggIntakeLatch;
-
 	public static Latch lowBarLatch;
 
 	final double kJoystickDeadzone = .15;
 
-	// TODO remove this
-	Joystick j;
-	Joystick j2;
-	JoystickButton a;
-	JoystickButton b;
-
 	public OperatorInterface() {
 
+		//Init driver and operator controllers
 		dc = new XboxController(0);
 		oc = new XboxController(1);
 
@@ -109,17 +103,11 @@ public class OperatorInterface {
 
 		m_commands = new Commands();
 
-		// TODO remove this
-		j = new Joystick(0);
-		j2 = new Joystick(1);
-		a = new JoystickButton(j, 1);
-		b = new JoystickButton(j2, 1);
-		// a.whenPressed(new DriveOverAndTurn());
-		// a.whenPressed(new ResetNavx());
-		// b.whenPressed(new IncrementUp(750));
-
 	}
-
+	
+	//The update function is what should be called in the teleopPeriodic function
+	//It updates the contoller's inputs, then sets the command object's enums accordingly,
+	//then executes the commands if they're valid requests
 	public void update() {
 
 		updateInputs();
@@ -133,10 +121,12 @@ public class OperatorInterface {
 		if (intakeDeployLatch.update(dY) || eggIntakeLatch.update(oLB)) {
 			// switch intake deployment
 			if (Robot.states.intakePositionTracker == IntakePosition.DEPLOYED) {
-				// Robot.intakeSS.retractIntake();
-				new RaiseIntake().start();
+				//Disallow retracting of the intake if the elevator is moving downwards so we dont break stuff
+				if(!Robot.elevatorSS.isMovingDown()){
+					new RaiseIntake().start();
+				}
 			} else if (Robot.states.intakePositionTracker == IntakePosition.RETRACTED) {
-				// Robot.intakeSS.deployIntake();
+				//It should always be safe to lower the intake
 				new LowerIntake().start();
 			}
 		}
@@ -253,11 +243,14 @@ public class OperatorInterface {
 				Robot.drivetrainSS.shiftLow();
 			}
 		}
-
+		
+		//Start a new lineup command if the driver wants to and one isn't currently running
 		if (c.autoLineUp == true && Robot.states.autoLiningUp == false) {
 			Robot.states.autoLiningUp = true;
 			System.out.println("Starting autolineup");
 			new LineUpShot().start();
+			Robot.states.initialTarget = Robot.jr.getAngleToGoal();
+			Robot.states.loopsUntilDone = 0;
 		}
 
 		if (/*
@@ -265,20 +258,20 @@ public class OperatorInterface {
 			 */true) {
 			if (m_commands.intakeCommandTracker == RunIntakeCommand.INTAKE && !Robot.states.hasBall
 					&& Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.INTAKING
-					&& !Robot.states.collectingBalling) {
-				if (Robot.elevatorSS.getElevatorSetpoint() != Constants.elevatorShootingHeight
+					&& !Robot.states.collectingBalling && Robot.states.intakePositionTracker == IntakePosition.DEPLOYED) {
+				if (Robot.elevatorSS.getElevatorSetpoint() <= Constants.elevatorChevaldeFunHeight - 10000
 						&& Robot.states.shooterCockedTracker == ShooterCocked.COCKED) {
 					// TODO is there a better way to do this other than reading
 					// the setpoint?
 					new CollectBall().start();
 					Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
-				} else if (Robot.states.shooterCockedTracker == ShooterCocked.NOTCOCKED) {
-					// new ManualCock().start();
+				} else if (Robot.states.shooterCockedTracker == ShooterCocked.NOTCOCKED && !Robot.shooterSS.isCocking() && !Robot.states.overCocked) {
+					new ManualCock().start();
 				}
 
 			} else if (m_commands.intakeCommandTracker == RunIntakeCommand.OUTTAKE) {
 				if (Robot.states.intakeRollerStateTracker != RobotStates.IntakeRollerState.OUTTAKING
-						&& (Robot.elevatorSS.getElevatorPosition() < 8000
+						&& (Robot.elevatorSS.getElevatorPosition() <= Constants.elevatorHoldingHeight + 4000
 								|| Robot.states.shooterArmPositionTracker == ShooterArmPosition.DOWN
 								|| Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING)) {
 					// can only release ball when it's close to the ground
@@ -328,28 +321,17 @@ public class OperatorInterface {
 				&& Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.AUTO) {
 			if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
 				new MoveToShootingHeight().start();
-				// new
-				// MoveToLocationPID(Constants.elevatorShootingHeight).start();
-				// new MoveToShootingHeight().start();
 			} else if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.UP) {
 				if (Robot.states.intakePositionTracker == IntakePosition.DEPLOYED) {
 					new MoveToHoldingPID().start();
 				}
-				// new
-				// MoveToLocationPID(Constants.elevatorHoldingHeight).start();
-				// new MoveToHoldingPID().start();
 			} else if (Robot.elevatorSS.elevatorGetPowerOutput() < 0) {
-				// elevator is moving downwards, so to interrupt go back up to
-				// shooting height
 				new MoveToShootingHeight().start();
-				System.out.println("MoveToShootingHeight started.");
-
-			} else if (Robot.elevatorSS.elevatorGetPowerOutput() >= 0) {
+			} else if (Robot.elevatorSS.elevatorGetPowerOutput() >= 0 && !Robot.states.lowBarring) {
 				// You're moving up so go to holding to interrupt. also this
-				// allows to get out of any bugged states by sending elevator to
+				// allows to get out of any weird positions or states by sending elevator to
 				// holding if it isn't moving
 				new MoveToHoldingPID().start();
-
 			}
 
 		} else if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.MANUAL) {
@@ -367,9 +349,9 @@ public class OperatorInterface {
 			new ShootThenCock().start();
 		}
 
-		if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && !Robot.shooterSS.shooterIsCocked()) {
+		if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && !Robot.shooterSS.isShooterCocked()) {
 			new ManualCock().start();
-		} else if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && Robot.shooterSS.shooterIsCocked()) {
+		} else if (m_commands.manualCockCommandTracker == ManualCockCommand.COCK && Robot.shooterSS.isShooterCocked()) {
 			new ShootDaBall().start();
 		}
 
@@ -401,7 +383,7 @@ public class OperatorInterface {
 		dPOVLeft = dc.getPOVLeft();
 		dPOVRight = dc.getPOVRight();
 
-		// op buttons
+		// operator buttons
 		olsY = oc.getLeftJoyY();
 		orsY = oc.getRightJoyY();
 		oRT = oc.getRightTrigger();
@@ -421,6 +403,7 @@ public class OperatorInterface {
 
 	}
 
+	//Stop all controller rumbles because the computer doesn't do it even if the robot is disabled :(
 	public void stopRumbles() {
 		dc.setRumble(RumbleType.kLeftRumble, 0);
 		dc.setRumble(RumbleType.kRightRumble, 0);

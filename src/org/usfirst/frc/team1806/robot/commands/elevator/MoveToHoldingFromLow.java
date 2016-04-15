@@ -37,14 +37,18 @@ public class MoveToHoldingFromLow extends Command {
 		Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
 		if (shouldSpin) {
 			Robot.intakeSS.runAtSpeed(Constants.intakeSpeedToMatchArm);
+		}else{
+			Robot.intakeSS.stopIntaking();
 		}
 	}
 
 	// Called repeatedly when this Command is scheduled to run
 	protected void execute() {
+		
 		if (Robot.elevatorSS.getElevatorPosition() >=Constants.elevatorHoldingHeight + Constants.collectingIntakeStopOffset){
 			shouldSpin = false;
 		}
+		
 		if (shouldSpin) {
 			Robot.intakeSS.runAtSpeed(Constants.intakeSpeedToMatchArm);
 		}
@@ -65,13 +69,12 @@ public class MoveToHoldingFromLow extends Command {
 		Robot.states.shooterArmPositionTracker = ShooterArmPosition.HOLDING;
 		Robot.intakeSS.stopIntaking();
 		System.out.println("at holding");
-		Robot.states.elevatorOperatorControlModeTracker = ElevatorOperatorControlMode.AUTO;
 	}
 
 	// Called when another command which requires one or more of the same
 	// subsystems is scheduled to run
 	protected void interrupted() {
-		System.out.println("MoveToHolding interrupted");
+		System.out.println("MoveToHoldingFromLow interrupted");
 		Robot.states.intakeControlModeTracker = IntakeControlMode.DRIVER;
 		Robot.elevatorSS.elevatorStopMovement();
 		Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;

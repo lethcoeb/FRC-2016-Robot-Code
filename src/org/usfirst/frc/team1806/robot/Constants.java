@@ -65,15 +65,16 @@ public class Constants {
 	// ELEVATOR THINGS
 
 	public static final double elevatorPIDp = 0.15;
-	public static final double elevatorPIDi = 0;
+	public static final double elevatorPIDi = 0.0006;
 	public static final double elevatorPIDd = 0;
+	//public static final double elevatorAbsoluteTolerance = 25;
 	public static final double elevatorAbsoluteTolerance = 500;
 	public static final double elevatorDownPIDp = .12;
 	public static final double elevatorDownPIDi = 0;
 	public static final double elevatorDownPIDd = 0;
 
-	//public static final double elevatorShootingHeight = 103560; :: comp bot
-	public static final int elevatorShootingHeight = 96000;
+	public static final int elevatorShootingHeight = 91700;
+	//public static final int elevatorShootingHeight = 96000; //old arm
 	//public static final int elevatorHoldingHeight = 20000;
 	public static final int elevatorHoldingHeight = 26000;
 	public static final int elevatorChevaldeFunHeight = 70000; //lowest height at which the intake can be raised and lowered

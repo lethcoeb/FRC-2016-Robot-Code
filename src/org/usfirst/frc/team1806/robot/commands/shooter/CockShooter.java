@@ -23,6 +23,7 @@ public class CockShooter extends Command {
 	
     public CockShooter() {
         requires(Robot.shooterSS);
+        this.setInterruptible(false);
     }
 
     // Called just before this Command runs the first time
@@ -30,7 +31,7 @@ public class CockShooter extends Command {
     	t = new Timer();
     	t.reset();
     	t.start();
-    	if(!Robot.shooterSS.shooterIsCocked()){
+    	if(!Robot.shooterSS.isShooterCocked()){
         	Robot.shooterSS.cockingDogGearEngage();
         	Robot.shooterSS.cockShooterEngageGear();
     	}
@@ -77,6 +78,10 @@ public class CockShooter extends Command {
     	}
     	*/
     	
+    	if(Robot.pdp.getCurrent(RobotMap.PDPcockingWinchSlot) > 100){
+    		Robot.states.overCocked = true;
+    	}
+    	
     }
 
     // Make this return true when this Command no longer needs to run execute()
@@ -88,7 +93,7 @@ public class CockShooter extends Command {
     		return false;
     	}
     	else{
-    		return Robot.shooterSS.shooterIsCocked();
+    		return Robot.shooterSS.isShooterCocked();
     	}
     	/*
     	//Becker's original code

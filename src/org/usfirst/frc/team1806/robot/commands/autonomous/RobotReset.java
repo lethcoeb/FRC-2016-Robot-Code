@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj.command.CommandGroup;
 public class RobotReset extends CommandGroup {
     
     public  RobotReset() {
-        addSequential(new LowerIntake(2));
+        addSequential(new LowerIntake(.5));
         addSequential(new MoveToHoldingPID());
     }
 }

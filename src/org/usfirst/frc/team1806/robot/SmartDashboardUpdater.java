@@ -33,7 +33,7 @@ public class SmartDashboardUpdater {
 			SmartDashboard.putString("shooter cocked?", Robot.states.shooterCockedTracker.toString());
 			SmartDashboard.putString("visionTrackingState", Robot.states.visionTrackingStateTracker.toString());
 
-			SmartDashboard.putBoolean("transduction sensor", Robot.shooterSS.shooterIsCocked());
+			SmartDashboard.putBoolean("transduction sensor", Robot.shooterSS.isShooterCocked());
 			SmartDashboard.putBoolean("bottom limit", Robot.elevatorSS.isBottomLimitHit());
 
 			SmartDashboard.putNumber("elevator pos", Robot.elevatorSS.getElevatorPosition());
@@ -46,6 +46,10 @@ public class SmartDashboardUpdater {
 			//SmartDashboard.putNumber("total current", Robot.pdp.getTotalCurrent());
 
 			SmartDashboard.putString("intake control mode", Robot.states.intakeControlModeTracker.toString());
+			
+			
+			SmartDashboard.putNumber("LoopsUntilDone", Robot.states.loopsUntilDone);
+			SmartDashboard.putNumber("Initial Target", Robot.states.initialTarget);
 			//SmartDashboard.putNumber("Winch Resistence", Robot.getPDPResistance(RobotMap.PDPcockingWinchSlot));
 
 			/*if (!Robot.jr.isGoalFound()) {

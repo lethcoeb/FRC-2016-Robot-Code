@@ -24,11 +24,12 @@ public class IntakeSubsystem extends Subsystem {
 	public IntakeSubsystem() {
 		roller = new Talon(RobotMap.intakeRoller);
 		roller.setInverted(true);
-		deployer = new DoubleSolenoid(RobotMap.deployerExtend, RobotMap.deployerRetract);
+		deployer = new DoubleSolenoid(1, RobotMap.deployerExtend, RobotMap.deployerRetract);
 	}
 
 	public void intakeBall() {
-		roller.set(kIntakeRollerSpeed);
+		//roller.set(kIntakeRollerSpeed);
+		roller.set(1);
 		Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
 	}
 

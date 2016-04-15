@@ -1,7 +1,6 @@
 package org.usfirst.frc.team1806.robot.subsystems;
 
 import org.usfirst.frc.team1806.robot.Constants;
-import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotMap;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -24,16 +23,16 @@ public class ShooterSubsystem extends Subsystem {
     
     double kGearEngageSpeed = Constants.gearEngageSpeed;
     
-    /*
-     * @param meme a string
-     */
     public ShooterSubsystem(){
     	//cockingMotor goes one direction. Only valid values are positive
+    	/*
+    	 *  So DO NOT send it in a negative direction!!
+    	 */
     	cockingMotor = new Talon(RobotMap.cockingMotor);
     	cockingMotor.setInverted(true);
     	cockedLimitSwitch = new DigitalInput(RobotMap.cockedShooterLimit);
     	puncherReleaseSolenoid = new Solenoid(RobotMap.shooterReleaseSolenoid);
-    	ballPincherSolenoid = new DoubleSolenoid(RobotMap.pincherPinch, RobotMap.pincherRelease);
+    	ballPincherSolenoid = new DoubleSolenoid(1, RobotMap.pincherPinch, RobotMap.pincherRelease);
     	ballSensor = new DigitalInput(RobotMap.hasBallSensor);
     }
     
@@ -70,8 +69,12 @@ public class ShooterSubsystem extends Subsystem {
     	ballPincherSolenoid.set(Value.kReverse);
     }
     
-    public boolean shooterIsCocked(){
+    public boolean isShooterCocked(){
     	return !cockedLimitSwitch.get();
+    }
+    
+    public boolean isCocking(){
+    	return cockingMotor.get() != 0;
     }
     
     public boolean hasBallSensor(){

@@ -14,5 +14,6 @@ public class MoveToShootingHeight extends CommandGroup {
     	addSequential(new SetStateOther());
         addSequential(new MoveToLocationPID(Constants.elevatorShootingHeight));
         addSequential(new SetStateShooting());
+        
     }
 }

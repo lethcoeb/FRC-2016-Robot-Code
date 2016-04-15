@@ -2,6 +2,7 @@ package org.usfirst.frc.team1806.robot.commands.autonomous.routines;
 
 import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
+import org.usfirst.frc.team1806.robot.commands.autonomous.DriveToPosition;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
@@ -9,6 +10,7 @@ import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToLocationPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
@@ -26,7 +28,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
     {
     	
     	//always lower the intake at the start
-		addSequential(new LowerIntake());
+		/*addSequential(new LowerIntake());
 
     	if(lane == 1 || !leaveArmUp){
     		addSequential(new MoveToHoldingPID());
@@ -48,22 +50,15 @@ public class ForwardsDrivingAuto extends CommandGroup {
     		addSequential(new LineUpShot());
     		addSequential(new ShootThenCock());
     		addSequential(new DoNothing());
-    	}
-        // Add Commands here:
-        // e.g. addSequential(new Command1());
-        //      addSequential(new Command2());
-        // these will run in order.
+    	}*/
 
-        // To run multiple commands at the same time,
-        // use addParallel()
-        // e.g. addParallel(new Command1());
-        //      addSequential(new Command2());
-        // Command1 and Command2 will run in parallel.
 
-        // A command group will require all of the subsystems that each member
-        // would require.
-        // e.g. if Command1 requires chassis, and Command2 requires arm,
-        // a CommandGroup containing them would require both the chassis and the
-        // arm.
+    	addParallel(new MoveToLocationPID(Constants.elevatorChevaldeFunHeight));
+    	addSequential(new DriveToPosition(120, .8));
+    	addParallel(new MoveToShootingHeight());
+    	addParallel(new LowerIntake(.5));
+    	addSequential(new LineUpShot());
+    	
+    	
     }
 }

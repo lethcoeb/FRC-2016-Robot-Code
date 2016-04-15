@@ -14,7 +14,8 @@ public class DriveUntilFlat extends Command {
 
 	Double commandTimeout;
 	double maxSpeed;
-	double kTimeUntilFlat = Constants.timeUntilFlat;
+	//double kTimeUntilFlat = Constants.timeUntilFlat;
+	double kTimeUntilFlat = 0;
 
 	Double minDistanceToTravel;
 

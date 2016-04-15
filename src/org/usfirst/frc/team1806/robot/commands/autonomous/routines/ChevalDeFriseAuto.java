@@ -10,6 +10,7 @@ import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToLocationPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.SetStateShooting;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 
 import edu.wpi.first.wpilibj.command.CommandGroup;
@@ -21,13 +22,17 @@ public class ChevalDeFriseAuto extends CommandGroup {
     
     public  ChevalDeFriseAuto(boolean shoot, int lane) {
         addParallel(new MoveToLocationPID(Constants.elevatorChevaldeFunHeight));
-        addSequential(new DriveToPosition(40, .6));
-        addParallel(new LowerIntake());
-        //addSequential(new DriveForTime(2, -.75));
-        addSequential(new Wait(2.5));
-        addSequential(new DriveToPosition(48, .4));
+        addSequential(new DriveToPosition(42, .6));
+        addSequential(new LowerIntake(1.5));
+        addSequential(new DriveToPosition(68, .55));
+        addParallel(new MoveToLocationPID(98800));
+        addSequential(new DriveToPosition(132, .8));
+        addSequential(new TurnToAbsoluteAngle(60));
+        addSequential(new SetStateShooting());
+        addSequential(new DriveToPosition(-24, .6));
+        addSequential(new LineUpShot());
         
-        if(shoot){
+        /*if(shoot){
         	addParallel(new MoveToShootingHeight());
         	addSequential(new TurnToAbsoluteAngle(Constants.autoForwardsNearGoalAngles[lane]));
         	addSequential(new LineUpShot());
@@ -35,7 +40,7 @@ public class ChevalDeFriseAuto extends CommandGroup {
         }else{
         	addSequential(new MoveToHoldingPID());
         	addSequential(new DoNothing());
-        }
+        }*/
         
     }
 }

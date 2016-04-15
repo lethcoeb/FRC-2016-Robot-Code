@@ -50,8 +50,12 @@ public class RobotStates {
 	public boolean autoLiningUp;
 	public boolean hasBall;
 	public boolean lowBarring;
+	public boolean overCocked;
 	
-	public int overshoot;
+	public double initialTarget = 0;
+	public int loopsUntilDone = 0;
+	
+	public double overshoot;
 	
 	public IntakePosition intakePositionTracker;
 	public ShooterArmPosition shooterArmPositionTracker;
@@ -80,6 +84,7 @@ public class RobotStates {
 		autoLiningUp = false;
 		collectingBalling = false;
 		lowBarring = false;
+		overCocked = false;
 		overshoot = 0;
 	}
 	

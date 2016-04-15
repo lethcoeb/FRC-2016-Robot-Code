@@ -1,16 +1,13 @@
 package org.usfirst.frc.team1806.robot.commands.autonomous.routines;
 
-import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveToPosition;
 import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAbsoluteAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToLocationPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
-import org.usfirst.frc.team1806.robot.commands.elevator.SetStateShooting;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.intake.RunAtSpeed;
 
-import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.CommandGroup;
 
 /**

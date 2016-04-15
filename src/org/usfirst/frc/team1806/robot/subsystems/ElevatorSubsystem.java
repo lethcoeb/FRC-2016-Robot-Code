@@ -39,6 +39,7 @@ public class ElevatorSubsystem extends Subsystem {
 		// topLimit = new DigitalInput(RobotMap.topElevatorLimit);
 
 		elevatorSRX = new CANTalon(0);
+		//elevatorSRX.setFeedbackDevice(CANTalon.FeedbackDevice.CtreMagEncoder_Absolute);
 		elevatorSRX.setFeedbackDevice(CANTalon.FeedbackDevice.QuadEncoder);
 		// starts in pid mode
 		elevatorSRX.changeControlMode(TalonControlMode.Position);
@@ -51,10 +52,12 @@ public class ElevatorSubsystem extends Subsystem {
 		//elevatorSRX.setCloseLoopRampRate(1);
 		//elevatorSRX.
 		
-		elevatorSRX.setForwardSoftLimit(100000);
+		elevatorSRX.setForwardSoftLimit(110000);
 		elevatorSRX.enableForwardSoftLimit(true);
 		elevatorSRX.setReverseSoftLimit(-500);
 		elevatorSRX.enableReverseSoftLimit(true);
+		
+		elevatorSRX.setIZone(2000);
 		
 		elevatorSRX.enable();
 
@@ -71,6 +74,14 @@ public class ElevatorSubsystem extends Subsystem {
 	
 	public double elevatorGetPowerOutput(){
 		return elevatorSRX.getOutputVoltage();
+	}
+
+	public boolean isMovingDown(){
+		return elevatorGetPowerOutput() < 0;
+	}
+	
+	public boolean isMovingUp(){
+		return elevatorGetPowerOutput() > 0;
 	}
 	
 	public void elevatorSetPIDValues(double p, double i, double d){
@@ -145,8 +156,7 @@ public class ElevatorSubsystem extends Subsystem {
 	}
 
 	// for some reason you gotta call this a lot to use the SRX PID idk why.
-	// fuck srx's
-	// jk i love them but still
+
 	public void resetSrxPID() {
 		elevatorSRX.reset();
 		elevatorSRX.disable();

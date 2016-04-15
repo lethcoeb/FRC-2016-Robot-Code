@@ -52,11 +52,10 @@ public class DrivetrainSubsystem extends Subsystem {
     	left2 = new Talon(RobotMap.leftMotor2);
     	left3 = new Talon(RobotMap.leftMotor3);
     	
-    	shifter = new DoubleSolenoid(RobotMap.shiftLow, RobotMap.shiftHigh);
+    	shifter = new DoubleSolenoid(1, RobotMap.shiftLow, RobotMap.shiftHigh);
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);
-    	//rightEncoder.setReverseDirection(true);
     	//leftEncoder.setReverseDirection(true);
     	rightEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
     	leftEncoder.setDistancePerPulse(Constants.encoderCountsPerRevolution);
@@ -225,6 +224,11 @@ public class DrivetrainSubsystem extends Subsystem {
     	setRight(power + turn);
     }
     
+    public void arcadeRight(double power, double turn){
+    	setLeft(0);
+    	setRight(power + turn);
+    }
+    
     public void shiftHigh(){
     	shifter.set(Value.kForward);
     	Robot.states.drivetrainGearTracker = DrivetrainGear.HIGH;
@@ -274,7 +278,7 @@ public class DrivetrainSubsystem extends Subsystem {
     }
     
     public boolean isNavxFlat(){
-    	return navx.getRoll() < Constants.navxMinPitchToBeFlat;
+    	return Math.abs(navx.getRoll()) < Constants.navxMinPitchToBeFlat;
     }
     
     public double getTrueAngle(){

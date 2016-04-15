@@ -33,6 +33,9 @@ public class CollectBall extends Command {
 	
 	
 	public CollectBall() {
+		
+		Robot.states.collectingBalling = true;
+		
 		requires(Robot.intakeSS);
 		requires(Robot.elevatorSS);
 		requires(Robot.shooterSS);
@@ -42,28 +45,30 @@ public class CollectBall extends Command {
 
 	// Called just before this Command runs the first time
 	protected void initialize() {
+		
+		Robot.states.collectingBalling = true;
 		Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
 		System.out.println("CollectBall() started");
 		Robot.elevatorSS.resetSrxPID();
+		Robot.elevatorSS.elevatorSetPIDValues(Constants.elevatorDownPIDp, Constants.elevatorDownPIDi, Constants.elevatorDownPIDd);
 		Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);
 		Robot.elevatorSS.elevatorSetSetpoint(0);
 		Robot.states.intakeRollerStateTracker = IntakeRollerState.INTAKING;
-		Robot.states.collectingBalling = true;
+		
 	}
 
 	// Called repeatedly when this Command is scheduled to run
 	protected void execute() {
-		// TODO variable this height?
 		if (Robot.elevatorSS.getElevatorPosition() < kElevatorSafeToCollect && !intaking) {
 			// you can now run the intake to collect the ball since the claw is
 			// in position to grab the ball
 			Robot.intakeSS.intakeBall();
-			System.out.println("intake rolling");
 			intaking = true;
+			System.out.println("intake rolling");
 		} else if (Robot.shooterSS.hasBallSensor() && intaking && !ballSensed) {
 			// you successfully intaked a ball and now you need to wait a bit
 			// for it to center.
-			new RumbleControllerConstant(Robot.oi.dc).start();
+			new RumbleController(Robot.oi.dc).start();
 			ballSensed = true;
 			System.out.println("sensed ball");
 		} else if (ballSensed && !Robot.shooterSS.hasBallSensor()) {
@@ -73,6 +78,8 @@ public class CollectBall extends Command {
 		}
 		
 		if(intaking && ballSensed && !ok){
+			//killer variable names
+			//Pinch the ball if you haven't already
 			ok = true;
 			System.out.println("pinching");
 			clamping = true;
@@ -93,6 +100,7 @@ public class CollectBall extends Command {
 		}
 
 		else if (clamping && t.get() >= .2) {
+			//If you've been clamped for more than two seconds finish the command and bring the ball up to holding height
 			System.out.println("finishing");
 			t.stop();
 			finished = true;
@@ -106,6 +114,7 @@ public class CollectBall extends Command {
 
 	// Called once after isFinished returns true
 	protected void end() {
+		Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
 		t.stop();
 		Robot.oi.stopRumbles();
 		Robot.states.hasBall = pinched;
@@ -117,6 +126,9 @@ public class CollectBall extends Command {
 	// subsystems is scheduled to run
 	protected void interrupted() {
 		
+		Robot.states.intakeRollerStateTracker = IntakeRollerState.STOPPED;
+		t.stop();
+		Robot.states.hasBall = pinched;
 		Robot.oi.stopRumbles();
 		Robot.intakeSS.stopIntaking();
 		Robot.states.collectingBalling = false;

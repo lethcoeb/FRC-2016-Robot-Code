@@ -21,6 +21,7 @@ import org.usfirst.frc.team1806.robot.subsystems.ShooterSubsystem;
 import java.util.ArrayList;
 
 import org.usfirst.frc.team1806.robot.RobotStates.DriveControlMode;
+import org.usfirst.frc.team1806.robot.RobotStates.IntakePosition;
 import org.usfirst.frc.team1806.robot.RobotStates.Mode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.commands.DriverControlDrivetrain;
@@ -28,6 +29,7 @@ import org.usfirst.frc.team1806.robot.commands.RumbleController;
 import org.usfirst.frc.team1806.robot.commands.Wait;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DoNothing;
 import org.usfirst.frc.team1806.robot.commands.autonomous.DriveToPosition;
+import org.usfirst.frc.team1806.robot.commands.autonomous.DriveUntilFlat;
 import org.usfirst.frc.team1806.robot.commands.autonomous.FourteenInchMode;
 import org.usfirst.frc.team1806.robot.commands.autonomous.RobotReset;
 import org.usfirst.frc.team1806.robot.commands.autonomous.Turn90;
@@ -99,9 +101,9 @@ public class Robot extends IterativeRobot {
 	}
 
 	public void robotInit() {
-		// init subsystems
-
 		
+		//BEEP BOOP BEEP BOOP!
+		//INITIALIZE ROBOT SUBSYSTEMS!
 		drivetrainSS = new DrivetrainSubsystem();
 		elevatorSS = new ElevatorSubsystem();
 		intakeSS = new IntakeSubsystem();
@@ -109,7 +111,7 @@ public class Robot extends IterativeRobot {
 		pdp = new PowerDistributionPanel();
 		compressor = new Compressor();
 		
-		
+		//INITIALIZE OPERATOR INTERFACE AND STATE TRACKER!
 		oi = new OperatorInterface();
 		states = new RobotStates();
 
@@ -123,7 +125,7 @@ public class Robot extends IterativeRobot {
 		
 		
 		
-		// jetson
+		// Vision tracking data receiver. Was used for jetson coprocessor, now used for receiving vals from DS over NetworkTables
 		jr = new JetsonReceiver();
 		jr.start();
 		// autoreader for future events
@@ -135,6 +137,10 @@ public class Robot extends IterativeRobot {
 
 		sdu = new SmartDashboardUpdater();
 
+		SmartDashboard.putNumber("PulsePower", .20);
+		SmartDashboard.putNumber("PulseWidth", .01);
+		
+		//Init SendableChoosers for autonomous selection
 		autonomous = new SendableChooser();
 		autoArmUpOrDown = new SendableChooser();
 		autoForwardOrBackward = new SendableChooser();
@@ -176,15 +182,7 @@ public class Robot extends IterativeRobot {
 		defenseToBeCrossed.addObject("Cheval De Frise", Defenses.CHEVALDEFRISE);
 		SmartDashboard.putData("Defense to be crossed", defenseToBeCrossed);
 		
-
-		// rvt = new RioVisionThread();
-		// rvt.start();
-
-		// compressor.setClosedLoopControl(false);
 		
-		
-		SmartDashboard.putNumber("PulsePower", .20);
-		SmartDashboard.putNumber("PulseWidth", .01);
 		
 	}
 
@@ -195,6 +193,9 @@ public class Robot extends IterativeRobot {
 	 */
 
 	public void disabledInit() {
+		
+		drivetrainSS.shiftLow();
+		
 		oi.stopRumbles();
 	}
 
@@ -227,23 +228,15 @@ public class Robot extends IterativeRobot {
 
 		Robot.states.mode = Mode.AUTONOMOUS;
 		hasBeenEnabled = true;
-
+		
+		//Shift robot to low gear and zero out sensors
 		Robot.drivetrainSS.shiftLow();
 		Robot.drivetrainSS.resetYaw();
 		Robot.drivetrainSS.resetEncoders();
 
 		autonomousCommand = new CommandGroup();
 
-		/*
-		 * autonomousCommand.addSequential(new LowerIntake(.5));
-		 * autonomousCommand.addSequential(new MoveToHoldingPID());
-		 * autonomousCommand.addSequential(new DriveToPosition(21, .85));
-		 * autonomousCommand.addParallel(new MoveToShootingHeight());
-		 * autonomousCommand.addSequential(new TurnToAbsoluteAngle(62));
-		 * autonomousCommand.addSequential(new DriveToPosition(2, .5));
-		 * autonomousCommand.addSequential(new LineUpShot());
-		 */
-
+		//Assign autonomous command group based on driver-selected sendable choosers
 		if (autonomous.getSelected() == "N") {
 			autonomousCommand = new RobotReset();
 		} else {
@@ -268,12 +261,10 @@ public class Robot extends IterativeRobot {
 						(boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
 			}
 		}
-
-		//autonomousCommand.addSequential(new Turn90(2.5, true));
-
-		//autonomousCommand.addSequential(new ChevalDeFriseAuto(false, 2));
-		//autonomousCommand.addSequential(new DriveToPosition(72, .6));
-		autonomousCommand.start();
+		
+		//Start assigned command
+		autonomousCommand.start();		
+		
 		/*
 		 * String autoSelected = SmartDashboard.getString("Auto Selector",
 		 * "Default"); switch (autoSelected) { case "My Auto": autonomousCommand
@@ -306,56 +297,60 @@ public class Robot extends IterativeRobot {
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
 		sdu.push();
-
-		if (Math.abs(Robot.drivetrainSS.getPitch()) > 65) {
+		
+		//Stop autonomous command if the robot is tilted too far forwards or backwards
+		//Basically avoid pulling a 935 hehehe
+		if (Math.abs(Robot.drivetrainSS.getRoll()) > 65) {
 			autonomousCommand.cancel();
 		}
 
 	}
 
 	public void teleopInit() {
-		// This makes sure that the autonomous stops running when
-		// teleop starts running. If you want the autonomous to
-		// continue until interrupted by another command, remove
-		// this line or comment it out.
 		
+		//Cancel any auto command if it's still running
 		if (autonomousCommand != null) {
 			autonomousCommand.cancel();
 		}
+		
+		//Sets tracking states that we use for some stuff
 		hasBeenEnabled = true;
 		Robot.states.mode = Mode.TELEOP;
 		Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
-
+		
+		//I don't know why but this fixed a bug where we couldn't autoline up if the auto didn't finish
 		Robot.states.autoLiningUp = false;
+		
+		//Recock shooter and lower arm automatically since sometimes the auto doesn't run all the way through
+		if(states.shooterCockedTracker != states.shooterCockedTracker.COCKED){
+			new CockShooter().start();
+		}
+		
+		
+		/*if(states.shooterArmPositionTracker != states.shooterArmPositionTracker.HOLDING && !states.hasBall && states.intakePositionTracker == IntakePosition.DEPLOYED){
+			new MoveToHoldingPID().start();
+		}*/
+		
+		//Give manual control of drivetrain to driver
 		new DriverControlDrivetrain().start();
 	}
 
 	/**
 	 * This function is called periodically during operator control
 	 */
-	boolean memes = false;
 
 	public void teleopPeriodic() {
 
 		Scheduler.getInstance().run();
 		oi.update();
-
-		/*
-		 * // automatic sensor listener, put this somewhere else bc it's so
-		 * ugleh if (Robot.shooterSS.hasBallSensor() && !Robot.states.hasBall
-		 * //FIXME oi.drt is dirty af && Robot.states.shooterArmPositionTracker
-		 * == ShooterArmPosition.DOWN && oi.dRT == 0) { new PinchBall().start();
-		 * }
-		 */
-
-		/*
-		 * if (pdp.getVoltage() < 9) { compressor.setClosedLoopControl(false); }
-		 * else { compressor.setClosedLoopControl(true); }
-		 */
 		
+		//Quick and dirty override to make sure the driver always has control of the drivetrain if not using autoalignment
 		if(states.autoLiningUp){
 			if(Robot.oi.dRT < .4){
+				System.out.println("Overriding autolineup, returning control to driver.");
 				new DriverControlDrivetrain().start();
+				compressor.setClosedLoopControl(true);
+				compressor.start();
 			}
 		}
 

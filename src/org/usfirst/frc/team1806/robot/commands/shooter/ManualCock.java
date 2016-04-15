@@ -29,15 +29,22 @@ public class ManualCock extends Command {
     	t.reset();
     	t.start();
     	
+    	Robot.shooterSS.cockingDogGearEngage();
     	
     	//engage gear, start pulling
-    	Robot.shooterSS.cockingDogGearEngage();
-    	Robot.shooterSS.cockShooterEngageGear();
+    	if(Robot.shooterSS.isShooterCocked()){
+    		
+    		Robot.shooterSS.cockShooterEngageGear();
+    	}
     	
     }
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+    	
+    	if(Robot.shooterSS.isShooterCocked()){
+    		finished = true;
+    	}
     	
     	if(!cocking && t.get() > Constants.timeToEngageDogGear){
     		//you've waited for long enough, the gear is engaged fam, COCK THAT SHIT BRUH
@@ -47,12 +54,11 @@ public class ManualCock extends Command {
     	
     	if(Robot.pdp.getCurrent(RobotMap.PDPcockingWinchSlot) > 100){
     		//kill pls
+    		Robot.states.overCocked = true;
     		finished = true;
     	}
     	
-    	if(Robot.shooterSS.shooterIsCocked()){
-    		finished = true;
-    	}
+    	
     	
     }
 
