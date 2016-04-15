@@ -7,6 +7,7 @@ import org.usfirst.frc.team1806.robot.RobotStates.DrivetrainGear;
 import org.usfirst.frc.team1806.robot.commands.DriverControlDrivetrain;
 
 import com.kauailabs.navx.frc.AHRS;
+
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.Encoder;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.SerialPort.Port;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Subsystem;
 
 /**
@@ -44,7 +46,25 @@ public class DrivetrainSubsystem extends Subsystem {
     double MaxRotationPID = Constants.drivetrainMaxRotationPIDStage1;
     double maxSpeed = 1;
     
+    
+    double currentEncoder;
+    double lastEncoder;
+	Boolean liningUpShot;
+	double lastTrackedTime;
+	double timeSinceLastAutoShift;
+	double lastAutoShift;
+	double period;
+	Timer periodTimer;
+	Timer autoShifting;
+    Boolean autoShift = false;
+
     public DrivetrainSubsystem(){
+    	currentEncoder = 0;
+    	lastEncoder = 0;
+    	lastTrackedTime = 0;
+    	timeSinceLastAutoShift = 0;
+		periodTimer = new Timer();
+		periodTimer.start();
     	right1 = new Talon(RobotMap.rightMotor1);
     	right2 = new Talon(RobotMap.rightMotor2);
     	right3 = new Talon(RobotMap.rightMotor3);
@@ -52,6 +72,8 @@ public class DrivetrainSubsystem extends Subsystem {
     	left2 = new Talon(RobotMap.leftMotor2);
     	left3 = new Talon(RobotMap.leftMotor3);
     	
+    	
+    	//TODO Make sure this is the right port for the shifter on comp bot
     	shifter = new DoubleSolenoid(1, RobotMap.shiftLow, RobotMap.shiftHigh);
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
@@ -192,7 +214,18 @@ public class DrivetrainSubsystem extends Subsystem {
     }
     
     public void execute(double power, double turn){
-    	
+    	lastEncoder = currentEncoder;
+		currentEncoder = getRightEncoderDistance();
+		
+		lastPower = currPower;
+		currPower = power;
+		
+		lastTurnPower = currTurnPower;
+		currTurnPower = turn;
+		
+		period = periodTimer.get() - lastTrackedTime;
+		lastTrackedTime = periodTimer.get();
+		
 		lastPower = currPower;
 		currPower = power;
 		
@@ -213,6 +246,13 @@ public class DrivetrainSubsystem extends Subsystem {
     		}else{
         		currTurnPower = lastTurnPower - Constants.maxTurnPowerDifferential;
     		}
+    	}
+    	if(autoShift && !Robot.oi.dc.getButtonRS()){
+    		newShift();
+    	} else if(!autoShift && Robot.oi.dc.getButtonRS()){
+    		shiftHigh();
+    	} else {
+    		shiftLow();
     	}
     	
     	arcadeDrive(currPower, currTurnPower);
@@ -417,7 +457,90 @@ public class DrivetrainSubsystem extends Subsystem {
     public void drivetrainTurnAbsolutePIDSetTolerance(double tolerance){
     	PIDTolerance = tolerance;
     }
+    
+    //////////////////////////////////////////////
+	public boolean isInLowGear() {
+		return Robot.states.drivetrainGearTracker == DrivetrainGear.LOW;
+	}
+	public boolean isInHighGear() {
+		return Robot.states.drivetrainGearTracker == DrivetrainGear.HIGH;
+	}
+	public double getDriveSpeedFPS() {
+		return Math.abs(getDriveVelocityFPS());
+	}
+	public double getDriveVelocityFPS() {
+		// TODO: This should convert to fps but fix it if it doesn't
+		
+		//FOR NAVX WHICH SUCKS
+		//return getDriveVelocity() * 3.28083989501;
+		
+		 return getDriveVelocity() / 12;
+	}
+	public double getDriveVelocity() {
+		// returns the average speed of the left and right side in inches per
+		// second
+		
+		
+		// getVelocity is in m/s
+		
+		//return SWATLib.convertTo2DVector(navX.getVelocityX(), navX.getVelocityY());
+		//return navx.getVelocityX();
+		
+		// Old version, using encoders:
+		return ((currentEncoder - lastEncoder) / period);
+	}
+	public boolean isSpeedingUp() {
+		return getDriveAccelFPSPS() > Constants.drivetrainAccelerationThreshold;
+	}
+	public double getDriveAccelFPSPS() {		
+		//return navx.getRawAccelX();
+		// THIS WILL NOT WORK!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		return (currPower - lastPower);
+	}
+	public boolean isSlowingDown() {
+		return getDriveAccelFPSPS() < -Constants.drivetrainAccelerationThreshold;
+	}
+	public boolean isAutoShifting(){
+		return autoShift;
+	}
+	public void disableAutoShift() {
+		autoShift = false;
+	}
+	public void enableAutoShift() {
+		autoShift = true;
+	}
 
+	private void newShift(){
+		if(autoShifting.get() > .5 || autoShifting.get() == 0){
+			if(getDriveSpeedFPS() > Constants.drivetrainUpshiftSpeedThreshold && Math.abs(currPower) > (Constants.drivetrainUpshiftPowerThreshold + .25) 
+				&& isInLowGear()){
+				
+				/*
+			 	* If it pushes the current value to over the power (The joystick) threshold 
+			 	* and its in low gear, then it'll shift to high hear.
+			 	* Also accounts for acceleration so its lit
+			 	* 
+			 	* I just gotta make sure not to hit the robot on the door :(
+			 	*/
+				shiftHigh();
+				autoShifting.reset();
+				autoShifting.start();
+			}
+
+			if(getDriveSpeedFPS() < Constants.drivetrainDownshiftSpeedThreshold 
+					&& Math.abs(currPower) < (Constants.drivetrainPowerDownshiftPowerThreshold + .1) && isInHighGear()){
+				/*
+				 * If it goes under the PowerDownShiftPowerThreshhold 
+				 * and its in high gear, then we shift to low gear
+				 * Also accounts for acceleration
+				 */
+				shiftLow();
+				autoShifting.reset();
+				autoShifting.start();
+			}
+		}
+	}
+    
     public void initDefaultCommand() {
     	
     	setDefaultCommand(new DriverControlDrivetrain());

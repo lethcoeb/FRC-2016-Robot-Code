@@ -44,6 +44,11 @@ public class DriverControlDrivetrain extends Command {
 		} else {
 			// Automatic driving stuff
 		}
+    	if(Robot.oi.dc.getLeftTrigger() >= .6 && !Robot.drivetrainSS.isAutoShifting()){
+    		Robot.drivetrainSS.enableAutoShift();
+    	} else if(Robot.oi.dc.getLeftTrigger() < .6 && Robot.drivetrainSS.isAutoShifting()) {
+    		Robot.drivetrainSS.disableAutoShift();
+    	}
     }
 
     // Make this return true when this Command no longer needs to run execute()

@@ -21,6 +21,14 @@ public class Constants {
 	public static final double drivetrainDriveI = 0.0001;
 	public static final double drivetrainDriveD = 0.03;
 	public static final double drivetrainDrivePIDTolerance = 2; // inches
+	// AUTO SHIFTING STUFF
+	public final static double drivetrainMaxLowGearSpeed = 3; //exceeding this speed will force an autoshift to high gear.
+	public final static double drivetrainPowerDownshiftPowerThreshold = .85 ; //power must be over this
+	public final static double drivetrainDownshiftPowerThreshold = .03; // power must be less than this
+	public final static double drivetrainDownshiftSpeedThreshold = 7; //speed must be less than this
+	public final static double drivetrainUpshiftPowerThreshold = .69; //power must be more than this
+	public final static double drivetrainAccelerationThreshold = .2; // applied for determining actual accel for shifting
+	public final static double drivetrainUpshiftSpeedThreshold = 6; //speed must be more than this
 	
 	//jones wants to do only i
 	//public static final double drivetrainTurnP = .07;
