@@ -53,6 +53,8 @@ public class RobotStates {
 	public boolean overCocked;
 	
 	public double initialTarget = 0;
+	public Double pulsePower;
+	
 	public int loopsUntilDone = 0;
 	
 	public double overshoot;

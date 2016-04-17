@@ -24,12 +24,12 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class LineUpShot extends Command {
 
-	enum direction{
+	enum direction {
 		LEFT, RIGHT
 	}
-	
+
 	direction directionTracker;
-	
+
 	boolean goalFound, withinRange, hasRumbled;
 
 	double targetAngle;
@@ -40,7 +40,7 @@ public class LineUpShot extends Command {
 	Timer autoTimer;
 	double pulsePower;
 	double pulseWidth;
-	
+
 	double overshoot;
 	double currYaw;
 
@@ -50,6 +50,7 @@ public class LineUpShot extends Command {
 
 	int loops = 0;
 	int goalLoops;
+	int step;
 	
 	
 
@@ -59,6 +60,15 @@ public class LineUpShot extends Command {
 		requires(Robot.drivetrainSS);
 		Robot.states.autoLiningUp = true;
 		Robot.drivetrainSS.resetYaw();
+		
+		if(Robot.states.pulsePower != null){
+			step = 2;
+			pulsePower = Robot.states.pulsePower;
+			System.out.println("Using global pulsepower");
+		}else{
+			step = 1;
+			pulsePower = .12;
+		}
 	}
 
 	// Called just before this Command runs the first time
@@ -68,36 +78,36 @@ public class LineUpShot extends Command {
 		Robot.compressor.stop();
 
 		// Determine angle from goal
-		
+
 		targetAngle = Robot.jr.getAngleToGoal();
-		
-		//TODO fix this
-		if(Math.signum(targetAngle) > 0){
+
+		// TODO fix this
+		if (Math.signum(targetAngle) > 0) {
 			directionTracker = direction.LEFT;
-		}else{
+		} else {
 			directionTracker = direction.RIGHT;
 		}
-		
+
 		voltage = Robot.pdp.getVoltage();
 
 		goalLoops = Math.abs((int) ((targetAngle / .1)));
-		//System.out.println("GoalLoops: " + goalLoops);
-		
+		// System.out.println("GoalLoops: " + goalLoops);
+
 		overshoot = Robot.states.overshoot;
-		//new algorithm to compensate for overshoot
-		if(overshoot != 0){
+		// new algorithm to compensate for overshoot
+		if (overshoot != 0) {
 			goalLoops = (int) (goalLoops * overshoot);
 		}
-		
-		//Old algorithm to compensate for overshoot
-		//goalLoops = goalLoops - (int) (Robot.states.overshoot * 10);
+
+		// Old algorithm to compensate for overshoot
+		// goalLoops = goalLoops - (int) (Robot.states.overshoot * 10);
 		if (goalLoops < 1) {
 			goalLoops = 1;
 		}
-		
-		if(Math.abs(targetAngle) < .5){
+
+		if (Math.abs(targetAngle) < .5) {
 			goalLoops = 0;
-		}else{
+		} else {
 			Robot.states.loopsUntilDone++;
 		}
 
@@ -111,16 +121,14 @@ public class LineUpShot extends Command {
 		}
 
 		// pulsePower = .27 * voltageCompensation;
-		pulsePower = .17;
+		
 
 		if (targetAngle > 0) {
 			// give more power if turning right because mechanical issues :-(
-			//pulsePower = pulsePower * 1.2;
+			// pulsePower = pulsePower * 1.2;
 		}
 
 		pulseWidth = .01;
-
-
 
 		autoTimer = new Timer();
 		autoTimer.reset();
@@ -151,68 +159,145 @@ public class LineUpShot extends Command {
 		 * 
 		 * }
 		 */
-		
-		currYaw = Robot.drivetrainSS.getYaw();
 
-		if (loops < goalLoops) {
-			if (autoTimer.get() >= pulseWidth) {
-				loops++;
+		
+
+		double minYawChange = .1;
+
+		switch (step) {
+
+		// finding min pulsepower
+		case 1: {
+			
+			Robot.drivetrainSS.arcadeDrive(0, pulsePower * -Math.signum(targetAngle));
+			boolean moving = true;
+			int loops = 0;
+			//fill table w/ entries
+			while (loops < 5) {
+				
+				currYaw = Robot.drivetrainSS.getYaw();
+				yawTable.add(currYaw);
+				while (yawTable.size() > 5) {
+					// keep table size at 5 entries
+					yawTable.remove(0);
+				}
+				
 				autoTimer.reset();
 				autoTimer.start();
-				
-				if(Math.abs(currYaw - targetAngle) <= 2){
-					Robot.drivetrainSS.arcadeRight(0, pulsePower * -Math.signum(targetAngle));
-				}else{
-					Robot.drivetrainSS.arcadeDrive(0, pulsePower * -Math.signum(targetAngle));
+				while(autoTimer.get() < .02){
+					
 				}
 				
-				//Robot.drivetrainSS.arcadeRight(0, pulsePower * -Math.signum(targetAngle));
+				loops++;
+
 			}
-		} else {
-			// done
-			Robot.drivetrainSS.arcadeDrive(0, 0);
-			finished = true;
-		}
-
-		if (/* Math.abs(Robot.drivetrainSS.getYaw() - targetAngle) < .5 || */(Robot.states.mode == Mode.TELEOP
-				&& Robot.oi.dc.getRightTrigger() < .5)) {
-			finished = true;
-		}
-
-		yawTable.add(currYaw);
-		while (yawTable.size() > 5) {
-			// keep table size at 5 entries
-			yawTable.remove(0);
-		}
-		boolean overshooting = true;
-		if (yawTable.size() == 5) {
+			
 			for (int i = 1; i < yawTable.size(); i++) {
-				if (Math.abs(yawTable.get(i) - targetAngle) > Math.abs(yawTable.get(i-1) - targetAngle)) {
-					//The difference between the target angle and current angle is GROWING
-					// keep overshooting var to true
+				if (Math.abs(yawTable.get(i)) - Math.abs(yawTable.get(i - 1)) < minYawChange) {
+					moving = false;
 				} else {
-					//You're not overshooting so set variable to false, it'll stay there
-					overshooting = false;
+					// yaws aren't increasing SMH
 				}
 			}
-			if (overshooting) {
-				System.out.println("Robot is overshooting, killing command");
+			
+			//dont let it get too big
+			if(pulsePower > .3){
+				moving = true;
+			}
+
+			if (moving) {
+				step = 2;
+				System.out.println("Found pulsePower: " + pulsePower);
+				Robot.drivetrainSS.arcadeDrive(0, 0);
+				//set global power so robot remembers it
+				Robot.states.pulsePower = pulsePower + .02;
+			} else {
+				
+				autoTimer.reset();
+				autoTimer.start();
+				while(autoTimer.get() < .2){
+					
+				}
+				
+				pulsePower = pulsePower + .01;
+				System.out.println("Changing pulsePower to " + pulsePower);
+				
+			}
+
+		}
+
+			// running goalloops cycle
+		case 2: {
+			
+			currYaw = Robot.drivetrainSS.getYaw();
+			yawTable.add(currYaw);
+			while (yawTable.size() > 5) {
+				// keep table size at 5 entries
+				yawTable.remove(0);
+			}
+			
+			if (loops < goalLoops) {
+				if (autoTimer.get() >= pulseWidth) {
+					loops++;
+					autoTimer.reset();
+					autoTimer.start();
+
+					if (Math.abs(currYaw - targetAngle) <= 2) {
+						Robot.drivetrainSS.arcadeRight(0, pulsePower * -Math.signum(targetAngle));
+					} else {
+						Robot.drivetrainSS.arcadeDrive(0, pulsePower * -Math.signum(targetAngle));
+					}
+
+					// Robot.drivetrainSS.arcadeRight(0, pulsePower *
+					// -Math.signum(targetAngle));
+				}
+			} else {
+				// done
+				Robot.drivetrainSS.arcadeDrive(0, 0);
 				finished = true;
-				
-				//New overshoot algorithm//
-				//Returns overshoot/undershoot as percentage
-				Robot.states.overshoot = 1 - ((currYaw - targetAngle) / currYaw);
-				if(Robot.states.overshoot < 0){
-					Robot.states.overshoot = Math.abs(Robot.states.overshoot);
-				}
-				
-				System.out.println("Overshoot: " + Robot.states.overshoot + ", currYaw: " + currYaw + ", targetAngle: " + targetAngle);
-				
-				
-				//Old overshoot algorithm
-				//Robot.states.overshoot = (Math.abs(currYaw - targetAngle) / .1);
-				System.out.println("Overshoot: " + Robot.states.overshoot);
 			}
+
+			if (/*
+				 * Math.abs(Robot.drivetrainSS.getYaw() - targetAngle) < .5 ||
+				 */(Robot.states.mode == Mode.TELEOP && Robot.oi.dc.getRightTrigger() < .5)) {
+				finished = true;
+			}
+
+			boolean overshooting = true;
+			if (yawTable.size() == 5) {
+				for (int i = 1; i < yawTable.size(); i++) {
+					if (Math.abs(yawTable.get(i) - targetAngle) > Math.abs(yawTable.get(i - 1) - targetAngle)) {
+						// The difference between the target angle and current
+						// angle is GROWING
+						// keep overshooting var to true
+					} else {
+						// You're not overshooting so set variable to false,
+						// it'll stay there
+						overshooting = false;
+					}
+				}
+				if (overshooting) {
+					System.out.println("Robot is overshooting, killing command");
+					finished = true;
+
+					// New overshoot algorithm//
+					// Returns overshoot/undershoot as percentage
+					Robot.states.overshoot = 1 - ((currYaw - targetAngle) / currYaw);
+					if (Robot.states.overshoot < 0) {
+						Robot.states.overshoot = Math.abs(Robot.states.overshoot);
+					}
+
+					System.out.println("Overshoot: " + Robot.states.overshoot + ", currYaw: " + currYaw
+							+ ", targetAngle: " + targetAngle);
+
+					// Old overshoot algorithm
+					// Robot.states.overshoot = (Math.abs(currYaw - targetAngle)
+					// / .1);
+					System.out.println("Overshoot: " + Robot.states.overshoot);
+				}
+			}
+		}
+
 		}
 
 	}
@@ -230,25 +315,19 @@ public class LineUpShot extends Command {
 	// Called once after isFinished returns true
 	protected void end() {
 
-		
-		
-		
-		
 		currYaw = Robot.drivetrainSS.getYaw();
-		
 
-		//System.out.println("lineupshot finished");
+		// System.out.println("lineupshot finished");
 
 		Robot.drivetrainSS.arcadeDrive(0, 0);
-		
+
 		autoTimer.reset();
 		autoTimer.start();
 
 		while (autoTimer.get() < 0) {
 
 		}
-		
-		
+
 		Robot.states.autoLiningUp = false;
 
 		if (Robot.states.mode == Mode.TELEOP && Robot.oi.dc.getRightTrigger() < .5) {
@@ -262,19 +341,19 @@ public class LineUpShot extends Command {
 		} else
 
 		if (Robot.states.mode == Mode.AUTONOMOUS) {
-			/*autoTimer.reset();
-			autoTimer.start();
-
-			while (autoTimer.get() < .2) {
-
-			}*/
+			/*
+			 * autoTimer.reset(); autoTimer.start();
+			 * 
+			 * while (autoTimer.get() < .2) {
+			 * 
+			 * }
+			 */
 
 			// If your angle offset is too big or your arm isnt all the way up
 			// repeat this command
-			
-			
-			
-			//Use currYaw since it was last calculated in the execute method, like targetAngle
+
+			// Use currYaw since it was last calculated in the execute method,
+			// like targetAngle
 			if (Math.abs(currYaw - targetAngle) >= .4
 					|| Robot.states.shooterArmPositionTracker != RobotStates.ShooterArmPosition.UP) {
 				new LineUpShot().start();
@@ -283,7 +362,7 @@ public class LineUpShot extends Command {
 
 				Robot.compressor.setClosedLoopControl(true);
 				Robot.compressor.start();
-				
+
 			}
 		}
 
