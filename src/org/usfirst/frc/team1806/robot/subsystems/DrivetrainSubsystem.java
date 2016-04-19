@@ -215,7 +215,7 @@ public class DrivetrainSubsystem extends Subsystem {
     
     public void execute(double power, double turn){
     	lastEncoder = currentEncoder;
-		currentEncoder = getRightEncoderDistance();
+		currentEncoder = getRightEncoderDistance();				//This stuff is for all of the period stuff for acceleration
 		
 		lastPower = currPower;
 		currPower = power;
@@ -224,7 +224,7 @@ public class DrivetrainSubsystem extends Subsystem {
 		currTurnPower = turn;
 		
 		period = periodTimer.get() - lastTrackedTime;
-		lastTrackedTime = periodTimer.get();
+		lastTrackedTime = periodTimer.get();					//Period timer stuffs
 		
 		lastPower = currPower;
 		currPower = power;
@@ -249,7 +249,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	}
     	if(autoShift && !Robot.oi.dc.getButtonRS()){
     		newShift();
-    	} else if(!autoShift && Robot.oi.dc.getButtonRS()){
+    	} else if(!autoShift && Robot.oi.dc.getButtonRS()){					//Auto shifting TODO please check RS click for manual shifting
     		shiftHigh();
     	} else {
     		shiftLow();
