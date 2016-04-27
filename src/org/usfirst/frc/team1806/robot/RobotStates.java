@@ -51,6 +51,7 @@ public class RobotStates {
 	public boolean hasBall;
 	public boolean lowBarring;
 	public boolean overCocked;
+	public static boolean autoalignmentShooting;
 	
 	public double initialTarget = 0;
 	public Double pulsePower;
@@ -87,6 +88,7 @@ public class RobotStates {
 		collectingBalling = false;
 		lowBarring = false;
 		overCocked = false;
+		autoalignmentShooting = false;
 		overshoot = 0;
 	}
 	

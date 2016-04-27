@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class LineUpShot extends Command {
 
-	enum direction {
+	public enum direction {
 		LEFT, RIGHT
 	}
 
@@ -60,14 +60,13 @@ public class LineUpShot extends Command {
 		requires(Robot.drivetrainSS);
 		Robot.states.autoLiningUp = true;
 		Robot.drivetrainSS.resetYaw();
-		
 		if(Robot.states.pulsePower != null){
 			step = 2;
 			pulsePower = Robot.states.pulsePower;
 			System.out.println("Using global pulsepower");
 		}else{
 			step = 1;
-			pulsePower = .12;
+			pulsePower = .14;
 		}
 	}
 
@@ -79,7 +78,12 @@ public class LineUpShot extends Command {
 
 		// Determine angle from goal
 
-		targetAngle = Robot.jr.getAngleToGoal();
+		goalFound = Robot.jr.isGoalFound();
+		if(goalFound){
+			targetAngle = Robot.jr.getAngleToGoal();
+		}else{
+			targetAngle = -10;
+		}
 
 		// TODO fix this
 		if (Math.signum(targetAngle) > 0) {
@@ -105,8 +109,14 @@ public class LineUpShot extends Command {
 			goalLoops = 1;
 		}
 
-		if (Math.abs(targetAngle) < .5) {
+		if (Math.abs(targetAngle) < .5 || Robot.states.autoalignmentShooting) {
 			goalLoops = 0;
+			
+			if(Robot.oi.dX && Robot.states.hasBall && !Robot.states.autoalignmentShooting){
+				Robot.states.autoalignmentShooting = true;
+				new ShootThenCock().start();
+			}
+			
 		} else {
 			Robot.states.loopsUntilDone++;
 		}
@@ -119,6 +129,7 @@ public class LineUpShot extends Command {
 				voltageCompensation = 1.2;
 			}
 		}
+		
 
 		// pulsePower = .27 * voltageCompensation;
 		
@@ -169,7 +180,7 @@ public class LineUpShot extends Command {
 		// finding min pulsepower
 		case 1: {
 			
-			Robot.drivetrainSS.arcadeDrive(0, pulsePower * -Math.signum(targetAngle));
+			Robot.drivetrainSS.arcadeDrive(0, -pulsePower);
 			boolean moving = true;
 			int loops = 0;
 			//fill table w/ entries
@@ -196,7 +207,7 @@ public class LineUpShot extends Command {
 				if (Math.abs(yawTable.get(i)) - Math.abs(yawTable.get(i - 1)) < minYawChange) {
 					moving = false;
 				} else {
-					// yaws aren't increasing SMH
+					
 				}
 			}
 			
@@ -242,8 +253,8 @@ public class LineUpShot extends Command {
 					autoTimer.reset();
 					autoTimer.start();
 
-					if (Math.abs(currYaw - targetAngle) <= 2) {
-						Robot.drivetrainSS.arcadeRight(0, pulsePower * -Math.signum(targetAngle));
+					if (Math.abs(currYaw - targetAngle) <= 2.5) {
+						Robot.drivetrainSS.arcadeRight(0, (pulsePower) * -Math.signum(targetAngle));
 					} else {
 						Robot.drivetrainSS.arcadeDrive(0, pulsePower * -Math.signum(targetAngle));
 					}
@@ -263,6 +274,7 @@ public class LineUpShot extends Command {
 				finished = true;
 			}
 
+			if(step == 2){
 			boolean overshooting = true;
 			if (yawTable.size() == 5) {
 				for (int i = 1; i < yawTable.size(); i++) {
@@ -296,6 +308,7 @@ public class LineUpShot extends Command {
 					System.out.println("Overshoot: " + Robot.states.overshoot);
 				}
 			}
+			}
 		}
 
 		}
@@ -321,11 +334,15 @@ public class LineUpShot extends Command {
 
 		Robot.drivetrainSS.arcadeDrive(0, 0);
 
+		
+		if(Robot.states.mode == Mode.AUTONOMOUS){
 		autoTimer.reset();
 		autoTimer.start();
 
-		while (autoTimer.get() < 0) {
+		
+		while (autoTimer.get() < .15) {
 
+		}
 		}
 
 		Robot.states.autoLiningUp = false;
@@ -354,10 +371,10 @@ public class LineUpShot extends Command {
 
 			// Use currYaw since it was last calculated in the execute method,
 			// like targetAngle
-			if (Math.abs(currYaw - targetAngle) >= .4
-					|| Robot.states.shooterArmPositionTracker != RobotStates.ShooterArmPosition.UP) {
+			if (Math.abs(currYaw - targetAngle) >= .4) {
 				new LineUpShot().start();
 			} else {
+				Robot.states.shooterArmPositionTracker = ShooterArmPosition.UP;
 				new ShootThenCock().start();
 
 				Robot.compressor.setClosedLoopControl(true);

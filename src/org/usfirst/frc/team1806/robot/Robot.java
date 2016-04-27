@@ -39,16 +39,18 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ChevalDeFrise
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoNothingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoSomething;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ForwardsDrivingAuto;
+import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ForwardsOverDefense;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.LowBarAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallNoSteal;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallSteal;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToOuterworksShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
 import org.usfirst.frc.team1806.robot.commands.shooter.CockShooter;
+import org.usfirst.frc.team1806.robot.commands.shooter.ManualCock;
 import org.usfirst.frc.team1806.robot.commands.shooter.PinchBall;
 import org.usfirst.frc.team1806.robot.commands.shooter.SecureBall;
 import org.usfirst.frc.team1806.robot.subsystems.DrivetrainSubsystem;
@@ -243,26 +245,26 @@ public class Robot extends IterativeRobot {
 
 			// Portcullis or chevaldefrise override forwards or backwards -- be
 			// careful!!
-			if (defenseToBeCrossed.getSelected() == Defenses.PORTCULLIS) {
-				// Put portcullis auto here
-			}
-			else if (defenseToBeCrossed.getSelected() == Defenses.CHEVALDEFRISE) {
-				autonomousCommand.addSequential(
-						new ChevalDeFriseAuto((boolean) autoShoot.getSelected(), (int) autoLane.getSelected()));
-			}else if(defenseToBeCrossed.getSelected() == Defenses.LOWBAR){
+			if(defenseToBeCrossed.getSelected() == Defenses.LOWBAR || (int) autoLane.getSelected() == 1){
 				autonomousCommand.addSequential(new LowBarAuto());
+			}else if (defenseToBeCrossed.getSelected() == Defenses.CHEVALDEFRISE) {
+				autonomousCommand.addSequential(
+						new ChevalDeFriseAuto((int) autoLane.getSelected()));
+			}else if(defenseToBeCrossed.getSelected() == Defenses.MOAT || defenseToBeCrossed.getSelected() == Defenses.RAMPARTS || defenseToBeCrossed.getSelected() == Defenses.ROCKWALL || defenseToBeCrossed.getSelected() == Defenses.ROUGHTERRAIN){
+				autonomousCommand.addSequential(new ForwardsOverDefense((int) autoLane.getSelected()));
 			}
 
-			else if (autoForwardOrBackward.getSelected() == "F") {
+			/*else if (autoForwardOrBackward.getSelected() == "F") {
 				autonomousCommand = new ForwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(),
 						(boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
 			} else {
 				autonomousCommand = new BackwardsDrivingAuto((boolean) autoArmUpOrDown.getSelected(),
 						(boolean) autoShoot.getSelected(), (int) autoLane.getSelected());
-			}
+			}*/
 		}
 		
 		//Start assigned command
+		//autonomousCommand = new ForwardsOverDefense((int) autoLane.getSelected());
 		autonomousCommand.start();		
 		
 		/*
@@ -303,6 +305,8 @@ public class Robot extends IterativeRobot {
 		if (Math.abs(Robot.drivetrainSS.getRoll()) > 65) {
 			autonomousCommand.cancel();
 		}
+		
+		Robot.shooterSS.unLit();
 
 	}
 
@@ -322,8 +326,8 @@ public class Robot extends IterativeRobot {
 		Robot.states.autoLiningUp = false;
 		
 		//Recock shooter and lower arm automatically since sometimes the auto doesn't run all the way through
-		if(states.shooterCockedTracker != states.shooterCockedTracker.COCKED){
-			new CockShooter().start();
+		if(!Robot.shooterSS.isShooterCocked()){
+			new ManualCock().start();
 		}
 		
 		
@@ -347,11 +351,19 @@ public class Robot extends IterativeRobot {
 		//Quick and dirty override to make sure the driver always has control of the drivetrain if not using autoalignment
 		if(states.autoLiningUp){
 			if(Robot.oi.dRT < .4){
+				Robot.states.autoalignmentShooting = true;
 				System.out.println("Overriding autolineup, returning control to driver.");
 				new DriverControlDrivetrain().start();
 				compressor.setClosedLoopControl(true);
 				compressor.start();
 			}
+		}
+		
+		if(Robot.elevatorSS.getElevatorPosition() >= Constants.elevatorShootingHeight - 10000 && Robot.oi.dc.getRightTrigger() < .3 && Robot.states.hasBall){
+			//high enough to get lit
+			Robot.shooterSS.getLit();
+		}else{
+			Robot.shooterSS.unLit();
 		}
 
 		sdu.push();

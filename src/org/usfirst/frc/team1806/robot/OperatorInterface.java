@@ -37,12 +37,14 @@ import org.usfirst.frc.team1806.robot.commands.elevator.IncrementUp;
 import org.usfirst.frc.team1806.robot.commands.elevator.LowBarTeleop;
 import org.usfirst.frc.team1806.robot.commands.elevator.LowBarTeleopCG;
 import org.usfirst.frc.team1806.robot.commands.elevator.ManualMove;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToBatterShotHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToChevalHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingFromLow;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToLocationPID;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToOuterworksShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.TempMoveToChevalDeFunHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.TempMoveToGrabHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
@@ -70,16 +72,16 @@ public class OperatorInterface {
 
 	// d for driver ;)
 	double dlsY, drsX, dRT, dLT;
-	boolean dB, dX, dY, dRB, dLB, dStart, dPOVUp, dPOVDown, dPOVLeft, dPOVRight;
-	public boolean dBack, dA;
+	boolean dB, dY, dRB, dLB, dStart, dPOVUp, dPOVDown, dPOVLeft, dPOVRight;
+	public boolean dBack, dA, dX;
 
 	double olsY, orsY, oRT, oLT;
 	boolean oA, oB, oX, oY, oRB, oLB, oStart, oBack, oRsClick;
 	public boolean oPOVUp, oPOVDown;
 
-	Latch intakeDeployLatch, moveShooterLatch, shootBallLatch, elevatorManualAutoLatch, cockingRequestLatch,
-			chevalDeFunLatch, elevatorLowBarModeLatch, incrementLatch, testLatch, eggIntakeLatch;
-	public static Latch lowBarLatch;
+	Latch intakeDeployLatch, moveShooterLatch, elevatorManualAutoLatch, cockingRequestLatch,
+			chevalDeFunLatch, elevatorLowBarModeLatch, incrementLatch, testLatch, eggIntakeLatch, latch1, latch2, latch3, latch4;
+	public static Latch lowBarLatch, shootBallLatch;
 
 	final double kJoystickDeadzone = .15;
 
@@ -100,6 +102,10 @@ public class OperatorInterface {
 		testLatch = new Latch();
 		lowBarLatch = new Latch();
 		eggIntakeLatch = new Latch();
+		latch1 = new Latch();
+		latch2 = new Latch();
+		latch3 = new Latch();
+		latch4 = new Latch();
 
 		m_commands = new Commands();
 
@@ -120,9 +126,14 @@ public class OperatorInterface {
 		// TODO make this a command
 		if (intakeDeployLatch.update(dY) || eggIntakeLatch.update(oLB)) {
 			// switch intake deployment
+			
+			System.out.println("Intake Deployed: " + (Robot.states.intakePositionTracker == IntakePosition.DEPLOYED));
+			System.out.println("Moving Down? : " + Robot.elevatorSS.isMovingDown());
+			System.out.println("High enough?: " + (Robot.elevatorSS.getElevatorPosition() >= (Constants.elevatorChevaldeFunHeight - 10000)));
+			
 			if (Robot.states.intakePositionTracker == IntakePosition.DEPLOYED) {
 				//Disallow retracting of the intake if the elevator is moving downwards so we dont break stuff
-				if(!Robot.elevatorSS.isMovingDown()){
+				if(!Robot.elevatorSS.isMovingDown() && ((Robot.elevatorSS.getElevatorPosition() >= (Constants.elevatorChevaldeFunHeight - 10000)) || Robot.states.lowBarring)){
 					new RaiseIntake().start();
 				}
 			} else if (Robot.states.intakePositionTracker == IntakePosition.RETRACTED) {
@@ -132,10 +143,12 @@ public class OperatorInterface {
 		}
 
 		if (chevalDeFunLatch.update(oPOVUp)) {
-			m_commands.armDefenseCommandTracker = ArmDefenseCommand.CHEVALDEFUN;
-			System.out.println("chevaldefun");
+			//m_commands.armDefenseCommandTracker = ArmDefenseCommand.CHEVALDEFUN;
+			m_commands.armDefenseCommandTracker = ArmDefenseCommand.NONE;
+			//System.out.println("chevaldefun");
 		} else if (elevatorLowBarModeLatch.update(oPOVDown)) {
-			m_commands.armDefenseCommandTracker = ArmDefenseCommand.LOWBAR;
+			//m_commands.armDefenseCommandTracker = ArmDefenseCommand.LOWBAR;
+			m_commands.armDefenseCommandTracker = ArmDefenseCommand.NONE;
 		} else {
 			m_commands.armDefenseCommandTracker = ArmDefenseCommand.NONE;
 		}
@@ -165,16 +178,26 @@ public class OperatorInterface {
 
 		m_commands.shiftRequestCommandTracker = ShiftRequest.NONE;
 
+		if(dStart){
+			Robot.states.pulsePower = null;
+		}
+		
 		if (dRT >= .6) {
 			m_commands.autoLineUp = true;
 		} else {
 			m_commands.autoLineUp = false;
 		}
 
-		if (moveShooterLatch.update(oB)) {
-			// reposition shooter from holding to shooting height or vice versa
-			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.SWITCH;
-		} else {
+		//what position do you wanna move the arm to
+		if (latch1.update(oA)) {
+			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.HOLDING;
+		} else if (latch2.update(oB)) {
+			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.OUTERWORKS;
+		}else if (latch3.update(oX)) {
+			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.BATTER;
+		}else if (latch4.update(oY)) {
+			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.CHEVAL;
+		}else {
 			m_commands.elevatorPositionRequestTracker = ElevatorPositionRequest.NONE;
 		}
 
@@ -184,7 +207,7 @@ public class OperatorInterface {
 			m_commands.shootRequestTracker = ShootRequest.NONE;
 		}
 
-		if (elevatorManualAutoLatch.update(oc.getButtonRB())) {
+		/*if (elevatorManualAutoLatch.update(oc.getButtonRB())) {
 			if (Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.AUTO) {
 				m_commands.elevatorControlModeTracker = ElevatorControlMode.MANUAL;
 			} else {
@@ -192,20 +215,22 @@ public class OperatorInterface {
 			}
 		} else {
 			m_commands.elevatorControlModeTracker = ElevatorControlMode.NONE;
-		}
+		}*/
+		
+		m_commands.elevatorControlModeTracker = ElevatorControlMode.NONE;
 
-		// FIXME again quick and dirty
-		if (cockingRequestLatch.update(dStart)) {
+		if (cockingRequestLatch.update(dA)) {
 			m_commands.manualCockCommandTracker = ManualCockCommand.COCK;
 		} else {
 			m_commands.manualCockCommandTracker = ManualCockCommand.NONE;
 		}
 
-		if (incrementLatch.update(oX)) {
+		if (incrementLatch.update(oRB)) {
+			System.out.println("incrementing up");
 			new IncrementUp(125).start();
 		}
 
-		if (lowBarLatch.update(dA)) {
+		if (lowBarLatch.update(oRT > .5)) {
 			// Low bar?
 
 			if (Robot.states.intakePositionTracker == IntakePosition.DEPLOYED
@@ -225,10 +250,10 @@ public class OperatorInterface {
 	private void executeCommands(Commands c) {
 
 		// TODO clean dis
-		if (oY) {
+		if (oBack) {
 			Robot.shooterSS.releaseBall();
 			Robot.states.hasBall = false;
-		} else if (oA) {
+		} else if (oStart) {
 			Robot.shooterSS.pinchBall();
 			Robot.states.hasBall = true;
 		}
@@ -298,12 +323,12 @@ public class OperatorInterface {
 
 		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.CHEVALDEFUN) {
 			if (c.intakeCommandTracker == RunIntakeCommand.STOP) {
-				new TempMoveToChevalDeFunHeight().start();
+				//new TempMoveToChevalDeFunHeight().start();
 				System.out.println("moving to temp chevaldefun");
 			}
 		} else if (c.armDefenseCommandTracker == ArmDefenseCommand.LOWBAR) {
 			if (c.intakeCommandTracker == RunIntakeCommand.STOP) {
-				new TempMoveToGrabHeight().start();
+				//new TempMoveToGrabHeight().start();
 				System.out.println("moving to temp grab height");
 			}
 		}
@@ -317,7 +342,7 @@ public class OperatorInterface {
 			Robot.states.elevatorOperatorControlModeTracker = ElevatorOperatorControlMode.MANUAL;
 		}
 
-		if (c.elevatorPositionRequestTracker == ElevatorPositionRequest.SWITCH
+		/*if (c.elevatorPositionRequestTracker == ElevatorPositionRequest.SWITCH
 				&& Robot.states.elevatorOperatorControlModeTracker == ElevatorOperatorControlMode.AUTO) {
 			if (Robot.states.shooterArmPositionTracker == ShooterArmPosition.HOLDING) {
 				new MoveToShootingHeight().start();
@@ -340,11 +365,29 @@ public class OperatorInterface {
 			} else {
 				Robot.elevatorSS.elevatorStopMovement();
 			}
+		}*/
+		
+		if(c.elevatorPositionRequestTracker != ElevatorPositionRequest.NONE){
+		
+		if(Robot.states.intakePositionTracker == IntakePosition.DEPLOYED){
+		
+		if(c.elevatorPositionRequestTracker == ElevatorPositionRequest.HOLDING){
+			new MoveToHoldingPID().start();
+		}else if(c.elevatorPositionRequestTracker == ElevatorPositionRequest.OUTERWORKS){
+			new MoveToOuterworksShootingHeight().start();
+		}else if(c.elevatorPositionRequestTracker == ElevatorPositionRequest.BATTER){
+			new MoveToBatterShotHeight().start();
+		}else if(c.elevatorPositionRequestTracker == ElevatorPositionRequest.CHEVAL){
+			new MoveToChevalHeight().start();
 		}
+		
+		}
+		}
+		
 
 		if (m_commands.shootRequestTracker == ShootRequest.SHOOT && Robot.states.hasBall
 				&& Robot.states.shooterArmPositionTracker == ShooterArmPosition.UP
-				&& Robot.states.shooterCockedTracker == ShooterCocked.COCKED) {
+				&& Robot.states.shooterCockedTracker == ShooterCocked.COCKED && dRT < .3) {
 
 			new ShootThenCock().start();
 		}

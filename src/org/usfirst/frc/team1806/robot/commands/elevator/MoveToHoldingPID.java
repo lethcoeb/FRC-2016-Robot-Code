@@ -12,7 +12,7 @@ public class MoveToHoldingPID extends CommandGroup {
     
     public  MoveToHoldingPID() {
         
-    	addSequential(new ResetOvershoot());
+    	//addSequential(new ResetOvershoot());
     	addSequential(new SetStateOther());
     	addSequential(new MoveToLocationPID(Constants.elevatorHoldingHeight));
     	addSequential(new SetStateHolding());

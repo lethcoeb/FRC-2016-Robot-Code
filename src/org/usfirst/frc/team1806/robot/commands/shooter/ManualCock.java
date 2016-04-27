@@ -70,6 +70,7 @@ public class ManualCock extends Command {
     // Called once after isFinished returns true
     protected void end() {
     	Robot.shooterSS.stopCocking();
+    	Robot.states.autoalignmentShooting = false;
     	Robot.states.shooterCockedTracker = ShooterCocked.COCKED;
     }
 

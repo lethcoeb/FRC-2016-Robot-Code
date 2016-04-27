@@ -349,6 +349,15 @@ public class DrivetrainSubsystem extends Subsystem {
     	return Math.sqrt(Math.pow(navx.getPitch(), 2) + Math.pow(navx.getRoll(), 2));
     }
     
+    public void drivetrainControlLoopsDisable(){
+    	drivePC.disable();
+    	turnPC.disable();
+    	turnAbsolutePC.disable();
+    	drivePC.reset();
+    	turnPC.reset();
+    	turnAbsolutePC.reset();
+    }
+    
     public void drivetrainDrivePIDEnable(){
     	if(turnPC.isEnabled()){
     		turnPC.disable();

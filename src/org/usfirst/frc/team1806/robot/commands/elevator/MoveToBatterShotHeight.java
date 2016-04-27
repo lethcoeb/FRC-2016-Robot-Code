@@ -7,13 +7,11 @@ import edu.wpi.first.wpilibj.command.CommandGroup;
 /**
  *
  */
-public class MoveToShootingHeight extends CommandGroup {
+public class MoveToBatterShotHeight extends CommandGroup {
     
-    public  MoveToShootingHeight() {
-    	
-    	addSequential(new SetStateOther());
-        addSequential(new MoveToLocationPID(Constants.elevatorShootingHeight));
+    public  MoveToBatterShotHeight() {
+        addSequential(new SetStateOther());
+        addSequential(new MoveToLocationPID(Constants.elevatorBatterShotHeight));
         addSequential(new SetStateShooting());
-        
     }
 }

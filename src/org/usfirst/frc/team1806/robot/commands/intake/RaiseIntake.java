@@ -26,15 +26,10 @@ public class RaiseIntake extends Command {
 
 	// Called just before this Command runs the first time
 	protected void initialize() {
-		if (Robot.elevatorSS.getElevatorPosition() > 2000
-				&& Robot.elevatorSS.getElevatorPosition() < Constants.elevatorChevaldeFunHeight) {
-			allowed = false;
-		}else{
 			Robot.states.intakePositionTracker = IntakePosition.MOVING;
 			Robot.intakeSS.retractIntake();
 			timer.reset();
 			timer.start();
-		}
 	}
 
 	// Called repeatedly when this Command is scheduled to run

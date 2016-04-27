@@ -52,7 +52,7 @@ public class ElevatorSubsystem extends Subsystem {
 		//elevatorSRX.setCloseLoopRampRate(1);
 		//elevatorSRX.
 		
-		elevatorSRX.setForwardSoftLimit(110000);
+		elevatorSRX.setForwardSoftLimit(106000);
 		elevatorSRX.enableForwardSoftLimit(true);
 		elevatorSRX.setReverseSoftLimit(-500);
 		elevatorSRX.enableReverseSoftLimit(true);

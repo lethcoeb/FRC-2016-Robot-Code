@@ -31,6 +31,11 @@ public class DriverControlDrivetrain extends Command {
     	dlsY = Robot.oi.dc.getLeftJoyY();
     	drsX = Robot.oi.dc.getRightJoyX();
     	
+    	if(Robot.oi.dc.getLeftTrigger() >= .6){
+    		dlsY = dlsY * .35;
+    		drsX = drsX * .35;
+    	}
+    	
     	if (Robot.states.driveControlModeTracker == DriveControlMode.DRIVER) {
 			if (Math.abs(dlsY) > kJoystickDeadzone && Math.abs(drsX) > kJoystickDeadzone) {
 				Robot.drivetrainSS.execute(dlsY, -drsX);
@@ -44,11 +49,7 @@ public class DriverControlDrivetrain extends Command {
 		} else {
 			// Automatic driving stuff
 		}
-    	if(Robot.oi.dc.getLeftTrigger() >= .6 && !Robot.drivetrainSS.isAutoShifting()){
-    		Robot.drivetrainSS.enableAutoShift();
-    	} else if(Robot.oi.dc.getLeftTrigger() < .6 && Robot.drivetrainSS.isAutoShifting()) {
-    		Robot.drivetrainSS.disableAutoShift();
-    	}
+    	
     }
 
     // Make this return true when this Command no longer needs to run execute()

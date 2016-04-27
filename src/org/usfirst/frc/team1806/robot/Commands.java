@@ -19,7 +19,7 @@ public class Commands {
 	}
 	
 	public enum ElevatorPositionRequest{
-		SWITCH, NONE
+		NONE, CHEVAL, OUTERWORKS, BATTER, HOLDING
 	}
 	
 	public enum ShootRequest{

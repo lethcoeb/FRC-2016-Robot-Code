@@ -18,9 +18,6 @@ public class ShootThenCock extends CommandGroup {
 	public ShootThenCock() {
 		addSequential(new ShootDaBall());
 		addSequential(new Wait(Constants.timeToShoot));
-		if (Robot.states.intakePositionTracker == IntakePosition.DEPLOYED) {
-			addParallel(new MoveToHoldingPID());
-		}
 		addSequential(new CockShooter());
 	}
 }

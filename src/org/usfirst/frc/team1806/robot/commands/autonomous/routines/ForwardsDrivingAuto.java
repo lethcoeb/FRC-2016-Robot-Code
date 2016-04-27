@@ -11,7 +11,7 @@ import org.usfirst.frc.team1806.robot.commands.elevator.MoveToGrabPosition_Depre
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToLocationPID;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToOuterworksShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
@@ -55,7 +55,7 @@ public class ForwardsDrivingAuto extends CommandGroup {
 
     	addParallel(new MoveToLocationPID(Constants.elevatorChevaldeFunHeight));
     	addSequential(new DriveToPosition(120, .8));
-    	addParallel(new MoveToShootingHeight());
+    	addParallel(new MoveToOuterworksShootingHeight());
     	addParallel(new LowerIntake(.5));
     	addSequential(new LineUpShot());
     	

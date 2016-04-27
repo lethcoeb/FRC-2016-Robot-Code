@@ -15,13 +15,15 @@ public class DriveUntilFlat extends Command {
 	Double commandTimeout;
 	double maxSpeed;
 	//double kTimeUntilFlat = Constants.timeUntilFlat;
-	double kTimeUntilFlat = 0;
+	double kTimeUntilFlat = 0.25;
 
 	Double minDistanceToTravel;
 
 	boolean finished = false;
 	boolean flat;
-	boolean hasHit = false;
+	
+	//hacky
+	boolean hasHit = true;
 	Timer timeoutTimer;
 	Timer flatTimer;
 

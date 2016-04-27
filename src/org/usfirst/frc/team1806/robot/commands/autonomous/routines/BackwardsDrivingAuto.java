@@ -10,7 +10,7 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.TurnToAngle;
 import org.usfirst.frc.team1806.robot.commands.autotarget.LineUpShot;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToHoldingPID_Deprecated;
-import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight;
+import org.usfirst.frc.team1806.robot.commands.elevator.MoveToOuterworksShootingHeight;
 import org.usfirst.frc.team1806.robot.commands.elevator.MoveToShootingHeight_Deprecated;
 import org.usfirst.frc.team1806.robot.commands.elevator.ResetElevator;
 import org.usfirst.frc.team1806.robot.commands.intake.LowerIntake;
@@ -42,7 +42,7 @@ public class BackwardsDrivingAuto extends CommandGroup {
 				addSequential(new DoNothing());
 			} else {
 				if (lane == 1 || !leaveArmUp) {
-					addParallel(new MoveToShootingHeight());
+					addParallel(new MoveToOuterworksShootingHeight());
 				}
 				
 				if(lane == 5){

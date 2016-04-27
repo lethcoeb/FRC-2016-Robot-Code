@@ -95,7 +95,7 @@ public class TurnToAbsoluteAngle extends Command {
     			System.out.println("moving to stage 1");*/
     			
     			finished = true;
-    		}else if(stage == 1 && Robot.jr.isAngleAcceptable()){
+    		}else if(stage == 1){
     			//should be done.
     			finished = true;
     			System.out.println("stage one done");
@@ -106,7 +106,7 @@ public class TurnToAbsoluteAngle extends Command {
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
     	//LT for an override
-        return finished || Math.abs(Robot.oi.dc.getLeftTrigger()) > .5;
+        return finished;
     }
 
     // Called once after isFinished returns true

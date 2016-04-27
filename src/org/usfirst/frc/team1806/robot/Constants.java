@@ -3,8 +3,9 @@ package org.usfirst.frc.team1806.robot;
 public class Constants {
 	
 	//lit new auto stuff
-	public static final double[] autoForwardsNearGoalAngles = {62, 15, 5, -3, -10};
+	public static final double[] autoForwardsNearGoalAngles = {62, 15, 6.5, -2.5, -10};
 	public static final double[] autoBackwardsNearGoalAngles = {-150, -165, -175, 177, 170};
+	public static final double distanceFromStartingPosToDefenses = 44;
 	
 
 	public static final double joystickDeadzone = .15;
@@ -50,7 +51,7 @@ public class Constants {
 
 	
 	//tiny lil values
-	public static final double drivetrainTurn3P = .03;
+	public static final double drivetrainTurn3P = .065;
 	public static final double drivetrainTurn3I = 0;
 	//public static final double drivetrainTurn3D = 0.15;
 	public static final double drivetrainTurn3D = 0;
@@ -81,11 +82,12 @@ public class Constants {
 	public static final double elevatorDownPIDi = 0;
 	public static final double elevatorDownPIDd = 0;
 
-	public static final int elevatorShootingHeight = 91700;
+	public static final int elevatorBatterShotHeight = 102000;
+	public static final int elevatorShootingHeight = 96500;
 	//public static final int elevatorShootingHeight = 96000; //old arm
 	//public static final int elevatorHoldingHeight = 20000;
 	public static final int elevatorHoldingHeight = 26000;
-	public static final int elevatorChevaldeFunHeight = 70000; //lowest height at which the intake can be raised and lowered
+	public static final int elevatorChevaldeFunHeight = 75000; //lowest height at which the intake can be raised and lowered
 	public static final double resetSpeed = -.35;
 	public static final double collectingIntakeStopOffset = -3000;
 	
@@ -115,13 +117,13 @@ public class Constants {
 	public static final double gearEngageSpeed = .5;
 	public static final double timeToPinch = .5;
 	public static final double timeToUnpinch = .15;
-	public static final double timeToSettle = 1; // after 'ungrabbing' the
+	public static final double timeToSettle = .7; // after 'ungrabbing' the
 													// ball with the claw at
 													// shooting height this is
 													// the time at which the
 													// shooter will wait for the
 													// ball to settle.
-	public static final double timeToShoot = 2; // Time in seconds that it takes
+	public static final double timeToShoot = 1.25; // Time in seconds that it takes
 												// for the puncher to travel all
 												// the way through,
 												// after this time elapses you
@@ -136,7 +138,7 @@ public class Constants {
 	//TODO: Make distance range reasonable.
 	public static final double ShootingMinGoalDistance = 4;
 	public static final double ShootingMaxGoalDistance = 12;
-	public static final double ShootingJetsonCameraAngleOffset = 0;
+	public static final double ShootingJetsonCameraAngleOffset = -1.5;
 
 	// Networking stuff
 	public static final double jetsonConnectionLostTimeout = 1; // timeout until

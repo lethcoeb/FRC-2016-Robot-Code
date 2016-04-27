@@ -6,6 +6,7 @@ import org.usfirst.frc.team1806.robot.RobotMap;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Talon;
 import edu.wpi.first.wpilibj.command.Subsystem;
@@ -20,6 +21,7 @@ public class ShooterSubsystem extends Subsystem {
     Solenoid puncherReleaseSolenoid;
     DoubleSolenoid ballPincherSolenoid;
     DigitalInput ballSensor;
+    Relay flashlight;
     
     double kGearEngageSpeed = Constants.gearEngageSpeed;
     
@@ -34,6 +36,8 @@ public class ShooterSubsystem extends Subsystem {
     	puncherReleaseSolenoid = new Solenoid(RobotMap.shooterReleaseSolenoid);
     	ballPincherSolenoid = new DoubleSolenoid(1, RobotMap.pincherPinch, RobotMap.pincherRelease);
     	ballSensor = new DigitalInput(RobotMap.hasBallSensor);
+    	flashlight = new Relay(0);
+    	flashlight.setDirection(Relay.Direction.kForward);
     }
     
     public void cockShooterEngageGear(){
@@ -79,6 +83,14 @@ public class ShooterSubsystem extends Subsystem {
     
     public boolean hasBallSensor(){
     	return !ballSensor.get();
+    }
+    
+    public void getLit(){
+    	flashlight.set(Relay.Value.kOn);
+    }
+    
+    public void unLit(){
+    	flashlight.set(Relay.Value.kOff);
     }
 
     public void initDefaultCommand() {
