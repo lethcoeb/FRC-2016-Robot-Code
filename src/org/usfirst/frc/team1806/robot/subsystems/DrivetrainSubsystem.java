@@ -74,7 +74,8 @@ public class DrivetrainSubsystem extends Subsystem {
     	
     	
     	//TODO Make sure this is the right port for the shifter on comp bot
-    	shifter = new DoubleSolenoid(1, RobotMap.shiftLow, RobotMap.shiftHigh);
+    	shifter = new DoubleSolenoid(RobotMap.shiftLow, RobotMap.shiftHigh);
+    	//shifter = new DoubleSolenoid(1, RobotMap.shiftLow, RobotMap.shiftHigh);
     	
     	rightEncoder = new Encoder(RobotMap.rightEncoderA, RobotMap.rightEncoderB);
     	leftEncoder = new Encoder(RobotMap.leftEncoderA, RobotMap.leftEncoderB);

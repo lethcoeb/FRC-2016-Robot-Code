@@ -207,7 +207,7 @@ public class Robot extends IterativeRobot {
 		sdu.push();
 
 		if (!hasBeenEnabled) {
-			Robot.elevatorSS.elevatorSetPosition(-98800);
+			Robot.elevatorSS.elevatorSetPosition(-101100);
 			//Robot.elevatorSS.elevatorSetPosition(-Constants.elevatorShootingHeight);
 		}
 		// System.out.println("Get POV: " + oi.oc.getPOV());

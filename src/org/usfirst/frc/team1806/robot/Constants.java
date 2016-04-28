@@ -82,8 +82,8 @@ public class Constants {
 	public static final double elevatorDownPIDi = 0;
 	public static final double elevatorDownPIDd = 0;
 
-	public static final int elevatorBatterShotHeight = 102000;
-	public static final int elevatorShootingHeight = 96500;
+	public static final int elevatorBatterShotHeight = 103500;
+	public static final int elevatorShootingHeight = 94500;
 	//public static final int elevatorShootingHeight = 96000; //old arm
 	//public static final int elevatorHoldingHeight = 20000;
 	public static final int elevatorHoldingHeight = 26000;
