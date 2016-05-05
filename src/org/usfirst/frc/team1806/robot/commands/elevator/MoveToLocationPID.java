@@ -4,6 +4,7 @@ import org.usfirst.frc.team1806.robot.Constants;
 import org.usfirst.frc.team1806.robot.Robot;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.CANTalon.TalonControlMode;
 import edu.wpi.first.wpilibj.command.Command;
 
@@ -13,7 +14,11 @@ import edu.wpi.first.wpilibj.command.Command;
 public class MoveToLocationPID extends Command {
 
 	double target;
+	double m_tolerance = Constants.elevatorAbsoluteTolerance;
 	double startPosition;
+	
+	Timer timer;
+	Double m_timeout;
 	
 	boolean PIDEngaged;
 	boolean up;
@@ -23,9 +28,27 @@ public class MoveToLocationPID extends Command {
         target = location;
         startPosition = Robot.elevatorSS.getElevatorPosition();
     }
+    
+    public MoveToLocationPID(int location, double timeout) {
+        requires(Robot.elevatorSS);
+        target = location;
+        m_timeout = timeout;
+        startPosition = Robot.elevatorSS.getElevatorPosition();
+    }
+    
+    public MoveToLocationPID(int location, int tolerance) {
+        requires(Robot.elevatorSS);
+        target = location;
+        m_tolerance = tolerance;
+        startPosition = Robot.elevatorSS.getElevatorPosition();
+    }
 
     // Called just before this Command runs the first time
     protected void initialize() {
+    	
+    	timer = new Timer();
+    	timer.reset();
+    	timer.start();
     	
     	Robot.states.shooterArmPositionTracker = ShooterArmPosition.OTHER;
     	
@@ -91,7 +114,13 @@ public class MoveToLocationPID extends Command {
 
     protected boolean isFinished() {
     	//Return true to end the command if the elevator is within range of its setpoint.
-        return Math.abs(target - Robot.elevatorSS.getElevatorPosition()) < Constants.elevatorAbsoluteTolerance;
+    	
+    	if(m_timeout != null){
+            return (Math.abs(target - Robot.elevatorSS.getElevatorPosition()) <= m_tolerance) || timer.get() >= m_timeout;
+    	}else{
+    	
+    		return (Math.abs(target - Robot.elevatorSS.getElevatorPosition()) <= m_tolerance);
+    	}
     }
 
     // Called once after isFinished returns true

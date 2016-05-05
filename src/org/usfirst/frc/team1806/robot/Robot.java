@@ -210,6 +210,13 @@ public class Robot extends IterativeRobot {
 			Robot.elevatorSS.elevatorSetPosition(-101100);
 			//Robot.elevatorSS.elevatorSetPosition(-Constants.elevatorShootingHeight);
 		}
+		
+		if ((String) autonomous.getSelected() == "N") {
+			SmartDashboard.putString("Auto running?", "N");
+		}else{
+			SmartDashboard.putString("Auto running?", "Y");
+		}
+		
 		// System.out.println("Get POV: " + oi.oc.getPOV());
 		// System.out.println("Get POV Count: " + oi.oc.getPOVCount());
 
@@ -359,7 +366,7 @@ public class Robot extends IterativeRobot {
 			}
 		}
 		
-		if(Robot.elevatorSS.getElevatorPosition() >= Constants.elevatorShootingHeight - 10000 && Robot.oi.dc.getRightTrigger() < .3 && Robot.states.hasBall){
+		if(Robot.elevatorSS.getElevatorPosition() >= Constants.elevatorShootingHeight - 10000 && Robot.oi.dc.getRightTrigger() < .3 && Robot.states.hasBall && !Robot.oi.dc.getButtonLS()){
 			//high enough to get lit
 			Robot.shooterSS.getLit();
 		}else{

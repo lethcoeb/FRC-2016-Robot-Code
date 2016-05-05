@@ -15,6 +15,9 @@ import edu.wpi.first.wpilibj.command.Command;
 public class MoveToHoldingFromLow extends Command {
 
 	boolean shouldSpin = true;
+	boolean pickingUp = false;
+	
+	int kPositionToPinch = Constants.elevatorPickupEncPosToEngage;
 
 	public MoveToHoldingFromLow() {
 		requires(Robot.elevatorSS);
@@ -23,6 +26,13 @@ public class MoveToHoldingFromLow extends Command {
 
 	public MoveToHoldingFromLow(boolean spin) {
 		shouldSpin = spin;
+		requires(Robot.elevatorSS);
+		requires(Robot.intakeSS);
+	}
+	
+	public MoveToHoldingFromLow(boolean spin, boolean pickingUp) {
+		shouldSpin = spin;
+		this.pickingUp = pickingUp;
 		requires(Robot.elevatorSS);
 		requires(Robot.intakeSS);
 	}
@@ -55,6 +65,14 @@ public class MoveToHoldingFromLow extends Command {
 		else{
 			Robot.intakeSS.stopIntaking();
 		}
+		
+		if(pickingUp){
+			if(Robot.elevatorSS.getElevatorPosition() >=  kPositionToPinch){
+				Robot.shooterSS.pinchBall();
+				pickingUp = false;
+			}
+		}
+		
 	}
 
 	// Make this return true when this Command no longer needs to run execute()

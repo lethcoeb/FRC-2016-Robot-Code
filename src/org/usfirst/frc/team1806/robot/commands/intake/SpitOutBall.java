@@ -19,6 +19,7 @@ public class SpitOutBall extends Command {
     public SpitOutBall() {
     	//HELLA REQUIREMENTS
     	Robot.states.intakeRollerStateTracker = IntakeRollerState.OUTTAKING;
+    	Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
         requires(Robot.elevatorSS);
         requires(Robot.intakeSS);
         requires(Robot.shooterSS);
@@ -26,7 +27,7 @@ public class SpitOutBall extends Command {
 
     // Called just before this Command runs the first time
     protected void initialize() {
-		Robot.states.intakeControlModeTracker = IntakeControlMode.AUTOMATIC;
+		
 		System.out.println("SpitOutBall() started");
     	Robot.elevatorSS.resetSrxPID();
     	Robot.elevatorSS.elevatorSetControlMode(TalonControlMode.Position);

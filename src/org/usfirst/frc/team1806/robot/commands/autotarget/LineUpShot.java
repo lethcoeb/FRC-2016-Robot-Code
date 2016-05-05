@@ -13,6 +13,7 @@ import org.usfirst.frc.team1806.robot.RobotStates.Mode;
 import org.usfirst.frc.team1806.robot.RobotStates.ShooterArmPosition;
 import org.usfirst.frc.team1806.robot.commands.DriverControlDrivetrain;
 import org.usfirst.frc.team1806.robot.commands.RumbleController;
+import org.usfirst.frc.team1806.robot.commands.autonomous.RobotReset;
 import org.usfirst.frc.team1806.robot.commands.shooter.ShootThenCock;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -66,7 +67,7 @@ public class LineUpShot extends Command {
 			System.out.println("Using global pulsepower");
 		}else{
 			step = 1;
-			pulsePower = .14;
+			pulsePower = .16;
 		}
 	}
 
@@ -186,6 +187,7 @@ public class LineUpShot extends Command {
 			//fill table w/ entries
 			while (loops < 5) {
 				
+				Robot.drivetrainSS.arcadeDrive(0, -pulsePower);
 				currYaw = Robot.drivetrainSS.getYaw();
 				yawTable.add(currYaw);
 				while (yawTable.size() > 5) {
@@ -221,14 +223,14 @@ public class LineUpShot extends Command {
 				System.out.println("Found pulsePower: " + pulsePower);
 				Robot.drivetrainSS.arcadeDrive(0, 0);
 				//set global power so robot remembers it
-				Robot.states.pulsePower = pulsePower + .02;
+				Robot.states.pulsePower = pulsePower + .01;
 			} else {
 				
-				autoTimer.reset();
+				/*autoTimer.reset();
 				autoTimer.start();
-				while(autoTimer.get() < .2){
+				while(autoTimer.get() < .15){
 					
-				}
+				}*/
 				
 				pulsePower = pulsePower + .01;
 				System.out.println("Changing pulsePower to " + pulsePower);
@@ -254,7 +256,7 @@ public class LineUpShot extends Command {
 					autoTimer.start();
 
 					if (Math.abs(currYaw - targetAngle) <= 2.5) {
-						Robot.drivetrainSS.arcadeRight(0, (pulsePower) * -Math.signum(targetAngle));
+						Robot.drivetrainSS.arcadeRight(0, (pulsePower - .02) * -Math.signum(targetAngle));
 					} else {
 						Robot.drivetrainSS.arcadeDrive(0, pulsePower * -Math.signum(targetAngle));
 					}
@@ -335,20 +337,21 @@ public class LineUpShot extends Command {
 		Robot.drivetrainSS.arcadeDrive(0, 0);
 
 		
-		if(Robot.states.mode == Mode.AUTONOMOUS){
+		/*if(Robot.states.mode == Mode.AUTONOMOUS){
 		autoTimer.reset();
 		autoTimer.start();
 
 		
-		while (autoTimer.get() < .15) {
+		while (autoTimer.get() < .1) {
 
 		}
-		}
+		}*/
 
-		Robot.states.autoLiningUp = false;
+		
 
 		if (Robot.states.mode == Mode.TELEOP && Robot.oi.dc.getRightTrigger() < .5) {
 
+			Robot.states.autoLiningUp = false;
 			Robot.states.driveControlModeTracker = DriveControlMode.DRIVER;
 			new DriverControlDrivetrain().start();
 			Robot.states.overshoot = 0;
@@ -371,14 +374,25 @@ public class LineUpShot extends Command {
 
 			// Use currYaw since it was last calculated in the execute method,
 			// like targetAngle
-			if (Math.abs(currYaw - targetAngle) >= .4) {
+			if (Math.abs(Robot.jr.getAngleToGoal()) >= .4) {
 				new LineUpShot().start();
 			} else {
+				
+				autoTimer.reset();
+				autoTimer.start();
+				while(autoTimer.get() < .2){
+					
+				}if(Math.abs(Robot.jr.getAngleToGoal()) < .4){
+				
+				Robot.states.autoLiningUp = false;
 				Robot.states.shooterArmPositionTracker = ShooterArmPosition.UP;
 				new ShootThenCock().start();
 
 				Robot.compressor.setClosedLoopControl(true);
 				Robot.compressor.start();
+				}else{
+					new LineUpShot().start();
+				}
 
 			}
 		}
@@ -388,7 +402,8 @@ public class LineUpShot extends Command {
 		}
 
 		else if (Robot.states.mode == Mode.AUTONOMOUS) {
-
+			Robot.states.autoLiningUp = false;
+			Robot.states.shooterArmPositionTracker = ShooterArmPosition.UP;
 			new ShootThenCock().start();
 
 			Robot.compressor.setClosedLoopControl(true);

@@ -93,6 +93,8 @@ public class Constants {
 	
 	public static final double elevatorIntakeEngagedHeight = 30000;
 	
+	public static final int elevatorPickupEncPosToEngage = 4000;
+	
 	public static final double elevatorPIDEngageDistance = 10000;
 	// position where the ball is no longer engaged w/ the intake while held
 	// with the claw. After the elevator surpasses this height,
@@ -138,7 +140,7 @@ public class Constants {
 	//TODO: Make distance range reasonable.
 	public static final double ShootingMinGoalDistance = 4;
 	public static final double ShootingMaxGoalDistance = 12;
-	public static final double ShootingJetsonCameraAngleOffset = -1.5;
+	public static final double ShootingJetsonCameraAngleOffset = 0;
 
 	// Networking stuff
 	public static final double jetsonConnectionLostTimeout = 1; // timeout until

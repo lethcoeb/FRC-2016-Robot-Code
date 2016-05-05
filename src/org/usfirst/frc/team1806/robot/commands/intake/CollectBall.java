@@ -65,7 +65,7 @@ public class CollectBall extends Command {
 			Robot.intakeSS.intakeBall();
 			intaking = true;
 			System.out.println("intake rolling");
-		} else if (Robot.shooterSS.hasBallSensor() && intaking && !ballSensed) {
+		} else if ((Robot.shooterSS.hasBallSensor() || Robot.oi.oc.getLeftTrigger() > .5) && intaking && !ballSensed) {
 			// you successfully intaked a ball and now you need to wait a bit
 			// for it to center.
 			new RumbleController(Robot.oi.dc).start();
@@ -83,7 +83,7 @@ public class CollectBall extends Command {
 			ok = true;
 			System.out.println("pinching");
 			clamping = true;
-			Robot.shooterSS.pinchBall();
+			//Robot.shooterSS.pinchBall();
 			pinched = true;
 			t.reset();
 			t.start();
@@ -99,8 +99,8 @@ public class CollectBall extends Command {
 			}
 		}
 
-		else if (clamping && t.get() >= .2) {
-			//If you've been clamped for more than two seconds finish the command and bring the ball up to holding height
+		else if (clamping && t.get() >= 0) {
+			//If you've been clamped for more than .two seconds finish the command and bring the ball up to holding height
 			System.out.println("finishing");
 			t.stop();
 			finished = true;
@@ -118,8 +118,8 @@ public class CollectBall extends Command {
 		t.stop();
 		Robot.oi.stopRumbles();
 		Robot.states.hasBall = pinched;
-		new MoveToHoldingFromLow(pinched).start();
 		Robot.states.collectingBalling = false;
+		new MoveToHoldingFromLow(pinched, pinched).start();
 	}
 
 	// Called when another command which requires one or more of the same
