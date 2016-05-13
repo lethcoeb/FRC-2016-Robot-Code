@@ -80,9 +80,7 @@ public class SmartDashboardUpdater {
 			SmartDashboard.putNumber("NavxPitch", Robot.drivetrainSS.getPitch());
 			SmartDashboard.putNumber("NavxRoll", Robot.drivetrainSS.getRoll());
 			
-			if(Robot.states.pulsePower != null){
-				SmartDashboard.putNumber("PulsePower Global", Robot.states.pulsePower);
-			}
+			SmartDashboard.putNumber("PulsePower Global", Robot.states.pulsePower);
 			
 			//SmartDashboard.putBoolean("GoalFound", towerTracker.getBoolean("GoalFound", false));
 			//SmartDashboard.putNumber("AngleToGoal", towerTracker.getNumber("AngleToGoal", 0));

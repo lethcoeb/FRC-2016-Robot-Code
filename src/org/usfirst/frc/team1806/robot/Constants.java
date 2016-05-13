@@ -73,17 +73,17 @@ public class Constants {
 	public static final int loopsToCheckSensorDisconnect = 10;
 	// ELEVATOR THINGS
 
-	public static final double elevatorPIDp = 0.15;
-	public static final double elevatorPIDi = 0.0006;
+	public static final double elevatorPIDp = 0.17;
+	public static final double elevatorPIDi = 0.0009;
 	public static final double elevatorPIDd = 0;
 	//public static final double elevatorAbsoluteTolerance = 25;
-	public static final double elevatorAbsoluteTolerance = 500;
+	public static final double elevatorAbsoluteTolerance = 600;
 	public static final double elevatorDownPIDp = .12;
 	public static final double elevatorDownPIDi = 0;
 	public static final double elevatorDownPIDd = 0;
 
 	public static final int elevatorBatterShotHeight = 103500;
-	public static final int elevatorShootingHeight = 94500;
+	public static final int elevatorShootingHeight = 93500;
 	//public static final int elevatorShootingHeight = 96000; //old arm
 	//public static final int elevatorHoldingHeight = 20000;
 	public static final int elevatorHoldingHeight = 26000;

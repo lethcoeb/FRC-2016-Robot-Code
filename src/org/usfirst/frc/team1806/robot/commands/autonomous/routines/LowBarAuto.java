@@ -28,7 +28,7 @@ public class LowBarAuto extends CommandGroup {
     	CommandGroup lowerArms = new CommandGroup();
     	lowerArms.addSequential(new IntakeRunAtSpeed(-.3));
     	lowerArms.addSequential(new LowerIntake(.1));
-    	lowerArms.addSequential(new MoveToLocationPID(0, 800));
+    	lowerArms.addSequential(new MoveToLocationPID(0, 900));
     	lowerArms.addSequential(new WaitForBottomLimit());
     	lowerArms.addSequential(new IntakeRunAtSpeed(0));
     	
@@ -40,7 +40,7 @@ public class LowBarAuto extends CommandGroup {
     	addSequential(new DriveToPosition(180, .95));
     	addParallel(turnThenForwards);
     	addSequential(new MoveToFlushHeight(3.75));
-    	addSequential(new MoveToFlushHeight(1));
+    	addSequential(new MoveToFlushHeight(2));
 		addSequential(new LineUpShot());
     	
     }

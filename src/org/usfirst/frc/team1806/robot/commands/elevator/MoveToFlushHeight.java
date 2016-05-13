@@ -14,7 +14,7 @@ public class MoveToFlushHeight extends CommandGroup {
     public  MoveToFlushHeight(double timeout) {
     	
     	addSequential(new SetStateOther());
-    	addSequential(new MoveToLocationPID(96000, timeout));
+    	addSequential(new MoveToLocationPID(98000, timeout));
     	addSequential(new SetStateShooting());
     	
     }

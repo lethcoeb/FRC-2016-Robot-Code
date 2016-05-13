@@ -179,7 +179,7 @@ public class OperatorInterface {
 		m_commands.shiftRequestCommandTracker = ShiftRequest.NONE;
 
 		if(dStart){
-			Robot.states.pulsePower = null;
+			Robot.states.pulsePower = 0;
 		}
 		
 		if (dRT >= .6) {
@@ -381,6 +381,17 @@ public class OperatorInterface {
 			new MoveToChevalHeight().start();
 		}
 		
+		}else{
+			if(Robot.elevatorSS.getElevatorPosition() >= Constants.elevatorChevaldeFunHeight - 1000 && !Robot.elevatorSS.isMovingDown()){
+				//If the arm is above or at cheval height let it move between the 'high' locations - cheval, batter, outerworks
+				if(c.elevatorPositionRequestTracker == ElevatorPositionRequest.OUTERWORKS){
+					new MoveToOuterworksShootingHeight().start();
+				}else if(c.elevatorPositionRequestTracker == ElevatorPositionRequest.BATTER){
+					new MoveToBatterShotHeight().start();
+				}else if(c.elevatorPositionRequestTracker == ElevatorPositionRequest.CHEVAL){
+					new MoveToChevalHeight().start();
+				}
+			}
 		}
 		}
 		

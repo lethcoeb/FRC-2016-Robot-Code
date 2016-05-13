@@ -326,6 +326,7 @@ public class DrivetrainSubsystem extends Subsystem {
     	return navx.getAngle();
     }
     
+    
     public double getYaw(){
     	return navx.getYaw();
     }

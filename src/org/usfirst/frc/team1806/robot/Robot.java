@@ -84,6 +84,7 @@ public class Robot extends IterativeRobot {
 	public static AutonomousReader ar;
 	public static SmartDashboardUpdater sdu;
 	public static RioVisionThread rvt;
+	public static SensorSuite ss;
 
 	public static SendableChooser autonomous;
 	public static SendableChooser autoArmUpOrDown;
@@ -130,6 +131,8 @@ public class Robot extends IterativeRobot {
 		// Vision tracking data receiver. Was used for jetson coprocessor, now used for receiving vals from DS over NetworkTables
 		jr = new JetsonReceiver();
 		jr.start();
+		
+		ss = new SensorSuite();
 		// autoreader for future events
 
 		//ar = new AutonomousReader();
@@ -205,6 +208,7 @@ public class Robot extends IterativeRobot {
 
 		Scheduler.getInstance().run();
 		sdu.push();
+		ss.update();
 
 		if (!hasBeenEnabled) {
 			Robot.elevatorSS.elevatorSetPosition(-101100);
@@ -306,6 +310,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousPeriodic() {
 		Scheduler.getInstance().run();
 		sdu.push();
+		ss.update();
 		
 		//Stop autonomous command if the robot is tilted too far forwards or backwards
 		//Basically avoid pulling a 935 hehehe
@@ -354,11 +359,13 @@ public class Robot extends IterativeRobot {
 
 		Scheduler.getInstance().run();
 		oi.update();
+		ss.update();
 		
 		//Quick and dirty override to make sure the driver always has control of the drivetrain if not using autoalignment
 		if(states.autoLiningUp){
 			if(Robot.oi.dRT < .4){
-				Robot.states.autoalignmentShooting = true;
+				states.autoLiningUp = false;
+				Robot.states.autoalignmentShooting = false;
 				System.out.println("Overriding autolineup, returning control to driver.");
 				new DriverControlDrivetrain().start();
 				compressor.setClosedLoopControl(true);

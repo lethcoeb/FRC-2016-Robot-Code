@@ -54,7 +54,7 @@ public class RobotStates {
 	public static boolean autoalignmentShooting;
 	
 	public double initialTarget = 0;
-	public Double pulsePower;
+	public double pulsePower;
 	
 	public int loopsUntilDone = 0;
 	
@@ -89,6 +89,7 @@ public class RobotStates {
 		lowBarring = false;
 		overCocked = false;
 		autoalignmentShooting = false;
+		pulsePower = 0;
 		overshoot = 0;
 	}
 	

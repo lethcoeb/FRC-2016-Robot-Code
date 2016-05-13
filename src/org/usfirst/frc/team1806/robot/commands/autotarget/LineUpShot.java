@@ -53,6 +53,9 @@ public class LineUpShot extends Command {
 	int goalLoops;
 	int step;
 	
+	double minPulsePower = .15;
+
+	
 	
 
 	ArrayList<Double> yawTable = new ArrayList<Double>();
@@ -61,10 +64,9 @@ public class LineUpShot extends Command {
 		requires(Robot.drivetrainSS);
 		Robot.states.autoLiningUp = true;
 		Robot.drivetrainSS.resetYaw();
-		if(Robot.states.pulsePower != null){
+		if(Robot.states.pulsePower != 0){
 			step = 2;
 			pulsePower = Robot.states.pulsePower;
-			System.out.println("Using global pulsepower");
 		}else{
 			step = 1;
 			pulsePower = .16;
@@ -171,70 +173,32 @@ public class LineUpShot extends Command {
 		 * 
 		 * }
 		 */
-
 		
-
-		double minYawChange = .1;
-
 		switch (step) {
 
 		// finding min pulsepower
 		case 1: {
 			
-			Robot.drivetrainSS.arcadeDrive(0, -pulsePower);
-			boolean moving = true;
-			int loops = 0;
-			//fill table w/ entries
-			while (loops < 5) {
+			double targetVelocity = .5;
+			
+			System.out.println("Finding min pulsepower");
+			
+			Robot.drivetrainSS.arcadeDrive(0, minPulsePower * -Math.signum(targetAngle));
+			autoTimer.reset();
+			autoTimer.start();
+			
+			while(Math.abs(Robot.ss.getAngularVelocity()) < targetVelocity && autoTimer.get() < .10){
 				
-				Robot.drivetrainSS.arcadeDrive(0, -pulsePower);
-				currYaw = Robot.drivetrainSS.getYaw();
-				yawTable.add(currYaw);
-				while (yawTable.size() > 5) {
-					// keep table size at 5 entries
-					yawTable.remove(0);
-				}
-				
-				autoTimer.reset();
-				autoTimer.start();
-				while(autoTimer.get() < .02){
-					
-				}
-				
-				loops++;
-
 			}
 			
-			for (int i = 1; i < yawTable.size(); i++) {
-				if (Math.abs(yawTable.get(i)) - Math.abs(yawTable.get(i - 1)) < minYawChange) {
-					moving = false;
-				} else {
-					
-				}
-			}
-			
-			//dont let it get too big
-			if(pulsePower > .3){
-				moving = true;
-			}
-
-			if (moving) {
+			if(Math.abs(Robot.ss.getAngularVelocity()) >= targetVelocity){
+				//Robot is moving fast enough
+				System.out.println("Found pulsepower: " + minPulsePower);
+				Robot.states.pulsePower = minPulsePower;
 				step = 2;
-				System.out.println("Found pulsePower: " + pulsePower);
-				Robot.drivetrainSS.arcadeDrive(0, 0);
-				//set global power so robot remembers it
-				Robot.states.pulsePower = pulsePower + .01;
-			} else {
-				
-				/*autoTimer.reset();
-				autoTimer.start();
-				while(autoTimer.get() < .15){
-					
-				}*/
-				
-				pulsePower = pulsePower + .01;
-				System.out.println("Changing pulsePower to " + pulsePower);
-				
+			}else{
+				//Never moved fast enough; redo case 1
+				minPulsePower += .01;
 			}
 
 		}
@@ -242,6 +206,7 @@ public class LineUpShot extends Command {
 			// running goalloops cycle
 		case 2: {
 			
+			double pulsePowerr = Robot.states.pulsePower;
 			currYaw = Robot.drivetrainSS.getYaw();
 			yawTable.add(currYaw);
 			while (yawTable.size() > 5) {
@@ -256,9 +221,9 @@ public class LineUpShot extends Command {
 					autoTimer.start();
 
 					if (Math.abs(currYaw - targetAngle) <= 2.5) {
-						Robot.drivetrainSS.arcadeRight(0, (pulsePower - .02) * -Math.signum(targetAngle));
+						Robot.drivetrainSS.arcadeRight(0, (pulsePowerr - .03) * -Math.signum(targetAngle));
 					} else {
-						Robot.drivetrainSS.arcadeDrive(0, pulsePower * -Math.signum(targetAngle));
+						Robot.drivetrainSS.arcadeDrive(0, pulsePowerr * -Math.signum(targetAngle));
 					}
 
 					// Robot.drivetrainSS.arcadeRight(0, pulsePower *
@@ -266,6 +231,7 @@ public class LineUpShot extends Command {
 				}
 			} else {
 				// done
+				
 				Robot.drivetrainSS.arcadeDrive(0, 0);
 				finished = true;
 			}
@@ -329,6 +295,8 @@ public class LineUpShot extends Command {
 
 	// Called once after isFinished returns true
 	protected void end() {
+		
+		Robot.states.autoLiningUp = false;
 
 		currYaw = Robot.drivetrainSS.getYaw();
 
@@ -374,7 +342,7 @@ public class LineUpShot extends Command {
 
 			// Use currYaw since it was last calculated in the execute method,
 			// like targetAngle
-			if (Math.abs(Robot.jr.getAngleToGoal()) >= .4) {
+			if (Math.abs(Robot.jr.getAngleToGoal()) >= .5) {
 				new LineUpShot().start();
 			} else {
 				
@@ -382,7 +350,7 @@ public class LineUpShot extends Command {
 				autoTimer.start();
 				while(autoTimer.get() < .2){
 					
-				}if(Math.abs(Robot.jr.getAngleToGoal()) < .4){
+				}if(Math.abs(Robot.jr.getAngleToGoal()) < .5){
 				
 				Robot.states.autoLiningUp = false;
 				Robot.states.shooterArmPositionTracker = ShooterArmPosition.UP;
@@ -397,7 +365,7 @@ public class LineUpShot extends Command {
 			}
 		}
 
-		else if (Math.abs(currYaw - targetAngle) >= .5) {
+		else if (Math.abs(Robot.drivetrainSS.getYaw() - Robot.jr.getAngleToGoal()) >= .5) {
 			new LineUpShot().start();
 		}
 
