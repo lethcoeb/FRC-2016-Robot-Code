@@ -243,16 +243,16 @@ public class LineUpShot extends Command {
 			}
 
 			if(step == 2){
-			boolean overshooting = true;
+			
 			if (yawTable.size() == 5) {
+				boolean overshooting = true;
 				for (int i = 1; i < yawTable.size(); i++) {
-					if (Math.abs(yawTable.get(i) - targetAngle) > Math.abs(yawTable.get(i - 1) - targetAngle)) {
+					if (Math.abs(yawTable.get(i) - targetAngle) > Math.abs(yawTable.get(i - 1) - targetAngle) + .04) {
 						// The difference between the target angle and current
 						// angle is GROWING
 						// keep overshooting var to true
 					} else {
-						// You're not overshooting so set variable to false,
-						// it'll stay there
+						// You're not overshooting so set variable to false
 						overshooting = false;
 					}
 				}

@@ -22,6 +22,12 @@ public class TurnToAbsoluteAngle extends Command {
         targetAngle = target;
     }
     
+    public TurnToAbsoluteAngle(double target, double timeoutInSeconds) {
+        requires(Robot.drivetrainSS);
+        this.setTimeout(timeoutInSeconds); 
+        targetAngle = target;
+    }
+    
     public TurnToAbsoluteAngle(double target, int accuracy){
     	requires(Robot.drivetrainSS);
     	targetAngle = target;

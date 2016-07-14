@@ -40,6 +40,7 @@ import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoNothingAuto
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.DoSomething;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ForwardsDrivingAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ForwardsOverDefense;
+import org.usfirst.frc.team1806.robot.commands.autonomous.routines.ForwardsOverPos2or5Defense;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.LowBarAuto;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallNoSteal;
 import org.usfirst.frc.team1806.robot.commands.autonomous.routines.OneBallSteal;
@@ -246,7 +247,10 @@ public class Robot extends IterativeRobot {
 		Robot.drivetrainSS.shiftLow();
 		Robot.drivetrainSS.resetYaw();
 		Robot.drivetrainSS.resetEncoders();
-
+		
+		int lane = (int) autoLane.getSelected();
+		Defenses defense = (Defenses) defenseToBeCrossed.getSelected();
+		
 		autonomousCommand = new CommandGroup();
 
 		//Assign autonomous command group based on driver-selected sendable choosers
@@ -254,15 +258,19 @@ public class Robot extends IterativeRobot {
 			autonomousCommand = new RobotReset();
 		} else {
 
-			// Portcullis or chevaldefrise override forwards or backwards -- be
-			// careful!!
-			if(defenseToBeCrossed.getSelected() == Defenses.LOWBAR || (int) autoLane.getSelected() == 1){
+			if(defense == Defenses.LOWBAR || lane == 1){
 				autonomousCommand.addSequential(new LowBarAuto());
-			}else if (defenseToBeCrossed.getSelected() == Defenses.CHEVALDEFRISE) {
+			}else if (defense == Defenses.CHEVALDEFRISE) {
 				autonomousCommand.addSequential(
-						new ChevalDeFriseAuto((int) autoLane.getSelected()));
-			}else if(defenseToBeCrossed.getSelected() == Defenses.MOAT || defenseToBeCrossed.getSelected() == Defenses.RAMPARTS || defenseToBeCrossed.getSelected() == Defenses.ROCKWALL || defenseToBeCrossed.getSelected() == Defenses.ROUGHTERRAIN){
-				autonomousCommand.addSequential(new ForwardsOverDefense((int) autoLane.getSelected()));
+						new ChevalDeFriseAuto(lane));
+			}else if(defense == Defenses.MOAT || defense == Defenses.RAMPARTS || defense == Defenses.ROCKWALL || defense == Defenses.ROUGHTERRAIN){
+				if(lane == 5 || lane == 2){
+					//Run 2/5 over defense auto
+					autonomousCommand.addSequential(new ForwardsOverPos2or5Defense(lane));
+				}else{
+					//Run 3/4 over defense auto
+					autonomousCommand.addSequential(new ForwardsOverDefense(lane));
+				}
 			}
 
 			/*else if (autoForwardOrBackward.getSelected() == "F") {

@@ -16,4 +16,12 @@ public class MoveToOuterworksShootingHeight extends CommandGroup {
         addSequential(new SetStateShooting());
         
     }
+    
+public  MoveToOuterworksShootingHeight(int position) {
+    	
+    	addSequential(new SetStateOther());
+        addSequential(new MoveToLocationPID(position));
+        addSequential(new SetStateShooting());
+        
+    }
 }

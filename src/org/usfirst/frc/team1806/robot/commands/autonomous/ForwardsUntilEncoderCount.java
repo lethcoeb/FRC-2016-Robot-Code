@@ -23,6 +23,7 @@ public class ForwardsUntilEncoderCount extends Command {
     	}
     	
     	Robot.drivetrainSS.drivetrainControlLoopsDisable();
+    	Robot.drivetrainSS.resetYaw();
         requires(Robot.drivetrainSS);
     }
 

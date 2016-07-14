@@ -10,18 +10,25 @@ public class SensorSuite {
 	ArrayList<Double> navxYawTable;
 	ArrayList<Long> timeTable;
 
+	ArrayList<Double> voltageTable;
+
 	double addedAverage = 0;
 	double rollingYawAverage = 0;
+
+	double addedVoltageAverage = 0;
+	double rollingVoltageAverage = 0;
 
 	public SensorSuite() {
 		navxYawTable = new ArrayList<>();
 		timeTable = new ArrayList<>();
+		voltageTable = new ArrayList<>();
 	}
 
 	public void update() {
 
 		calculateAngularVelocity();
-		
+		calculateVoltage();
+
 		SmartDashboard.putNumber("Angular Velocity... : ", rollingYawAverage);
 
 	}
@@ -49,25 +56,56 @@ public class SensorSuite {
 		if (navxYawTable.size() > 1 && timeTable.size() > 1) {
 
 			for (int i = 0; i < navxYawTable.size() - 1; i++) {
-				
+
 				// Calculate dx/dt
-				addedAverage += (Math.IEEEremainder(navxYawTable.get(i + 1) - navxYawTable.get(i), 360) / ((timeTable.get(i + 1).doubleValue() - timeTable.get(i).doubleValue()) / 100));
+				addedAverage += (Math.IEEEremainder(navxYawTable.get(i + 1) - navxYawTable.get(i), 360)
+						/ ((timeTable.get(i + 1).doubleValue() - timeTable.get(i).doubleValue()) / 100));
 				loops++;
-				
+
 			}
 
 		}
 
 		rollingYawAverage = addedAverage / loops;
-		
-		if(Math.abs(rollingYawAverage) >= 35){
+
+		if (Math.abs(rollingYawAverage) >= 35) {
 			rollingYawAverage = 0;
 		}
+	}
+
+	public void calculateVoltage() {
+
+		voltageTable.add(Robot.pdp.getVoltage());
+
+		while (voltageTable.size() > 10) {
+			voltageTable.remove(0);
+		}
+
+		int loops = 0;
+		addedVoltageAverage = 0;
+		
+		if (voltageTable.size() > 0) {
+
+			for (int i = 0; i < voltageTable.size(); i++) {
+
+				addedVoltageAverage += voltageTable.get(i);
+				loops++;
+
+			}
+
+		}
+		
+		rollingVoltageAverage = addedVoltageAverage / loops;
+
 	}
 
 	public double getAngularVelocity() {
 		// returns angular velocity in deg/s
 		return rollingYawAverage;
+	}
+
+	public double getVoltage() {
+		return rollingVoltageAverage;
 	}
 
 }
